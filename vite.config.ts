@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -8,7 +9,7 @@ const certificatePath = resolve('certs', `${appHost}.pem`)
 const privateKeyPath = resolve('certs', `${appHost}-key.pem`)
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     host: '0.0.0.0',
     port: 5173,
