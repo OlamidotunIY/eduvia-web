@@ -1,4 +1,5 @@
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import { normalizeApiError } from '../errors'
 
 interface RetryConfig extends InternalAxiosRequestConfig {
   _eduviaRetried?: boolean
@@ -20,7 +21,7 @@ export function applyErrorInterceptor(
       const isRefreshRequest = request?.url?.includes('/auth/refresh')
 
       if (error.response?.status !== 401 || !request || request._eduviaRetried || isRefreshRequest) {
-        return Promise.reject(error)
+        return Promise.reject(normalizeApiError(error))
       }
 
       request._eduviaRetried = true
@@ -35,7 +36,7 @@ export function applyErrorInterceptor(
         return instance(request)
       } catch (refreshError) {
         options.onSessionExpired()
-        return Promise.reject(refreshError)
+        return Promise.reject(normalizeApiError(refreshError))
       }
     },
   )

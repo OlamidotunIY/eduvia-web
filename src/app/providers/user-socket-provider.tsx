@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import {
   activeOrganizationChangedHandler,
 } from '@/features/authentication'
-import { userWsConnection } from '@/shared/api'
+import { buildUserSocketAuth, userWsConnection } from '@/shared/api'
 import { authStore } from '@/shared/store'
 
 interface UserSocketProviderProps {
@@ -18,7 +18,7 @@ export function UserSocketProvider({ children }: UserSocketProviderProps) {
     if (!isHydrated || !accessToken) return
 
     const unregister = activeOrganizationChangedHandler.register()
-    userWsConnection.connect({ namespace: '/user', auth: { token: accessToken } })
+    userWsConnection.connect({ namespace: '/user', auth: buildUserSocketAuth(accessToken) })
 
     return () => {
       unregister()

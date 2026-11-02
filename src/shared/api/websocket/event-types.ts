@@ -5,6 +5,10 @@ export const WsEventType = {
 
 export type WsEventType = (typeof WsEventType)[keyof typeof WsEventType]
 
+export function isWsEventType(value: string): value is WsEventType {
+  return Object.values(WsEventType).includes(value as WsEventType)
+}
+
 export interface ActiveOrganizationChangedPayload {
   organizationId: string
 }

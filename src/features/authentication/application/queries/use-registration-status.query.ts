@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   eventBus,
+  buildRegistrationSocketAuth,
   WsConnection,
   WsEventType,
   type RegistrationReadyPayload,
@@ -31,7 +32,7 @@ export function useRegistrationStatusQuery(
     )
     connection.connect({
       namespace: '/registration',
-      auth: { registrationRequestId, registrationContinuation },
+      auth: buildRegistrationSocketAuth(registrationRequestId, registrationContinuation),
     })
 
     return () => {

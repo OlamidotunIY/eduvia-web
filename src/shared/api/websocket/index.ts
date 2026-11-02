@@ -1,3 +1,6 @@
 export * from './event-bus'
+export * from './event-router'
 export * from './event-types'
+export * from './handlers'
+export * from './ws-auth'
 export * from './ws-connection'
