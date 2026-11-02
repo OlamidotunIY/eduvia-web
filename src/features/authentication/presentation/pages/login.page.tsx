@@ -1,4 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -19,6 +21,7 @@ import { loginSchema } from "../schemas";
 export function LoginPage() {
   const navigate = useNavigate();
   const login = useLoginMutation();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -49,26 +52,12 @@ export function LoginPage() {
           <FieldGroup className="gap-5">
             <Field data-invalid={Boolean(form.formState.errors.email)}>
               <FieldLabel className="text-xs font-semibold tracking-wide uppercase" htmlFor="email">Email address</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={Boolean(form.formState.errors.email)}
-                className="h-10 rounded-lg bg-transparent px-3"
-                {...form.register("email")}
-              />
+              <div className="relative"><Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="email" type="email" autoComplete="email" aria-invalid={Boolean(form.formState.errors.email)} className="h-10 rounded-lg bg-transparent pr-3 pl-10" {...form.register("email")} /></div>
               <FieldError errors={[form.formState.errors.email]} />
             </Field>
             <Field data-invalid={Boolean(form.formState.errors.password)}>
               <FieldLabel className="text-xs font-semibold tracking-wide uppercase" htmlFor="password">Password</FieldLabel>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={Boolean(form.formState.errors.password)}
-                className="h-10 rounded-lg bg-transparent px-3"
-                {...form.register("password")}
-              />
+              <div className="relative"><LockKeyhole className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="password" type={isPasswordVisible ? "text" : "password"} autoComplete="current-password" aria-invalid={Boolean(form.formState.errors.password)} className="h-10 rounded-lg bg-transparent pr-10 pl-10" {...form.register("password")} /><Button type="button" variant="ghost" size="icon-sm" className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground" aria-label={isPasswordVisible ? "Hide password" : "Show password"} onClick={() => setIsPasswordVisible((visible) => !visible)}>{isPasswordVisible ? <EyeOff /> : <Eye />}</Button></div>
               <FieldError errors={[form.formState.errors.password]} />
             </Field>
             <AuthErrorBanner error={login.error} />

@@ -5,7 +5,7 @@ export function AuthLayout() {
     return (
         <div className="grid h-svh lg:grid-cols-2 overflow-hidden w-full">
             <div className="flex flex-col h-full overflow-hidden min-h-0">
-                <div className="flex justify-center gap-2 md:justify-start shrink-0 p-4 md:p-8 mb-2">
+                <div className="flex justify-start gap-2 shrink-0 p-4 md:p-8 mb-2">
                     <Link to="#">
                         <Logo size={"lg"}/>
                     </Link>
