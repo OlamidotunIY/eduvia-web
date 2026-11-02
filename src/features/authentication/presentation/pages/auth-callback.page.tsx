@@ -1,20 +1,13 @@
-import { useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import { Spinner } from "@/shared/ui/spinner";
-import { APP_ROUTES } from "@/shared/constant/routes.constants";
-import { authStore } from "@/shared/store";
+import { useEffect, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Spinner } from '@/shared/ui/spinner'
+import { APP_ROUTES } from '@/shared/constant/routes.constants'
+import { authStore } from '@/shared/store'
 import {
   useGoogleExchangeMutation,
   useRegistrationStatusQuery,
 } from "../../application";
-import { AuthErrorBanner } from "../components";
+import { AuthErrorBanner } from '../components'
 
 export function AuthCallbackPage() {
   const [search] = useSearchParams();
@@ -79,25 +72,27 @@ export function AuthCallbackPage() {
         : (exchange.error ?? registration.error);
 
   return (
-    <Card className="my-8 border-0 shadow-none sm:border sm:shadow-xs">
-      <CardHeader>
-        <CardTitle className="text-2xl">Completing sign in</CardTitle>
-        <CardDescription>
-          Securely connecting your Google account to Eduvia.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <section className="flex min-h-full w-full items-center justify-center py-12 text-center">
+      <div className="w-full max-w-md space-y-3 bg-transparent">
+        <div className="space-y-1.5">
+          <h1 className="font-serif text-2xl font-semibold tracking-tight">
+            Completing sign in
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Securely connecting your Google account to Eduvia.
+          </p>
+        </div>
         {error ? (
           <AuthErrorBanner error={error} />
         ) : (
-          <div className="flex items-center gap-3 rounded-md bg-muted p-4 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-3 py-3 text-sm text-muted-foreground">
             <Spinner />
             {registration.isAwaitingCompletion
-              ? "Creating your Eduvia account…"
-              : "Please wait…"}
+              ? 'Creating your Eduvia account…'
+              : 'Please wait…'}
           </div>
         )}
-      </CardContent>
-    </Card>
-  );
+      </div>
+    </section>
+  )
 }
