@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { io } from 'socket.io-client'
-import { WS_BASE_URL } from '@/shared/constant/api-constant'
+import {
+  eventBus,
+  WsConnection,
+  WsEventType,
+  type RegistrationReadyPayload,
+} from '@/shared/api'
 import { authRepository } from '../../infrastructure'
 
 /**
@@ -18,14 +22,21 @@ export function useRegistrationStatusQuery(
     setIsReady(false)
     if (!registrationRequestId || !registrationContinuation) return
 
-    const socket = io(`${WS_BASE_URL}/registration`, {
+    const connection = new WsConnection()
+    const unregister = eventBus.subscribe<RegistrationReadyPayload>(
+      WsEventType.REGISTRATION_READY,
+      (payload) => {
+        if (payload.registrationRequestId === registrationRequestId) setIsReady(true)
+      },
+    )
+    connection.connect({
+      namespace: '/registration',
       auth: { registrationRequestId, registrationContinuation },
-      transports: ['websocket'],
     })
-    socket.on('registration:ready', () => setIsReady(true))
 
     return () => {
-      socket.disconnect()
+      unregister()
+      connection.disconnect()
     }
   }, [registrationContinuation, registrationRequestId])
 

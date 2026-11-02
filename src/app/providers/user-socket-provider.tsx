@@ -1,14 +1,15 @@
 import { useEffect, type ReactNode } from 'react'
-import { io } from 'socket.io-client'
-import { refreshCurrentUser } from '@/features/authentication'
-import { WS_BASE_URL } from '@/shared/constant/api-constant'
+import {
+  activeOrganizationChangedHandler,
+} from '@/features/authentication'
+import { userWsConnection } from '@/shared/api'
 import { authStore } from '@/shared/store'
 
 interface UserSocketProviderProps {
   children: ReactNode
 }
 
-/** Applies authenticated user-domain events to the local current-user projection. */
+/** Starts and stops the authenticated shared websocket transport with the session lifecycle. */
 export function UserSocketProvider({ children }: UserSocketProviderProps) {
   const accessToken = authStore((state) => state.accessToken)
   const isHydrated = authStore((state) => state.isHydrated)
@@ -16,17 +17,12 @@ export function UserSocketProvider({ children }: UserSocketProviderProps) {
   useEffect(() => {
     if (!isHydrated || !accessToken) return
 
-    const socket = io(`${WS_BASE_URL}/user`, {
-      auth: { token: accessToken },
-      transports: ['websocket'],
-    })
-
-    socket.on('user:active_organization_changed', () => {
-      void refreshCurrentUser()
-    })
+    const unregister = activeOrganizationChangedHandler.register()
+    userWsConnection.connect({ namespace: '/user', auth: { token: accessToken } })
 
     return () => {
-      socket.disconnect()
+      unregister()
+      userWsConnection.disconnect()
     }
   }, [accessToken, isHydrated])
 

@@ -1,3 +1,4 @@
+export * from './handlers'
 export * from './mutations'
 export * from './queries'
 export * from './services/current-user.service'
