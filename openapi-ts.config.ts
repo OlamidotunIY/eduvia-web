@@ -12,7 +12,7 @@ export default defineConfig({
   input: new URL('/openapi.json', VITE_API_URL).toString(),
   output: {
     path: "src/shared/api/generated",
-    format: "prettier",
+    postProcess: ['prettier'],
   },
   plugins: ["@hey-api/client-axios"]
 });

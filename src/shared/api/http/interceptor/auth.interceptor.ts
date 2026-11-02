@@ -1,14 +1,16 @@
-import { authStore } from "@/shared/store/auth-state";
-import type { AxiosInstance } from "axios";
+import type { AxiosInstance } from 'axios'
 
-export function applyAuthInterceptor(instance: AxiosInstance) {
+export function applyAuthInterceptor(
+  instance: AxiosInstance,
+  getToken: () => string | null,
+) {
   instance.interceptors.request.use((config) => {
-    const token = authStore.getState().accessToken;
+    const token = getToken()
 
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
 
-    return config;
-  });
+    return config
+  })
 }

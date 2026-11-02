@@ -1,17 +1,22 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
 export interface AuthState {
-    accessToken: string | null;
-    refreshToken: string | null;
-    expiresAt: number | null;
-    sessionId: string | null;
-    isHydrated: boolean;
-    markHydrated: () => void;
-    setTokens: (accessToken: string, refreshToken: string, expiresAt: number) => void;
-    clear: () => void;
-    isAuthenticated: () => boolean;
-    isExpired: () => boolean;
+  accessToken: string | null
+  refreshToken: string | null
+  expiresAt: number | null
+  sessionId: string | null
+  isHydrated: boolean
+  markHydrated: () => void
+  setSession: (input: {
+    accessToken: string
+    refreshToken: string
+    expiresAt: number
+    sessionId: string
+  }) => void
+  clear: () => void
+  isAuthenticated: () => boolean
+  isExpired: () => boolean
 }
 
 export const authStore = create<AuthState>()(
@@ -25,8 +30,8 @@ export const authStore = create<AuthState>()(
 
         markHydrated: () => set({ isHydrated: true }),
 
-        setTokens: (accessToken, refreshToken, expiresAt) => {
-            set({ accessToken, refreshToken, expiresAt });
+        setSession: ({ accessToken, refreshToken, expiresAt, sessionId }) => {
+            set({ accessToken, refreshToken, expiresAt, sessionId });
         },
 
         clear: () => {

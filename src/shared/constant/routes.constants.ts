@@ -6,7 +6,9 @@ export const APP_ROUTES = {
   TWO_FACTOR_AUTH: "/auth/2fa",
   VERIFY_EMAIL: "/auth/verify-email",
   SETUP_PASSWORD: "/auth/setup-password",
-  ONBOARDING: "/onboarding/organization",
+  ONBOARDING: "/onboarding",
+  ONBOARDING_ORGANIZATION: "/onboarding/organization",
+  ONBOARDING_MARKETPLACE: "/onboarding/marketplace",
 
   DASHBOARD: "/dashboard",
   NOTIFICATIONS: "/notifications",
