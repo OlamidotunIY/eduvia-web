@@ -1,0 +1,7 @@
+import { Building2, Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { APP_ROUTES } from '@/shared/constant/routes.constants'
+
+export function OrganizationChoicePage() {
+  return <section className="mx-auto max-w-3xl py-10"><p className="text-sm font-medium text-primary">Teacher onboarding</p><h1 className="mt-2 font-heading text-3xl font-semibold">Choose how you want to begin</h1><p className="mt-3 max-w-2xl text-muted-foreground">Teachers can run their own organization or apply to an existing organization that is accepting applications.</p><div className="mt-8 grid gap-4 md:grid-cols-2"><Link to={`${APP_ROUTES.ONBOARDING_ORGANIZATION}/create`} className="rounded-xl border bg-card p-6 transition-colors hover:border-primary hover:bg-primary/5"><Building2 className="mb-5 size-7 text-primary" /><h2 className="text-lg font-semibold">Create an organization</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Set up your tutoring organization and become its first administrator.</p></Link><Link to={APP_ROUTES.ONBOARDING_MARKETPLACE} className="rounded-xl border bg-card p-6 transition-colors hover:border-primary hover:bg-primary/5"><Search className="mb-5 size-7 text-primary" /><h2 className="text-lg font-semibold">Explore the marketplace</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Find organizations that are looking for teachers and submit an application.</p></Link></div></section>
+}
