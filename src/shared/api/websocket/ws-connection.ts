@@ -4,7 +4,7 @@ import { createEventRouter } from './event-router'
 
 interface ConnectInput {
   namespace: `/${string}`
-  auth: Record<string, string>
+  auth: object
 }
 
 /** Shared Socket.IO transport. Domain code receives events through the event bus. */

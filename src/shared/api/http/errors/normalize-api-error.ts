@@ -1,16 +1,23 @@
 import { isAxiosError } from 'axios'
 import { ApiError } from './api-error'
 import { ErrorCode, type ErrorCode as ErrorCodeValue } from './error-codes'
+import type { ApiErrorPayload } from '@/shared/types'
 
 export function normalizeApiError(error: unknown): Error {
   if (!isAxiosError(error)) return error instanceof Error ? error : new Error('An unknown API error occurred.')
 
-  const payload = asRecord(error.response?.data)
+  const payload = asErrorPayload(error.response?.data)
   const status = error.response?.status ?? 500
   const details = asRecord(payload?.details)
   const message = readMessage(payload, details) ?? error.message ?? 'An unknown API error occurred.'
   const errorCode = resolveErrorCode(payload?.errorCode, status)
   return new ApiError(message, status, errorCode, details)
+}
+
+function asErrorPayload(value: unknown): ApiErrorPayload | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as ApiErrorPayload
+    : undefined
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -19,7 +26,7 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
     : undefined
 }
 
-function readMessage(payload?: Record<string, unknown>, details?: Record<string, unknown>): string | undefined {
+function readMessage(payload?: ApiErrorPayload, details?: Record<string, unknown>): string | undefined {
   if (typeof payload?.message === 'string') return payload.message
   if (Array.isArray(payload?.message)) return payload.message.filter((entry): entry is string => typeof entry === 'string').join(', ')
   if (typeof details?.error === 'string') return details.error
