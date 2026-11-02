@@ -15,6 +15,7 @@ export function AuthCallbackPage() {
   const exchange = useGoogleExchangeMutation();
   const started = useRef(false);
   const oauthCode = search.get("oauthCode");
+  const oauthError = search.get("oauthError");
   const registrationRequestId = search.get("registrationRequestId");
   const registrationContinuation = search.get("registrationContinuation");
   const registration = useRegistrationStatusQuery(
@@ -63,7 +64,9 @@ export function AuthCallbackPage() {
   }, [navigate, registration.data?.session]);
 
   const error =
-    !oauthCode && !registrationRequestId
+    oauthError
+      ? new Error(oauthError)
+      : !oauthCode && !registrationRequestId
       ? new Error("This sign-in link is invalid or has expired.")
       : registration.data?.nextAction === "sign_in"
         ? new Error(
