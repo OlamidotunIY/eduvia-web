@@ -46,7 +46,7 @@ export function LoginPage() {
             }),
           )}
         >
-          <FieldGroup>
+          <FieldGroup className="gap-5">
             <Field data-invalid={Boolean(form.formState.errors.email)}>
               <FieldLabel className="text-xs font-semibold tracking-wide uppercase" htmlFor="email">Email address</FieldLabel>
               <Input
@@ -54,7 +54,7 @@ export function LoginPage() {
                 type="email"
                 autoComplete="email"
                 aria-invalid={Boolean(form.formState.errors.email)}
-                className="h-12 rounded-xl bg-transparent px-4"
+                className="h-10 rounded-lg bg-transparent px-3"
                 {...form.register("email")}
               />
               <FieldError errors={[form.formState.errors.email]} />
@@ -66,7 +66,7 @@ export function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 aria-invalid={Boolean(form.formState.errors.password)}
-                className="h-12 rounded-xl bg-transparent px-4"
+                className="h-10 rounded-lg bg-transparent px-3"
                 {...form.register("password")}
               />
               <FieldError errors={[form.formState.errors.password]} />
@@ -80,7 +80,7 @@ export function LoginPage() {
             >
               {login.isPending ? "Signing in…" : "Sign in"}
             </Button>
-            <div className="flex items-center gap-3 py-1"><Separator /><span className="shrink-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">or continue with</span><Separator /></div>
+            <div className="flex w-full items-center gap-3 py-1"><Separator className="w-auto flex-1" /><span className="shrink-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">or continue with</span><Separator className="w-auto flex-1" /></div>
             <Button
               className="w-full"
               variant="outline"

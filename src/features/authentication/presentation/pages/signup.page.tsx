@@ -51,7 +51,7 @@ export function SignUpPage() {
             ),
           )}
         >
-          <FieldGroup>
+          <FieldGroup className="gap-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field data-invalid={Boolean(form.formState.errors.firstName)}>
               <FieldLabel className="text-xs font-semibold tracking-wide uppercase" htmlFor="first-name">First name</FieldLabel>
@@ -59,7 +59,7 @@ export function SignUpPage() {
                   id="first-name"
                   autoComplete="given-name"
                   aria-invalid={Boolean(form.formState.errors.firstName)}
-                className="h-12 rounded-xl bg-transparent px-4"
+                className="h-10 rounded-lg bg-transparent px-3"
                   {...form.register("firstName")}
                 />
                 <FieldError errors={[form.formState.errors.firstName]} />
@@ -70,7 +70,7 @@ export function SignUpPage() {
                   id="last-name"
                   autoComplete="family-name"
                   aria-invalid={Boolean(form.formState.errors.lastName)}
-                className="h-12 rounded-xl bg-transparent px-4"
+                className="h-10 rounded-lg bg-transparent px-3"
                   {...form.register("lastName")}
                 />
                 <FieldError errors={[form.formState.errors.lastName]} />
@@ -83,7 +83,7 @@ export function SignUpPage() {
                 type="email"
                 autoComplete="email"
                 aria-invalid={Boolean(form.formState.errors.email)}
-                className="h-12 rounded-xl bg-transparent px-4"
+                className="h-10 rounded-lg bg-transparent px-3"
                 {...form.register("email")}
               />
               <FieldError errors={[form.formState.errors.email]} />
@@ -95,7 +95,7 @@ export function SignUpPage() {
                 type="password"
                 autoComplete="new-password"
                 aria-invalid={Boolean(form.formState.errors.password)}
-                className="h-12 rounded-xl bg-transparent px-4"
+                className="h-10 rounded-lg bg-transparent px-3"
                 {...form.register("password")}
               />
               <FieldError errors={[form.formState.errors.password]} />
@@ -109,7 +109,7 @@ export function SignUpPage() {
             >
               {registration.isPending ? "Creating account…" : "Create account"}
             </Button>
-            <div className="flex items-center gap-3 py-1"><Separator /><span className="shrink-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">or continue with</span><Separator /></div>
+            <div className="flex w-full items-center gap-3 py-1"><Separator className="w-auto flex-1" /><span className="shrink-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">or continue with</span><Separator className="w-auto flex-1" /></div>
             <Button
               className="w-full"
               variant="outline"
