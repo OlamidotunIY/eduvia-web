@@ -60,13 +60,25 @@ function toOrganizationSubject(value: unknown): OrganizationSubject {
 function toRecurrence(value: unknown): ClassroomRecurrence {
   const recurrence = record(value, "classroom recurrence");
   return {
-    dayOfWeek: requiredNumber(recurrence, "dayOfWeek"),
+    daysOfWeek: readDaysOfWeek(recurrence),
     startTime: requiredString(recurrence, "startTime"),
     timezone: requiredString(recurrence, "timezone"),
     intervalWeeks: optionalNumber(recurrence, "intervalWeeks") ?? 1,
     effectiveFrom: requiredString(recurrence, "effectiveFrom"),
     effectiveUntil: optionalString(recurrence, "effectiveUntil"),
   };
+}
+
+function readDaysOfWeek(value: Record<string, unknown>): number[] {
+  const days = value.daysOfWeek;
+  if (
+    Array.isArray(days) &&
+    days.length > 0 &&
+    days.every((day) => typeof day === "number")
+  ) {
+    return days;
+  }
+  return [requiredNumber(value, "dayOfWeek")];
 }
 
 function record(value: unknown, name: string): Record<string, unknown> {

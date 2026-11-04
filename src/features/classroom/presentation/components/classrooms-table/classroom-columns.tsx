@@ -139,20 +139,20 @@ function IconAction({
 }
 
 function ScheduleCell({ recurrence }: Pick<Classroom, "recurrence">) {
-  const day = new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(
-    new Date(Date.UTC(2024, 0, recurrence.dayOfWeek + 1)),
-  );
-  const interval =
-    recurrence.intervalWeeks > 1
-      ? `Every ${recurrence.intervalWeeks} weeks`
-      : "Every week";
+  const days = recurrence.daysOfWeek.map(formatWeekday).join(", ");
   return (
     <div className="min-w-32">
       <p className="text-xs font-medium">
-        {day} · {formatTime(recurrence.startTime)}
+        {days} · {formatTime(recurrence.startTime)}
       </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">{interval}</p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">Weekly</p>
     </div>
+  );
+}
+
+function formatWeekday(dayOfWeek: number): string {
+  return new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(
+    new Date(Date.UTC(2024, 0, dayOfWeek + 1)),
   );
 }
 

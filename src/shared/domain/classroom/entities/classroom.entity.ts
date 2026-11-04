@@ -1,7 +1,7 @@
 export type ClassroomStatus = "active" | "paused" | "closed" | string;
 
 export interface ClassroomRecurrence {
-  dayOfWeek: number;
+  daysOfWeek: number[];
   startTime: string;
   timezone: string;
   intervalWeeks: number;
@@ -34,7 +34,7 @@ export interface CreateClassroomInput {
   primaryTeacherId: string;
   lessonDurationMins: number;
   maxStudents?: number;
-  recurrenceDayOfWeek: number;
+  recurrenceDaysOfWeek: number[];
   recurrenceStartTime: string;
   recurrenceTimezone: string;
   recurrenceIntervalWeeks?: number;
