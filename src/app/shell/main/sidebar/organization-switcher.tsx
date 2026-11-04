@@ -61,7 +61,7 @@ export function OrganizationSwitcher() {
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{activeOrganization.name}</span>
-              <span className="truncate text-xs">{activeOrganization.role}</span>
+              <span className="truncate text-xs">{'roleName' in activeOrganization ? activeOrganization.roleName : activeOrganization.role}</span>
             </div>
             <ChevronRight className="ml-auto" />
           </DropdownMenuTrigger>

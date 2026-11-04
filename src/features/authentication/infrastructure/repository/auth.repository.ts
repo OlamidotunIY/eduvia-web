@@ -1,6 +1,7 @@
 import {
   AuthSession,
   type CurrentUserBootstrap,
+  type OrganizationPermission,
   type EmailRegistration,
   IAuthRepository,
   type LoginCredentials,
@@ -121,6 +122,9 @@ function toActiveOrganization(
     name: readString(organization, "name"),
     slug: readString(organization, "slug"),
     role: readString(organization, "role"),
+    roleId: readNullableString(organization, "roleId"),
+    roleName: readString(organization, "roleName"),
+    permissions: readStringArray<OrganizationPermission>(organization, "permissions"),
     memberCount: readNumber(organization, "memberCount"),
   };
 }
@@ -158,6 +162,18 @@ function readNumber(payload: Record<string, unknown>, key: string): number {
   if (typeof value !== "number")
     throw new Error(`The API response is missing ${key}.`);
   return value;
+}
+
+function readNullableString(payload: Record<string, unknown>, key: string): string | null {
+  const value = payload[key];
+  return typeof value === "string" ? value : null;
+}
+
+function readStringArray<T extends string>(payload: Record<string, unknown>, key: string): T[] {
+  const value = payload[key];
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+    ? value as T[]
+    : [];
 }
 
 function isEduviaRole(

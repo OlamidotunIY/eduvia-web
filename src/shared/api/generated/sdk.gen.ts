@@ -209,6 +209,8 @@ import type {
   OrganizationChangeMemberRoleResponses,
   OrganizationCreateOrganizationData,
   OrganizationCreateOrganizationResponses,
+  OrganizationCreateRoleData,
+  OrganizationCreateRoleResponses,
   OrganizationCreateSubjectData,
   OrganizationCreateSubjectResponses,
   OrganizationDelistFromMarketplaceData,
@@ -219,10 +221,14 @@ import type {
   OrganizationGetMembersResponses,
   OrganizationGetOrganizationBySlugData,
   OrganizationGetOrganizationBySlugResponses,
+  OrganizationGetRolesData,
+  OrganizationGetRolesResponses,
   OrganizationGetSubjectsData,
   OrganizationGetSubjectsResponses,
   OrganizationListOnMarketplaceData,
   OrganizationListOnMarketplaceResponses,
+  OrganizationProvisionRolesData,
+  OrganizationProvisionRolesResponses,
   OrganizationRejectApplicationData,
   OrganizationRejectApplicationResponses,
   OrganizationSelectActiveOrganizationData,
@@ -235,6 +241,8 @@ import type {
   OrganizationUpdatePolicyResponses,
   OrganizationUpdateProfileData,
   OrganizationUpdateProfileResponses,
+  OrganizationUpdateRoleData,
+  OrganizationUpdateRoleResponses,
   OrganizationUpdateSubjectData,
   OrganizationUpdateSubjectResponses,
   OrgBillingAddPlanDiscountData,
@@ -934,6 +942,66 @@ export const organizationGetMembers = <ThrowOnError extends boolean = false>(
     responseType: "json",
     url: "/organizations/{organizationId}/members",
     ...options,
+  });
+
+export const organizationGetRoles = <ThrowOnError extends boolean = false>(
+  options: Options<OrganizationGetRolesData, ThrowOnError>,
+): RequestResult<OrganizationGetRolesResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).get<
+    OrganizationGetRolesResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/roles",
+    ...options,
+  });
+
+export const organizationCreateRole = <ThrowOnError extends boolean = false>(
+  options: Options<OrganizationCreateRoleData, ThrowOnError>,
+): RequestResult<OrganizationCreateRoleResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<
+    OrganizationCreateRoleResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: "/organizations/{organizationId}/roles",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const organizationProvisionRoles = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<OrganizationProvisionRolesData, ThrowOnError>,
+): RequestResult<OrganizationProvisionRolesResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<
+    OrganizationProvisionRolesResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/roles/provision",
+    ...options,
+  });
+
+export const organizationUpdateRole = <ThrowOnError extends boolean = false>(
+  options: Options<OrganizationUpdateRoleData, ThrowOnError>,
+): RequestResult<OrganizationUpdateRoleResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).patch<
+    OrganizationUpdateRoleResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: "/organizations/{organizationId}/roles/{roleId}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 export const organizationChangeMemberRole = <

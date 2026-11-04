@@ -129,9 +129,110 @@ export type SendInvitationDto = {
   subjects?: Array<string>;
 };
 
+export type CreateOrganizationRoleDto = {
+  name: string;
+  description?: string;
+  permissions: Array<
+    | "organization:read"
+    | "organization:update"
+    | "organization:policy:update"
+    | "organization:marketplace:manage"
+    | "roles:read"
+    | "roles:manage"
+    | "members:read"
+    | "members:invite"
+    | "members:manage"
+    | "applications:read"
+    | "applications:review"
+    | "subjects:read"
+    | "subjects:create"
+    | "subjects:update"
+    | "classrooms:read"
+    | "classrooms:create"
+    | "classrooms:update"
+    | "classrooms:manage_students"
+    | "lessons:read"
+    | "lessons:schedule"
+    | "lessons:manage"
+    | "curriculum:read"
+    | "curriculum:manage"
+    | "questions:read"
+    | "questions:create"
+    | "questions:update"
+    | "questions:delete"
+    | "questions:publish"
+    | "assessments:read"
+    | "assessments:create"
+    | "assessments:mark"
+    | "assessments:finalize"
+    | "reports:read"
+    | "reports:create"
+    | "reports:update"
+    | "reports:submit"
+    | "reports:approve_ai"
+    | "progress:read"
+    | "analytics:read"
+    | "conversations:read"
+    | "conversations:manage"
+    | "billing:read"
+    | "billing:manage"
+  >;
+};
+
+export type UpdateOrganizationRoleDto = {
+  name: string;
+  description?: string;
+  permissions: Array<
+    | "organization:read"
+    | "organization:update"
+    | "organization:policy:update"
+    | "organization:marketplace:manage"
+    | "roles:read"
+    | "roles:manage"
+    | "members:read"
+    | "members:invite"
+    | "members:manage"
+    | "applications:read"
+    | "applications:review"
+    | "subjects:read"
+    | "subjects:create"
+    | "subjects:update"
+    | "classrooms:read"
+    | "classrooms:create"
+    | "classrooms:update"
+    | "classrooms:manage_students"
+    | "lessons:read"
+    | "lessons:schedule"
+    | "lessons:manage"
+    | "curriculum:read"
+    | "curriculum:manage"
+    | "questions:read"
+    | "questions:create"
+    | "questions:update"
+    | "questions:delete"
+    | "questions:publish"
+    | "assessments:read"
+    | "assessments:create"
+    | "assessments:mark"
+    | "assessments:finalize"
+    | "reports:read"
+    | "reports:create"
+    | "reports:update"
+    | "reports:submit"
+    | "reports:approve_ai"
+    | "progress:read"
+    | "analytics:read"
+    | "conversations:read"
+    | "conversations:manage"
+    | "billing:read"
+    | "billing:manage"
+  >;
+};
+
 export type ChangeMemberRoleDto = {
-  role:
+  role?:
     "OrgOwner" | "OrgAdmin" | "LeadTeacher" | "Teacher" | "TeachingAssistant";
+  roleId?: string;
 };
 
 export type CreateClassroomDto = {
@@ -1200,6 +1301,67 @@ export type OrganizationGetMembersResponses = {
 
 export type OrganizationGetMembersResponse =
   OrganizationGetMembersResponses[keyof OrganizationGetMembersResponses];
+
+export type OrganizationGetRolesData = {
+  body?: never;
+  path: {
+    organizationId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/roles";
+};
+
+export type OrganizationGetRolesResponses = {
+  200: Array<{
+    [key: string]: unknown;
+  }>;
+};
+
+export type OrganizationGetRolesResponse =
+  OrganizationGetRolesResponses[keyof OrganizationGetRolesResponses];
+
+export type OrganizationCreateRoleData = {
+  body: CreateOrganizationRoleDto;
+  path: {
+    organizationId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/roles";
+};
+
+export type OrganizationCreateRoleResponses = {
+  201: unknown;
+};
+
+export type OrganizationProvisionRolesData = {
+  body?: never;
+  path: {
+    organizationId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/roles/provision";
+};
+
+export type OrganizationProvisionRolesResponses = {
+  201: Array<string>;
+};
+
+export type OrganizationProvisionRolesResponse =
+  OrganizationProvisionRolesResponses[keyof OrganizationProvisionRolesResponses];
+
+export type OrganizationUpdateRoleData = {
+  body: UpdateOrganizationRoleDto;
+  path: {
+    organizationId: string;
+    roleId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/roles/{roleId}";
+};
+
+export type OrganizationUpdateRoleResponses = {
+  200: unknown;
+};
 
 export type OrganizationChangeMemberRoleData = {
   body: ChangeMemberRoleDto;
