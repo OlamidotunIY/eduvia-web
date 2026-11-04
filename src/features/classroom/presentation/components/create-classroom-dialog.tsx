@@ -44,7 +44,8 @@ const createClassroomSchema = z.object({
   recurrenceEffectiveFrom: z.string().min(1, "Choose a start date."),
 });
 
-type CreateClassroomForm = z.infer<typeof createClassroomSchema>;
+type CreateClassroomFormInput = z.input<typeof createClassroomSchema>;
+type CreateClassroomForm = z.output<typeof createClassroomSchema>;
 
 interface CreateClassroomDialogProps {
   open: boolean;
@@ -73,7 +74,11 @@ export function CreateClassroomDialog({
   error,
   onSubmit,
 }: CreateClassroomDialogProps) {
-  const form = useForm<CreateClassroomForm>({
+  const form = useForm<
+    CreateClassroomFormInput,
+    undefined,
+    CreateClassroomForm
+  >({
     resolver: zodResolver(createClassroomSchema),
     defaultValues: {
       name: "",
