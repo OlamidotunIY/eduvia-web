@@ -11,11 +11,16 @@ export const APP_ROUTES = {
   ONBOARDING_MARKETPLACE: "/onboarding/marketplace",
 
   DASHBOARD: "/dashboard",
+  CLASSROOMS: "/classrooms",
   NOTIFICATIONS: "/notifications",
-} as const
+} as const;
+
+export function classroomRoute(classroomId: string): string {
+  return `${APP_ROUTES.CLASSROOMS}/${classroomId}`;
+}
 
 export const ADMIN_ROUTES = {
   LOGIN: "/admin/login",
   DASHBOARD: "/admin/dashboard",
   SETTINGS: "/admin/settings",
-} as const
+} as const;
