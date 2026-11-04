@@ -16,8 +16,8 @@ export function MainSidebar() {
         <OrganizationSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarNavigation role={role} />
-        <SidebarProductNavigation role={role} />
+        <SidebarNavigation role={role} organizationRole={currentUser.activeOrganization?.role} />
+        <SidebarProductNavigation role={role} organizationRole={currentUser.activeOrganization?.role} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarUtilityNavigation />
