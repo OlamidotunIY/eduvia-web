@@ -17,24 +17,15 @@ type NavigationItem = { label: string; to: string; icon: LucideIcon }
 const navigationByRole: Record<Exclude<EduviaRole, 'pending'>, NavigationItem[]> = {
   teacher: [
     { label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { label: 'Classrooms', to: '/classrooms', icon: Users },
-    { label: 'Curriculum', to: '/curriculum', icon: BookOpen },
-    { label: 'Schedule', to: '/schedule', icon: CalendarDays },
   ],
   parent: [
     { label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { label: 'My children', to: '/children', icon: GraduationCap },
-    { label: 'Schedule', to: '/schedule', icon: CalendarDays },
   ],
   student: [
     { label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { label: 'My learning', to: '/learning', icon: BookOpen },
-    { label: 'Assignments', to: '/assignments', icon: ClipboardList },
   ],
   admin: [
     { label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { label: 'Organizations', to: '/organizations', icon: Users },
-    { label: 'Settings', to: '/settings', icon: Settings },
   ],
 }
 
