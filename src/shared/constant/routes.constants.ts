@@ -12,6 +12,7 @@ export const APP_ROUTES = {
 
   DASHBOARD: "/dashboard",
   CLASSROOMS: "/classrooms",
+  SUBJECTS: "/organization/subjects",
   NOTIFICATIONS: "/notifications",
 } as const;
 
