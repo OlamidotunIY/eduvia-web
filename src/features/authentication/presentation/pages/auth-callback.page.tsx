@@ -37,6 +37,7 @@ export function AuthCallbackPage() {
           accessToken: session.props.accessToken,
           refreshToken: session.props.refreshToken,
           expiresAt: session.props.accessTokenExpiresAt,
+          refreshExpiresAt: session.props.refreshTokenExpiresAt,
           sessionId: session.props.sessionId,
         });
         navigate(APP_ROUTES.DASHBOARD, { replace: true });
@@ -58,6 +59,7 @@ export function AuthCallbackPage() {
       accessToken: session.props.accessToken,
       refreshToken: session.props.refreshToken,
       expiresAt: session.props.accessTokenExpiresAt,
+      refreshExpiresAt: session.props.refreshTokenExpiresAt,
       sessionId: session.props.sessionId,
     });
     navigate(APP_ROUTES.ONBOARDING, { replace: true });

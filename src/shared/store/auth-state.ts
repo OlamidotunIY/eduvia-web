@@ -5,6 +5,7 @@ export interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   expiresAt: number | null
+  refreshExpiresAt: number | null
   sessionId: string | null
   isHydrated: boolean
   markHydrated: () => void
@@ -12,6 +13,7 @@ export interface AuthState {
     accessToken: string
     refreshToken: string
     expiresAt: number
+    refreshExpiresAt?: number
     sessionId: string
   }) => void
   clear: () => void
@@ -25,17 +27,18 @@ export const authStore = create<AuthState>()(
         accessToken: null,
         refreshToken: null,
         expiresAt: null,
+        refreshExpiresAt: null,
         sessionId: null,
         isHydrated: false,
 
         markHydrated: () => set({ isHydrated: true }),
 
-        setSession: ({ accessToken, refreshToken, expiresAt, sessionId }) => {
-            set({ accessToken, refreshToken, expiresAt, sessionId });
+        setSession: ({ accessToken, refreshToken, expiresAt, refreshExpiresAt, sessionId }) => {
+            set({ accessToken, refreshToken, expiresAt, refreshExpiresAt: refreshExpiresAt ?? null, sessionId });
         },
 
         clear: () => {
-            set({ accessToken: null, refreshToken: null, expiresAt: null, sessionId: null });
+            set({ accessToken: null, refreshToken: null, expiresAt: null, refreshExpiresAt: null, sessionId: null });
         },
 
         isAuthenticated: () => {
@@ -54,6 +57,7 @@ export const authStore = create<AuthState>()(
             accessToken: state.accessToken,
             refreshToken: state.refreshToken,
             expiresAt: state.expiresAt,
+            refreshExpiresAt: state.refreshExpiresAt,
             sessionId: state.sessionId,
         }),
         storage: createJSONStorage(() => localStorage),
