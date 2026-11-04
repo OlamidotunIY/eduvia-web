@@ -1,9 +1,24 @@
 import { useEffect, useState } from 'react'
-import { Building2 } from 'lucide-react'
+import { Building2, Check, ChevronRight, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useSwitchOrganizationMutation } from '@/features/organization'
+import { APP_ROUTES } from '@/shared/constant/routes.constants'
 import { sessionStore } from '@/shared/store'
+import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/shared/ui/sidebar'
 
 export function OrganizationSwitcher() {
+  const navigate = useNavigate()
+  const { isMobile } = useSidebar()
   const currentUser = sessionStore((state) => state.currentUser)
   const switchOrganization = useSwitchOrganizationMutation()
   const [requestedOrganizationId, setRequestedOrganizationId] = useState<string | null>(null)
@@ -14,27 +29,71 @@ export function OrganizationSwitcher() {
     }
   }, [currentUser?.activeOrganization?.id, requestedOrganizationId])
 
-  if (!currentUser?.organizations.length) return null
+  const organizations = currentUser?.organizations ?? []
+  const activeOrganization = currentUser?.activeOrganization ?? organizations[0]
+  if (!activeOrganization) return null
 
   const isSwitching = switchOrganization.isPending || Boolean(requestedOrganizationId)
+  const selectOrganization = (organizationId: string) => {
+    if (organizationId === activeOrganization.id) return
+    switchOrganization.mutate(organizationId, {
+      onSuccess: () => setRequestedOrganizationId(organizationId),
+    })
+  }
+
   return (
-    <label className="mb-5 block">
-      <span className="mb-1.5 flex items-center gap-2 px-1 text-xs font-medium text-muted-foreground"><Building2 className="size-3.5" />Organization</span>
-      <select
-        className="h-9 w-full rounded-md border bg-background px-2 text-sm"
-        value={currentUser.activeOrganization?.id ?? ''}
-        disabled={isSwitching}
-        onChange={(event) => {
-          const organizationId = event.target.value
-          if (!organizationId || organizationId === currentUser.activeOrganization?.id) return
-          switchOrganization.mutate(organizationId, {
-            onSuccess: () => setRequestedOrganizationId(organizationId),
-          })
-        }}
-      >
-        {currentUser.organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
-      </select>
-      {isSwitching && <span className="mt-1 block px-1 text-xs text-muted-foreground">Switching workspace…</span>}
-    </label>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="hover:!bg-transparent hover:!text-sidebar-foreground active:!bg-transparent active:!text-sidebar-foreground"
+                disabled={isSwitching}
+              />
+            }
+          >
+            <Avatar className="rounded-md">
+              <AvatarFallback className="rounded-md bg-primary text-primary-foreground">
+                <Building2 className="size-4" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{activeOrganization.name}</span>
+              <span className="truncate text-xs">{activeOrganization.role}</span>
+            </div>
+            <ChevronRight className="ml-auto" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side={isMobile ? 'bottom' : 'right'} sideOffset={4}>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Your organizations</DropdownMenuLabel>
+              {organizations.map((organization) => (
+                <DropdownMenuItem
+                  key={organization.id}
+                  disabled={isSwitching}
+                  onClick={() => selectOrganization(organization.id)}
+                >
+                  <Avatar size="sm" className="rounded-md">
+                    <AvatarFallback className="rounded-md bg-muted text-muted-foreground">
+                      {organization.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="flex-1 truncate">{organization.name}</span>
+                  {organization.id === activeOrganization.id ? <Check /> : null}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate(APP_ROUTES.ONBOARDING_ORGANIZATION)}>
+              <div className="mr-1 flex size-6 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+                <Plus className="size-3.5" />
+              </div>
+              Add organization
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }
