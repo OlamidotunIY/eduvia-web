@@ -18,11 +18,12 @@ import {
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/shared/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 const CUSTOM_SOURCE = "custom";
 const schema = z.object({
@@ -101,37 +102,42 @@ export function SubjectDialog({
         </DialogHeader>
         <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
           <Field label="Subject source">
-            <Select
-              value={platformSubjectId ?? CUSTOM_SOURCE}
-              onValueChange={selectSource}
-            >
-              <SelectTrigger className="w-full">
-                <span
-                  className={
-                    selectedPlatformSubject || !platformSubjectId
-                      ? "flex-1 truncate text-left"
-                      : "flex-1 text-left text-muted-foreground"
-                  }
-                >
-                  {selectedPlatformSubject
-                    ? `${selectedPlatformSubject.name} · ${selectedPlatformSubject.shortCode}`
-                    : "Custom organization subject"}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={CUSTOM_SOURCE}>
-                  Custom organization subject
-                </SelectItem>
-                {platformSubjects.map((platformSubject) => (
-                  <SelectItem
-                    key={platformSubject.id}
-                    value={platformSubject.id}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start font-normal"
                   >
-                    {platformSubject.name} · {platformSubject.shortCode}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    {selectedPlatformSubject
+                      ? `${selectedPlatformSubject.name} · ${selectedPlatformSubject.shortCode}`
+                      : "Custom organization subject"}
+                  </Button>
+                }
+              />
+              <DropdownMenuContent
+                align="start"
+                className="max-h-72 w-[var(--anchor-width)] overflow-y-auto"
+              >
+                <DropdownMenuRadioGroup
+                  value={platformSubjectId ?? CUSTOM_SOURCE}
+                  onValueChange={selectSource}
+                >
+                  <DropdownMenuRadioItem value={CUSTOM_SOURCE}>
+                    Custom organization subject
+                  </DropdownMenuRadioItem>
+                  {platformSubjects.map((platformSubject) => (
+                    <DropdownMenuRadioItem
+                      key={platformSubject.id}
+                      value={platformSubject.id}
+                    >
+                      {platformSubject.name} · {platformSubject.shortCode}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <p className="mt-1.5 text-xs text-muted-foreground">
               {platformSubjectId
                 ? "Linked subjects can later use the shared curriculum catalog."
