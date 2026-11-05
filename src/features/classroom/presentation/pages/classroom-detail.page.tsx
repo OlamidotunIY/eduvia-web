@@ -13,6 +13,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -477,9 +478,14 @@ function LearnerGrid({
 }: {
   students: Array<{
     id: string;
-    studentId: string;
     status: string;
     enrolledAt: string;
+    learner: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      image: string | null;
+    } | null;
   }>;
 }) {
   if (!students.length)
@@ -496,15 +502,23 @@ function LearnerGrid({
           className="rounded-xl border border-border p-4"
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              L
-            </div>
+            <Avatar size="lg">
+              <AvatarImage src={student.learner?.image ?? undefined} />
+              <AvatarFallback>{initials(student.learner)}</AvatarFallback>
+            </Avatar>
             <Badge variant="outline" className="capitalize">
               {student.status}
             </Badge>
           </div>
-          <h3 className="mt-5 font-medium">Learner profile</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <h3 className="mt-5 font-medium">
+            {student.learner
+              ? `${student.learner.firstName} ${student.learner.lastName}`
+              : "Learner profile"}
+          </h3>
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {student.learner?.email ?? "Learner profile is unavailable"}
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground">
             Enrolled {new Date(student.enrolledAt).toLocaleDateString()}
           </p>
         </article>
@@ -710,6 +724,12 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function initials(learner: { firstName: string; lastName: string } | null) {
+  return learner
+    ? `${learner.firstName[0] ?? ""}${learner.lastName[0] ?? ""}`
+    : "L";
 }
 
 function DetailSkeleton() {

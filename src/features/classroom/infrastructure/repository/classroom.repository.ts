@@ -27,7 +27,9 @@ export class ClassroomRepository implements IClassroomRepository {
   ): Promise<ClassroomStudent[]> {
     const value = await classroomApi.listStudents(organizationId, classroomId);
     if (!Array.isArray(value)) {
-      throw new Error("The API returned an invalid classroom learner response.");
+      throw new Error(
+        "The API returned an invalid classroom learner response.",
+      );
     }
     return value.map(toClassroomStudent);
   }
@@ -95,6 +97,19 @@ function toClassroomStudent(value: unknown): ClassroomStudent {
     status: requiredString(student, "status"),
     enrolledAt: requiredString(student, "enrolledAt"),
     removedAt: optionalString(student, "removedAt"),
+    learner: toLearnerProfile(student.learner),
+  };
+}
+
+function toLearnerProfile(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const learner = value as Record<string, unknown>;
+  return {
+    id: requiredString(learner, "id"),
+    firstName: requiredString(learner, "firstName"),
+    lastName: requiredString(learner, "lastName"),
+    email: requiredString(learner, "email"),
+    image: optionalString(learner, "image"),
   };
 }
 
@@ -108,7 +123,8 @@ function toClassroomLesson(value: unknown): ClassroomLesson {
     scheduledAt: requiredString(lesson, "scheduledAt"),
     durationMins: requiredNumber(lesson, "durationMins"),
     status: requiredString(lesson, "status"),
-    isRecurring: typeof lesson.isRecurring === "boolean" ? lesson.isRecurring : false,
+    isRecurring:
+      typeof lesson.isRecurring === "boolean" ? lesson.isRecurring : false,
   };
 }
 

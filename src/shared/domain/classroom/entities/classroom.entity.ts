@@ -36,6 +36,15 @@ export interface ClassroomStudent {
   status: string;
   enrolledAt: string;
   removedAt: string | null;
+  learner: LearnerProfile | null;
+}
+
+export interface LearnerProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  image: string | null;
 }
 
 export interface ClassroomLesson {
