@@ -20,4 +20,16 @@ export const organizationApi = {
 
   selectActive: (organizationId: string) =>
     apiClient.post(`/organizations/active/${organizationId}`).then(() => undefined),
+
+  listRoles: (organizationId: string) =>
+    apiClient.get<unknown>(`/organizations/${organizationId}/roles`).then((response) => response.data),
+
+  provisionRoles: (organizationId: string) =>
+    apiClient.post(`/organizations/${organizationId}/roles/provision`).then(() => undefined),
+
+  createRole: (organizationId: string, body: { name: string; description: string | null; permissions: string[] }) =>
+    apiClient.post(`/organizations/${organizationId}/roles`, body).then(() => undefined),
+
+  updateRole: (organizationId: string, roleId: string, body: { name: string; description: string | null; permissions: string[] }) =>
+    apiClient.patch(`/organizations/${organizationId}/roles/${roleId}`, body).then(() => undefined),
 }
