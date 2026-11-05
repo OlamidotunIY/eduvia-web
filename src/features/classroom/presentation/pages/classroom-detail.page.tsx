@@ -34,8 +34,15 @@ import {
   useClassroomDetailQuery,
   useClassroomLessonsQuery,
   useClassroomStudentsQuery,
+  useLearnerCandidatesQuery,
+  useScheduleLessonMutation,
+  useAddLearnerMutation,
   useOrganizationSubjectsQuery,
 } from "../../application";
+import {
+  AddLearnerDialog,
+  ScheduleLessonDialog,
+} from "../components/classroom-action-dialogs";
 
 type DetailTab = "overview" | "learners" | "lessons" | "settings";
 
@@ -45,6 +52,8 @@ export function ClassroomDetailPage() {
   const navigate = useNavigate();
   const { classroomId } = useParams();
   const [tab, setTab] = useState<DetailTab>("overview");
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isLearnerOpen, setIsLearnerOpen] = useState(false);
   const currentUser = sessionStore((state) => state.currentUser);
   const organizationId = currentUser?.activeOrganization?.id;
   const permissions = currentUser?.activeOrganization?.permissions ?? [];
@@ -52,6 +61,12 @@ export function ClassroomDetailPage() {
   const students = useClassroomStudentsQuery(organizationId, classroomId);
   const lessons = useClassroomLessonsQuery(organizationId, classroomId);
   const subjects = useOrganizationSubjectsQuery(organizationId);
+  const learnerCandidates = useLearnerCandidatesQuery(
+    organizationId,
+    classroomId,
+  );
+  const scheduleLesson = useScheduleLessonMutation(organizationId, classroomId);
+  const addLearner = useAddLearnerMutation(organizationId, classroomId);
   const subjectName = useMemo(
     () =>
       subjects.data?.find((subject) => subject.id === classroom.data?.subjectId)
@@ -123,7 +138,7 @@ export function ClassroomDetailPage() {
             <PermissionButton
               allowed={canScheduleLessons}
               reason="You need lesson scheduling permission to schedule a lesson."
-              onClick={() => setTab("lessons")}
+              onClick={() => setIsScheduleOpen(true)}
             >
               <CalendarClock /> Schedule lesson
             </PermissionButton>
@@ -188,6 +203,7 @@ export function ClassroomDetailPage() {
                 <PermissionButton
                   allowed={canManageLearners}
                   reason="You need learner management permission to add learners."
+                  onClick={() => setIsLearnerOpen(true)}
                 >
                   <Users /> Add learner
                 </PermissionButton>
@@ -210,6 +226,7 @@ export function ClassroomDetailPage() {
                 <PermissionButton
                   allowed={canScheduleLessons}
                   reason="You need lesson scheduling permission to schedule a lesson."
+                  onClick={() => setIsScheduleOpen(true)}
                 >
                   <CalendarClock /> Schedule lesson
                 </PermissionButton>
@@ -232,6 +249,28 @@ export function ClassroomDetailPage() {
             <ClassroomSettings classroom={classroom.data} />
           </TabsContent>
         </Tabs>
+        <ScheduleLessonDialog
+          open={isScheduleOpen}
+          onOpenChange={setIsScheduleOpen}
+          isSubmitting={scheduleLesson.isPending}
+          onSubmit={(input) =>
+            scheduleLesson.mutate(
+              { ...input, teacherId: currentUser!.user.id },
+              { onSuccess: () => setIsScheduleOpen(false) },
+            )
+          }
+        />
+        <AddLearnerDialog
+          open={isLearnerOpen}
+          onOpenChange={setIsLearnerOpen}
+          learners={learnerCandidates.data ?? []}
+          isSubmitting={addLearner.isPending}
+          onSubmit={(studentId) =>
+            addLearner.mutate(studentId, {
+              onSuccess: () => setIsLearnerOpen(false),
+            })
+          }
+        />
       </section>
     </TooltipProvider>
   );

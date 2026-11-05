@@ -12,11 +12,16 @@ export const classroomDetailQueryKey = (
 export const classroomStudentsQueryKey = (
   organizationId: string,
   classroomId: string,
-) => [...classroomDetailQueryKey(organizationId, classroomId), "students"] as const;
+) =>
+  [
+    ...classroomDetailQueryKey(organizationId, classroomId),
+    "students",
+  ] as const;
 export const classroomLessonsQueryKey = (
   organizationId: string,
   classroomId: string,
-) => [...classroomDetailQueryKey(organizationId, classroomId), "lessons"] as const;
+) =>
+  [...classroomDetailQueryKey(organizationId, classroomId), "lessons"] as const;
 
 export function useClassroomsQuery(organizationId: string | undefined) {
   return useQuery({
@@ -52,8 +57,12 @@ export function useClassroomStudentsQuery(
   classroomId: string | undefined,
 ) {
   return useQuery({
-    queryKey: classroomStudentsQueryKey(organizationId ?? "", classroomId ?? ""),
-    queryFn: () => classroomRepository.listStudents(organizationId!, classroomId!),
+    queryKey: classroomStudentsQueryKey(
+      organizationId ?? "",
+      classroomId ?? "",
+    ),
+    queryFn: () =>
+      classroomRepository.listStudents(organizationId!, classroomId!),
     enabled: Boolean(organizationId && classroomId),
   });
 }
@@ -64,7 +73,23 @@ export function useClassroomLessonsQuery(
 ) {
   return useQuery({
     queryKey: classroomLessonsQueryKey(organizationId ?? "", classroomId ?? ""),
-    queryFn: () => classroomRepository.listLessons(organizationId!, classroomId!),
+    queryFn: () =>
+      classroomRepository.listLessons(organizationId!, classroomId!),
+    enabled: Boolean(organizationId && classroomId),
+  });
+}
+
+export function useLearnerCandidatesQuery(
+  organizationId: string | undefined,
+  classroomId: string | undefined,
+) {
+  return useQuery({
+    queryKey: [
+      ...classroomDetailQueryKey(organizationId ?? "", classroomId ?? ""),
+      "learner-candidates",
+    ],
+    queryFn: () =>
+      classroomRepository.listLearnerCandidates(organizationId!, classroomId!),
     enabled: Boolean(organizationId && classroomId),
   });
 }

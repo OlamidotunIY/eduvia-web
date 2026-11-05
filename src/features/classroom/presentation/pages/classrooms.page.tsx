@@ -9,19 +9,44 @@ import {
   useClassroomsQuery,
   useCreateClassroomMutation,
   useOrganizationSubjectsQuery,
+  useScheduleLessonMutation,
+  useAddLearnerMutation,
+  useLearnerCandidatesQuery,
 } from "../../application";
 import { CreateClassroomDialog } from "../components/create-classroom-dialog";
+import {
+  AddLearnerDialog,
+  ScheduleLessonDialog,
+} from "../components/classroom-action-dialogs";
 import { ClassroomsTable } from "../components/classrooms-table";
 
 export function ClassroomsPage() {
   const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [scheduleClassroom, setScheduleClassroom] = useState<Classroom | null>(
+    null,
+  );
+  const [learnerClassroom, setLearnerClassroom] = useState<Classroom | null>(
+    null,
+  );
   const currentUser = sessionStore((state) => state.currentUser);
   const organizationId = currentUser?.activeOrganization?.id;
   const permissions = currentUser?.activeOrganization?.permissions ?? [];
   const classrooms = useClassroomsQuery(organizationId);
   const subjects = useOrganizationSubjectsQuery(organizationId);
   const createClassroom = useCreateClassroomMutation(organizationId);
+  const scheduleLessonMutation = useScheduleLessonMutation(
+    organizationId,
+    scheduleClassroom?.id,
+  );
+  const addLearnerMutation = useAddLearnerMutation(
+    organizationId,
+    learnerClassroom?.id,
+  );
+  const learnerCandidates = useLearnerCandidatesQuery(
+    organizationId,
+    learnerClassroom?.id,
+  );
   const canCreate = permissions.includes("classrooms:create");
 
   const openClassroom = useCallback(
@@ -29,31 +54,28 @@ export function ClassroomsPage() {
     [navigate],
   );
   const manageStudents = useCallback(
-    (classroom: Classroom) =>
-      navigate(`${classroomRoute(classroom.id)}/learners`),
-    [navigate],
+    (classroom: Classroom) => setLearnerClassroom(classroom),
+    [],
   );
   const scheduleLesson = useCallback(
-    (classroom: Classroom) =>
-      navigate(`${classroomRoute(classroom.id)}/schedule`),
-    [navigate],
+    (classroom: Classroom) => setScheduleClassroom(classroom),
+    [],
   );
   const createAction = useMemo(
-    () =>
-      (
-        <Button
-          disabled={!canCreate}
-          title={
-            canCreate
-              ? undefined
-              : "You need classroom creation permission to create a classroom."
-          }
-          onClick={() => setIsCreateOpen(true)}
-        >
-          <Plus />
-          Create classroom
-        </Button>
-      ),
+    () => (
+      <Button
+        disabled={!canCreate}
+        title={
+          canCreate
+            ? undefined
+            : "You need classroom creation permission to create a classroom."
+        }
+        onClick={() => setIsCreateOpen(true)}
+      >
+        <Plus />
+        Create classroom
+      </Button>
+    ),
     [canCreate],
   );
 
@@ -129,6 +151,28 @@ export function ClassroomsPage() {
             },
             { onSuccess: () => setIsCreateOpen(false) },
           )
+        }
+      />
+      <ScheduleLessonDialog
+        open={Boolean(scheduleClassroom)}
+        onOpenChange={(open) => !open && setScheduleClassroom(null)}
+        isSubmitting={scheduleLessonMutation.isPending}
+        onSubmit={(input) =>
+          scheduleLessonMutation.mutate(
+            { ...input, teacherId: currentUser!.user.id },
+            { onSuccess: () => setScheduleClassroom(null) },
+          )
+        }
+      />
+      <AddLearnerDialog
+        open={Boolean(learnerClassroom)}
+        onOpenChange={(open) => !open && setLearnerClassroom(null)}
+        learners={learnerCandidates.data ?? []}
+        isSubmitting={addLearnerMutation.isPending}
+        onSubmit={(studentId) =>
+          addLearnerMutation.mutate(studentId, {
+            onSuccess: () => setLearnerClassroom(null),
+          })
         }
       />
     </section>

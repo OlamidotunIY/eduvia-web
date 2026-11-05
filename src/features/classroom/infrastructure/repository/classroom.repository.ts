@@ -58,6 +58,52 @@ export class ClassroomRepository implements IClassroomRepository {
   ): Promise<void> {
     await classroomApi.create(organizationId, input);
   }
+
+  async scheduleLesson(
+    organizationId: string,
+    classroomId: string,
+    input: {
+      scheduledAt: string;
+      durationMins: number;
+      teacherId: string;
+      isRecurring: boolean;
+    },
+  ): Promise<void> {
+    await classroomApi.scheduleLesson(organizationId, classroomId, input);
+  }
+  async listLearnerCandidates(
+    organizationId: string,
+    classroomId: string,
+  ): Promise<
+    Array<{
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      image: string | null;
+    }>
+  > {
+    const value = await classroomApi.listLearnerCandidates(
+      organizationId,
+      classroomId,
+    );
+    if (!Array.isArray(value))
+      throw new Error(
+        "The API returned an invalid learner candidate response.",
+      );
+    return value
+      .map(toLearnerProfile)
+      .filter(
+        (learner): learner is NonNullable<typeof learner> => learner !== null,
+      );
+  }
+  async addLearner(
+    organizationId: string,
+    classroomId: string,
+    studentId: string,
+  ): Promise<void> {
+    await classroomApi.addLearner(organizationId, classroomId, studentId);
+  }
 }
 
 export const classroomRepository = new ClassroomRepository();

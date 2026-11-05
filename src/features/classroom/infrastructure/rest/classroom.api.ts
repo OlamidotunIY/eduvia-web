@@ -9,7 +9,9 @@ export const classroomApi = {
 
   get: (organizationId: string, classroomId: string) =>
     apiClient
-      .get<unknown>(`/organizations/${organizationId}/classrooms/${classroomId}`)
+      .get<unknown>(
+        `/organizations/${organizationId}/classrooms/${classroomId}`,
+      )
       .then((response) => response.data),
 
   listStudents: (organizationId: string, classroomId: string) =>
@@ -36,5 +38,41 @@ export const classroomApi = {
   create: (organizationId: string, input: CreateClassroomInput) =>
     apiClient
       .post(`/organizations/${organizationId}/classrooms`, input)
+      .then(() => undefined),
+
+  scheduleLesson: (
+    organizationId: string,
+    classroomId: string,
+    input: {
+      scheduledAt: string;
+      durationMins: number;
+      teacherId: string;
+      isRecurring: boolean;
+    },
+  ) =>
+    apiClient
+      .post(
+        `/organizations/${organizationId}/classrooms/${classroomId}/schedule-lesson`,
+        input,
+      )
+      .then(() => undefined),
+
+  listLearnerCandidates: (organizationId: string, classroomId: string) =>
+    apiClient
+      .get<unknown>(
+        `/organizations/${organizationId}/classrooms/${classroomId}/learner-candidates`,
+      )
+      .then((response) => response.data),
+
+  addLearner: (
+    organizationId: string,
+    classroomId: string,
+    studentId: string,
+  ) =>
+    apiClient
+      .post(
+        `/organizations/${organizationId}/classrooms/${classroomId}/students`,
+        { studentId },
+      )
       .then(() => undefined),
 };
