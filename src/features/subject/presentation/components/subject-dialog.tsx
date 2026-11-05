@@ -22,7 +22,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/shared/ui/select";
 
 const CUSTOM_SOURCE = "custom";
@@ -62,6 +61,9 @@ export function SubjectDialog({
     },
   });
   const platformSubjectId = form.watch("platformSubjectId");
+  const selectedPlatformSubject = platformSubjects.find(
+    (item) => item.id === platformSubjectId,
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -104,7 +106,17 @@ export function SubjectDialog({
               onValueChange={selectSource}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a source" />
+                <span
+                  className={
+                    selectedPlatformSubject || !platformSubjectId
+                      ? "flex-1 truncate text-left"
+                      : "flex-1 text-left text-muted-foreground"
+                  }
+                >
+                  {selectedPlatformSubject
+                    ? `${selectedPlatformSubject.name} · ${selectedPlatformSubject.shortCode}`
+                    : "Custom organization subject"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={CUSTOM_SOURCE}>

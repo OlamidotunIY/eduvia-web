@@ -92,6 +92,9 @@ export function CreateClassroomDialog({
     if (!open) form.reset();
   }, [form, open]);
   const selectedDays = form.watch("recurrenceDaysOfWeek");
+  const selectedSubject = subjects.find(
+    (subject) => subject.id === form.watch("subjectId"),
+  );
   const submit = form.handleSubmit((value) =>
     onSubmit({
       ...value,
@@ -143,7 +146,15 @@ export function CreateClassroomDialog({
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a subject" />
+                  <span
+                    className={
+                      selectedSubject
+                        ? "flex-1 truncate text-left"
+                        : "flex-1 text-left text-muted-foreground"
+                    }
+                  >
+                    {selectedSubject?.name ?? "Select a subject"}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((subject) => (
