@@ -229,10 +229,7 @@ export function ClassroomDetailPage() {
               title="Classroom settings"
               description="The teaching, capacity, and lifecycle settings for this classroom."
             />
-            <ClassroomSettings
-              classroom={classroom.data}
-              canUpdate={canUpdate}
-            />
+            <ClassroomSettings classroom={classroom.data} />
           </TabsContent>
         </Tabs>
       </section>
@@ -573,7 +570,6 @@ function LessonAgenda({
 
 function ClassroomSettings({
   classroom,
-  canUpdate,
 }: {
   classroom: {
     name: string;
@@ -588,19 +584,11 @@ function ClassroomSettings({
     };
     status: string;
   };
-  canUpdate: boolean;
 }) {
-  const reason =
-    "You need classroom update permission to change these settings.";
   return (
     <div className="divide-y divide-border border-y border-border">
       <SettingsGroup title="Classroom profile">
-        <SettingRow
-          label="Classroom name"
-          value={classroom.name}
-          editable={canUpdate}
-          reason={reason}
-        />
+        <SettingRow label="Classroom name" value={classroom.name} />
         <SettingRow
           label="Learner capacity"
           value={
@@ -608,8 +596,6 @@ function ClassroomSettings({
               ? `${classroom.maxStudents} learners`
               : "No limit"
           }
-          editable={canUpdate}
-          reason={reason}
         />
       </SettingsGroup>
       <SettingsGroup title="Weekly schedule">
@@ -618,27 +604,13 @@ function ClassroomSettings({
           value={classroom.recurrence.daysOfWeek
             .map((day) => dayNames[day])
             .join(", ")}
-          editable={canUpdate}
-          reason={reason}
         />
-        <SettingRow
-          label="Start time"
-          value={classroom.recurrence.startTime}
-          editable={canUpdate}
-          reason={reason}
-        />
+        <SettingRow label="Start time" value={classroom.recurrence.startTime} />
         <SettingRow
           label="Lesson duration"
           value={`${classroom.lessonDurationMins} minutes`}
-          editable={canUpdate}
-          reason={reason}
         />
-        <SettingRow
-          label="Time zone"
-          value={classroom.recurrence.timezone}
-          editable={canUpdate}
-          reason={reason}
-        />
+        <SettingRow label="Time zone" value={classroom.recurrence.timezone} />
         <SettingRow
           label="Schedule end date"
           value={
@@ -646,17 +618,10 @@ function ClassroomSettings({
               ? formatShortDate(classroom.recurrence.effectiveUntil)
               : "No end date"
           }
-          editable={canUpdate}
-          reason={reason}
         />
       </SettingsGroup>
       <SettingsGroup title="Classroom lifecycle">
-        <SettingRow
-          label="Current status"
-          value={classroom.status}
-          editable={canUpdate}
-          reason={reason}
-        />
+        <SettingRow label="Current status" value={classroom.status} />
       </SettingsGroup>
     </div>
   );
@@ -676,31 +641,13 @@ function SettingsGroup({
     </section>
   );
 }
-function SettingRow({
-  label,
-  value,
-  editable,
-  reason,
-}: {
-  label: string;
-  value: string;
-  editable: boolean;
-  reason: string;
-}) {
+function SettingRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 py-4">
       <div>
         <p className="text-sm font-medium">{label}</p>
         <p className="mt-1 text-sm text-muted-foreground capitalize">{value}</p>
       </div>
-      <PermissionButton
-        allowed={editable}
-        reason={reason}
-        size="sm"
-        variant="outline"
-      >
-        <Pencil /> Change
-      </PermissionButton>
     </div>
   );
 }
