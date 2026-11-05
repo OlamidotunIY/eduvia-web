@@ -121,6 +121,8 @@ import type {
   ClassroomCreateClassroomResponses,
   ClassroomGetClassroomData,
   ClassroomGetClassroomResponses,
+  ClassroomGetClassroomStudentsData,
+  ClassroomGetClassroomStudentsResponses,
   ClassroomGetLessonData,
   ClassroomGetLessonResponses,
   ClassroomListClassroomsData,
@@ -135,6 +137,8 @@ import type {
   ClassroomPauseClassroomResponses,
   ClassroomRemoveStudentData,
   ClassroomRemoveStudentResponses,
+  ClassroomReopenClassroomData,
+  ClassroomReopenClassroomResponses,
   ClassroomScheduleLessonData,
   ClassroomScheduleLessonResponses,
   ClassroomStartLessonData,
@@ -1121,6 +1125,41 @@ export const classroomUpdateClassroom = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const classroomGetClassroomStudents = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<ClassroomGetClassroomStudentsData, ThrowOnError>,
+): RequestResult<
+  ClassroomGetClassroomStudentsResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ClassroomGetClassroomStudentsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/classrooms/{classroomId}/students",
+    ...options,
+  });
+
+export const classroomAddStudent = <ThrowOnError extends boolean = false>(
+  options: Options<ClassroomAddStudentData, ThrowOnError>,
+): RequestResult<ClassroomAddStudentResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<
+    ClassroomAddStudentResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: "/organizations/{organizationId}/classrooms/{classroomId}/students",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
 export const classroomPauseClassroom = <ThrowOnError extends boolean = false>(
   options: Options<ClassroomPauseClassroomData, ThrowOnError>,
 ): RequestResult<ClassroomPauseClassroomResponses, unknown, ThrowOnError> =>
@@ -1145,20 +1184,16 @@ export const classroomCloseClassroom = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
-export const classroomAddStudent = <ThrowOnError extends boolean = false>(
-  options: Options<ClassroomAddStudentData, ThrowOnError>,
-): RequestResult<ClassroomAddStudentResponses, unknown, ThrowOnError> =>
+export const classroomReopenClassroom = <ThrowOnError extends boolean = false>(
+  options: Options<ClassroomReopenClassroomData, ThrowOnError>,
+): RequestResult<ClassroomReopenClassroomResponses, unknown, ThrowOnError> =>
   (options.client ?? client).post<
-    ClassroomAddStudentResponses,
+    ClassroomReopenClassroomResponses,
     unknown,
     ThrowOnError
   >({
-    url: "/organizations/{organizationId}/classrooms/{classroomId}/students",
+    url: "/organizations/{organizationId}/classrooms/{classroomId}/reopen",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 export const classroomRemoveStudent = <ThrowOnError extends boolean = false>(

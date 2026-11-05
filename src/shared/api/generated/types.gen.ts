@@ -241,7 +241,11 @@ export type CreateClassroomDto = {
   primaryTeacherId: string;
   lessonDurationMins: number;
   maxStudents?: number;
-  recurrenceDayOfWeek: number;
+  recurrenceDaysOfWeek?: Array<number>;
+  /**
+   * @deprecated
+   */
+  recurrenceDayOfWeek?: number;
   recurrenceStartTime: string;
   recurrenceTimezone: string;
   recurrenceIntervalWeeks?: number;
@@ -254,6 +258,16 @@ export type UpdateClassroomDto = {
   lessonDurationMins?: number;
   maxStudents?: number;
   primaryTeacherId?: string;
+  recurrenceDaysOfWeek?: Array<number>;
+  /**
+   * @deprecated
+   */
+  recurrenceDayOfWeek?: number;
+  recurrenceStartTime?: string;
+  recurrenceTimezone?: string;
+  recurrenceIntervalWeeks?: number;
+  recurrenceEffectiveFrom?: string;
+  recurrenceEffectiveUntil?: string | null;
 };
 
 export type AddStudentDto = {
@@ -1488,6 +1502,39 @@ export type ClassroomUpdateClassroomResponses = {
   200: unknown;
 };
 
+export type ClassroomGetClassroomStudentsData = {
+  body?: never;
+  path: {
+    organizationId: string;
+    classroomId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/classrooms/{classroomId}/students";
+};
+
+export type ClassroomGetClassroomStudentsResponses = {
+  200: Array<{
+    [key: string]: unknown;
+  }>;
+};
+
+export type ClassroomGetClassroomStudentsResponse =
+  ClassroomGetClassroomStudentsResponses[keyof ClassroomGetClassroomStudentsResponses];
+
+export type ClassroomAddStudentData = {
+  body: AddStudentDto;
+  path: {
+    organizationId: string;
+    classroomId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/classrooms/{classroomId}/students";
+};
+
+export type ClassroomAddStudentResponses = {
+  201: unknown;
+};
+
 export type ClassroomPauseClassroomData = {
   body?: never;
   path: {
@@ -1516,17 +1563,17 @@ export type ClassroomCloseClassroomResponses = {
   201: unknown;
 };
 
-export type ClassroomAddStudentData = {
-  body: AddStudentDto;
+export type ClassroomReopenClassroomData = {
+  body?: never;
   path: {
     organizationId: string;
     classroomId: string;
   };
   query?: never;
-  url: "/organizations/{organizationId}/classrooms/{classroomId}/students";
+  url: "/organizations/{organizationId}/classrooms/{classroomId}/reopen";
 };
 
-export type ClassroomAddStudentResponses = {
+export type ClassroomReopenClassroomResponses = {
   201: unknown;
 };
 
