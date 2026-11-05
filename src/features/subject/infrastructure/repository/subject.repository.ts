@@ -1,6 +1,7 @@
 import type {
   OrganizationSubjectInput,
   OrganizationSubjectRecord,
+  OrganizationSubjectUpdateInput,
   PlatformSubject,
 } from "@/shared/domain";
 import { subjectApi } from "../rest/subject.api";
@@ -32,7 +33,7 @@ export class SubjectRepository {
   async update(
     organizationId: string,
     subjectId: string,
-    input: OrganizationSubjectInput,
+    input: OrganizationSubjectUpdateInput,
   ): Promise<void> {
     await subjectApi.update(organizationId, subjectId, input);
   }

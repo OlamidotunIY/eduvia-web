@@ -22,3 +22,5 @@ export interface OrganizationSubjectInput {
   description?: string | null;
   isActive?: boolean;
 }
+
+export type OrganizationSubjectUpdateInput = Partial<OrganizationSubjectInput>;

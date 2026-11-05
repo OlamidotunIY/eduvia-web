@@ -1,5 +1,8 @@
 import { apiClient } from "@/shared/api";
-import type { OrganizationSubjectInput } from "@/shared/domain";
+import type {
+  OrganizationSubjectInput,
+  OrganizationSubjectUpdateInput,
+} from "@/shared/domain";
 
 export const subjectApi = {
   listOrganizationSubjects: (organizationId: string) =>
@@ -20,7 +23,7 @@ export const subjectApi = {
   update: (
     organizationId: string,
     subjectId: string,
-    input: OrganizationSubjectInput,
+    input: OrganizationSubjectUpdateInput,
   ) =>
     apiClient
       .patch(`/organizations/${organizationId}/subjects/${subjectId}`, input)
