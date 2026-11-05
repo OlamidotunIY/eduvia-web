@@ -28,6 +28,27 @@ export interface OrganizationSubject {
   name: string;
 }
 
+export interface ClassroomStudent {
+  id: string;
+  classroomId: string;
+  organizationId: string;
+  studentId: string;
+  status: string;
+  enrolledAt: string;
+  removedAt: string | null;
+}
+
+export interface ClassroomLesson {
+  id: string;
+  classroomId: string;
+  teacherId: string;
+  coverTeacherId: string | null;
+  scheduledAt: string;
+  durationMins: number;
+  status: string;
+  isRecurring: boolean;
+}
+
 export interface CreateClassroomInput {
   name: string;
   subjectId: string;

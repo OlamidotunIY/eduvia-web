@@ -1,6 +1,8 @@
 import type {
   Classroom,
+  ClassroomLesson,
   ClassroomRecurrence,
+  ClassroomStudent,
   CreateClassroomInput,
   IClassroomRepository,
   OrganizationSubject,
@@ -13,6 +15,32 @@ export class ClassroomRepository implements IClassroomRepository {
     if (!Array.isArray(value))
       throw new Error("The API returned an invalid classroom response.");
     return value.map(toClassroom);
+  }
+
+  async get(organizationId: string, classroomId: string): Promise<Classroom> {
+    return toClassroom(await classroomApi.get(organizationId, classroomId));
+  }
+
+  async listStudents(
+    organizationId: string,
+    classroomId: string,
+  ): Promise<ClassroomStudent[]> {
+    const value = await classroomApi.listStudents(organizationId, classroomId);
+    if (!Array.isArray(value)) {
+      throw new Error("The API returned an invalid classroom learner response.");
+    }
+    return value.map(toClassroomStudent);
+  }
+
+  async listLessons(
+    organizationId: string,
+    classroomId: string,
+  ): Promise<ClassroomLesson[]> {
+    const value = await classroomApi.listLessons(organizationId, classroomId);
+    if (!Array.isArray(value)) {
+      throw new Error("The API returned an invalid classroom lesson response.");
+    }
+    return value.map(toClassroomLesson);
   }
 
   async listSubjects(organizationId: string): Promise<OrganizationSubject[]> {
@@ -54,6 +82,33 @@ function toOrganizationSubject(value: unknown): OrganizationSubject {
   return {
     id: requiredString(subject, "id"),
     name: requiredString(subject, "name"),
+  };
+}
+
+function toClassroomStudent(value: unknown): ClassroomStudent {
+  const student = record(value, "classroom learner");
+  return {
+    id: requiredString(student, "id"),
+    classroomId: requiredString(student, "classroomId"),
+    organizationId: requiredString(student, "orgId"),
+    studentId: requiredString(student, "studentId"),
+    status: requiredString(student, "status"),
+    enrolledAt: requiredString(student, "enrolledAt"),
+    removedAt: optionalString(student, "removedAt"),
+  };
+}
+
+function toClassroomLesson(value: unknown): ClassroomLesson {
+  const lesson = record(value, "classroom lesson");
+  return {
+    id: requiredString(lesson, "id"),
+    classroomId: requiredString(lesson, "classroomId"),
+    teacherId: requiredString(lesson, "teacherId"),
+    coverTeacherId: optionalString(lesson, "coverTeacherId"),
+    scheduledAt: requiredString(lesson, "scheduledAt"),
+    durationMins: requiredNumber(lesson, "durationMins"),
+    status: requiredString(lesson, "status"),
+    isRecurring: typeof lesson.isRecurring === "boolean" ? lesson.isRecurring : false,
   };
 }
 

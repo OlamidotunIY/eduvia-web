@@ -40,12 +40,20 @@ export function ClassroomsPage() {
   );
   const createAction = useMemo(
     () =>
-      canCreate ? (
-        <Button onClick={() => setIsCreateOpen(true)}>
+      (
+        <Button
+          disabled={!canCreate}
+          title={
+            canCreate
+              ? undefined
+              : "You need classroom creation permission to create a classroom."
+          }
+          onClick={() => setIsCreateOpen(true)}
+        >
           <Plus />
           Create classroom
         </Button>
-      ) : undefined,
+      ),
     [canCreate],
   );
 
