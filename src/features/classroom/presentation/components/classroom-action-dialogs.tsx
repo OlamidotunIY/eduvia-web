@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Calendar } from "@/shared/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +12,7 @@ import {
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import {
   Select,
   SelectContent,
@@ -18,80 +21,180 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 
+type LessonScheduleInput = {
+  scheduledAt: string;
+  durationMins: number;
+};
+
 export function ScheduleLessonDialog({
   open,
   onOpenChange,
   onSubmit,
   isSubmitting,
+  mode = "extra",
+  initialLesson,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (input: {
-    scheduledAt: string;
-    durationMins: number;
-    isRecurring: boolean;
-  }) => void;
+  onSubmit: (input: LessonScheduleInput) => void;
   isSubmitting: boolean;
+  mode?: "extra" | "reschedule";
+  initialLesson?: { scheduledAt: string; durationMins: number } | null;
 }) {
-  const [scheduledAt, setScheduledAt] = useState("");
+  const [date, setDate] = useState<Date>();
+  const [time, setTime] = useState("09:00");
   const [durationMins, setDurationMins] = useState("60");
+  const isReschedule = mode === "reschedule";
+  const times = useMemo(() => createTimeOptions(), []);
+
+  useEffect(() => {
+    if (!open) return;
+    if (initialLesson) {
+      const scheduledAt = new Date(initialLesson.scheduledAt);
+      setDate(scheduledAt);
+      setTime(
+        `${String(scheduledAt.getHours()).padStart(2, "0")}:${String(
+          scheduledAt.getMinutes(),
+        ).padStart(2, "0")}`,
+      );
+      setDurationMins(String(initialLesson.durationMins));
+      return;
+    }
+    setDate(undefined);
+    setTime("09:00");
+    setDurationMins("60");
+  }, [initialLesson, open]);
+
+  const title = isReschedule ? "Reschedule lesson" : "Add extra lesson";
+  const description = isReschedule
+    ? "Choose the new date, time, and optional duration for this lesson."
+    : "Add a one-off lesson outside this classroom’s recurring schedule.";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[min(46rem,calc(100dvh-2rem))] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Schedule lesson</DialogTitle>
-          <DialogDescription>
-            Set a date, time, and duration for this classroom.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form
-          className="grid gap-5"
+          className="grid gap-6"
           onSubmit={(event) => {
             event.preventDefault();
+            if (!date) return;
             onSubmit({
-              scheduledAt: new Date(scheduledAt).toISOString(),
+              scheduledAt: toLocalIso(date, time),
               durationMins: Number(durationMins),
-              isRecurring: false,
             });
           }}
         >
-          <div className="grid gap-2">
-            <Label htmlFor="lesson-time">Date and time</Label>
-            <Input
-              id="lesson-time"
-              type="datetime-local"
-              value={scheduledAt}
-              onChange={(event) => setScheduledAt(event.target.value)}
-              required
-            />
+          <div className="grid gap-3">
+            <Label>Lesson date</Label>
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <Button variant="outline" className="w-full justify-start">
+                    <CalendarDays />
+                    {date ? formatDate(date) : "Choose a lesson date"}
+                  </Button>
+                }
+              />
+              <PopoverContent align="start" className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  disabled={{ before: startOfToday() }}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
-          <div className="grid gap-2">
-            <Label>Duration</Label>
-            <Select
-              value={durationMins}
-              onValueChange={(value) => setDurationMins(value ?? "60")}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[30, 45, 60, 75, 90, 120].map((minutes) => (
-                  <SelectItem key={minutes} value={String(minutes)}>
-                    {minutes} minutes
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label>Start time</Label>
+              <Select
+                value={time}
+                onValueChange={(value) => setTime(value ?? "09:00")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {times.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Duration</Label>
+              <Select
+                value={durationMins}
+                onValueChange={(value) => setDurationMins(value ?? "60")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[30, 45, 60, 75, 90, 120].map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>
+                      {minutes} minutes
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter showCloseButton>
-            <Button type="submit" disabled={!scheduledAt || isSubmitting}>
-              {isSubmitting ? "Scheduling…" : "Schedule lesson"}
+            <Button type="submit" disabled={!date || isSubmitting}>
+              {isSubmitting ? "Saving…" : title}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
+}
+
+function startOfToday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function toLocalIso(date: Date, time: string): string {
+  const [hours, minutes] = time.split(":").map(Number);
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hours,
+    minutes,
+  ).toISOString();
+}
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+function createTimeOptions() {
+  return Array.from({ length: 48 }, (_, index) => {
+    const hours = Math.floor(index / 2);
+    const minutes = index % 2 === 0 ? 0 : 30;
+    const value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    const label = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(2024, 0, 1, hours, minutes));
+    return { value, label };
+  });
 }
 
 export function AddLearnerDialog({

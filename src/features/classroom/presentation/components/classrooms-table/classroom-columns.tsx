@@ -101,7 +101,7 @@ export function createClassroomColumns({
             <UsersRound />
           </IconAction>
           <IconAction
-            label="Schedule lesson"
+            label="Add extra lesson"
             onClick={() => onScheduleLesson(row.original)}
           >
             <CalendarPlus />

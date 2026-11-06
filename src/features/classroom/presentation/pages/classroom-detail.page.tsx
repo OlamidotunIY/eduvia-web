@@ -7,6 +7,7 @@ import {
   Clock3,
   MoreHorizontal,
   Pencil,
+  RotateCcw,
   Settings2,
   Users,
 } from "lucide-react";
@@ -36,6 +37,7 @@ import {
   useClassroomStudentsQuery,
   useLearnerCandidatesQuery,
   useScheduleLessonMutation,
+  useRescheduleLessonMutation,
   useAddLearnerMutation,
   useOrganizationSubjectsQuery,
 } from "../../application";
@@ -54,6 +56,11 @@ export function ClassroomDetailPage() {
   const [tab, setTab] = useState<DetailTab>("overview");
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isLearnerOpen, setIsLearnerOpen] = useState(false);
+  const [reschedulingLesson, setReschedulingLesson] = useState<{
+    id: string;
+    scheduledAt: string;
+    durationMins: number;
+  } | null>(null);
   const currentUser = sessionStore((state) => state.currentUser);
   const organizationId = currentUser?.activeOrganization?.id;
   const permissions = currentUser?.activeOrganization?.permissions ?? [];
@@ -66,6 +73,10 @@ export function ClassroomDetailPage() {
     classroomId,
   );
   const scheduleLesson = useScheduleLessonMutation(organizationId, classroomId);
+  const rescheduleLesson = useRescheduleLessonMutation(
+    organizationId,
+    classroomId,
+  );
   const addLearner = useAddLearnerMutation(organizationId, classroomId);
   const subjectName = useMemo(
     () =>
@@ -101,6 +112,7 @@ export function ClassroomDetailPage() {
   const canUpdate = permissions.includes("classrooms:update");
   const canManageLearners = permissions.includes("classrooms:manage_students");
   const canScheduleLessons = permissions.includes("lessons:schedule");
+  const canManageLessons = permissions.includes("lessons:manage");
   const schedule = `${classroom.data.recurrence.daysOfWeek.map((day) => dayNames[day]).join(", ")} · ${classroom.data.recurrence.startTime}`;
 
   return (
@@ -137,10 +149,10 @@ export function ClassroomDetailPage() {
           <div className="flex items-center gap-2">
             <PermissionButton
               allowed={canScheduleLessons}
-              reason="You need lesson scheduling permission to schedule a lesson."
+              reason="You need lesson scheduling permission to add an extra lesson."
               onClick={() => setIsScheduleOpen(true)}
             >
-              <CalendarClock /> Schedule lesson
+              <CalendarClock /> Add extra lesson
             </PermissionButton>
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -225,10 +237,10 @@ export function ClassroomDetailPage() {
               action={
                 <PermissionButton
                   allowed={canScheduleLessons}
-                  reason="You need lesson scheduling permission to schedule a lesson."
+                  reason="You need lesson scheduling permission to add an extra lesson."
                   onClick={() => setIsScheduleOpen(true)}
                 >
-                  <CalendarClock /> Schedule lesson
+                  <CalendarClock /> Add extra lesson
                 </PermissionButton>
               }
             />
@@ -237,7 +249,11 @@ export function ClassroomDetailPage() {
                 Loading lessons…
               </p>
             ) : (
-              <LessonAgenda lessons={lessons.data ?? []} />
+              <LessonAgenda
+                lessons={lessons.data ?? []}
+                canManageLessons={canManageLessons}
+                onReschedule={setReschedulingLesson}
+              />
             )}
           </TabsContent>
 
@@ -254,10 +270,9 @@ export function ClassroomDetailPage() {
           onOpenChange={setIsScheduleOpen}
           isSubmitting={scheduleLesson.isPending}
           onSubmit={(input) =>
-            scheduleLesson.mutate(
-              { ...input, teacherId: currentUser!.user.id },
-              { onSuccess: () => setIsScheduleOpen(false) },
-            )
+            scheduleLesson.mutate(input, {
+              onSuccess: () => setIsScheduleOpen(false),
+            })
           }
         />
         <AddLearnerDialog
@@ -270,6 +285,20 @@ export function ClassroomDetailPage() {
               onSuccess: () => setIsLearnerOpen(false),
             })
           }
+        />
+        <ScheduleLessonDialog
+          open={Boolean(reschedulingLesson)}
+          onOpenChange={(open) => !open && setReschedulingLesson(null)}
+          mode="reschedule"
+          initialLesson={reschedulingLesson}
+          isSubmitting={rescheduleLesson.isPending}
+          onSubmit={(input) => {
+            if (!reschedulingLesson) return;
+            rescheduleLesson.mutate(
+              { lessonId: reschedulingLesson.id, ...input },
+              { onSuccess: () => setReschedulingLesson(null) },
+            );
+          }}
         />
       </section>
     </TooltipProvider>
@@ -565,13 +594,22 @@ function LearnerGrid({
 
 function LessonAgenda({
   lessons,
+  canManageLessons,
+  onReschedule,
 }: {
   lessons: Array<{
     id: string;
     scheduledAt: string;
     durationMins: number;
     status: string;
+    origin: string;
   }>;
+  canManageLessons: boolean;
+  onReschedule: (lesson: {
+    id: string;
+    scheduledAt: string;
+    durationMins: number;
+  }) => void;
 }) {
   if (!lessons.length)
     return (
@@ -597,10 +635,30 @@ function LessonAgenda({
                 · {lesson.durationMins} minutes
               </p>
             </div>
-            <Badge variant="outline" className="capitalize">
-              {lesson.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="capitalize">
+                {lesson.status}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!canManageLessons}
+                title={
+                  canManageLessons
+                    ? "Reschedule lesson"
+                    : "You need lesson management permission to reschedule a lesson."
+                }
+                onClick={() => onReschedule(lesson)}
+              >
+                <RotateCcw /> Reschedule
+              </Button>
+            </div>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {lesson.origin === "ONE_OFF"
+              ? "Extra lesson"
+              : "Part of the recurring classroom schedule"}
+          </p>
         </li>
       ))}
     </ol>

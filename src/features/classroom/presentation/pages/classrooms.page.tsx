@@ -158,10 +158,9 @@ export function ClassroomsPage() {
         onOpenChange={(open) => !open && setScheduleClassroom(null)}
         isSubmitting={scheduleLessonMutation.isPending}
         onSubmit={(input) =>
-          scheduleLessonMutation.mutate(
-            { ...input, teacherId: currentUser!.user.id },
-            { onSuccess: () => setScheduleClassroom(null) },
-          )
+          scheduleLessonMutation.mutate(input, {
+            onSuccess: () => setScheduleClassroom(null),
+          })
         }
       />
       <AddLearnerDialog
