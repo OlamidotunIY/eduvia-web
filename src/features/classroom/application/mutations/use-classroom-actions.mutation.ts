@@ -14,16 +14,46 @@ export function useScheduleLessonMutation(
     mutationFn: (input: {
       scheduledAt: string;
       durationMins: number;
-      teacherId: string;
-      isRecurring: boolean;
+      teacherId?: string;
     }) =>
       classroomRepository.scheduleLesson(organizationId!, classroomId!, input),
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: classroomLessonsQueryKey(
+        queryKey: [
+          "organizations",
           organizationId ?? "",
+          "classrooms",
           classroomId ?? "",
-        ),
+          "lessons",
+        ],
+      }),
+  });
+}
+
+export function useRescheduleLessonMutation(
+  organizationId: string | undefined,
+  classroomId: string | undefined,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      lessonId: string;
+      scheduledAt: string;
+      durationMins?: number;
+    }) =>
+      classroomRepository.rescheduleLesson(organizationId!, input.lessonId, {
+        scheduledAt: input.scheduledAt,
+        durationMins: input.durationMins,
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: [
+          "organizations",
+          organizationId ?? "",
+          "classrooms",
+          classroomId ?? "",
+          "lessons",
+        ],
       }),
   });
 }

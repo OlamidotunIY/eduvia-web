@@ -56,6 +56,7 @@ export interface ClassroomLesson {
   durationMins: number;
   status: string;
   isRecurring: boolean;
+  origin: "RECURRING_GENERATION" | "ONE_OFF" | string;
 }
 
 export interface CreateClassroomInput {

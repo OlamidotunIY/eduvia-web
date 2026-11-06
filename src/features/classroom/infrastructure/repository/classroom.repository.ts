@@ -37,8 +37,13 @@ export class ClassroomRepository implements IClassroomRepository {
   async listLessons(
     organizationId: string,
     classroomId: string,
+    range?: { fromDate?: string; toDate?: string },
   ): Promise<ClassroomLesson[]> {
-    const value = await classroomApi.listLessons(organizationId, classroomId);
+    const value = await classroomApi.listLessons(
+      organizationId,
+      classroomId,
+      range,
+    );
     if (!Array.isArray(value)) {
       throw new Error("The API returned an invalid classroom lesson response.");
     }
@@ -65,11 +70,17 @@ export class ClassroomRepository implements IClassroomRepository {
     input: {
       scheduledAt: string;
       durationMins: number;
-      teacherId: string;
-      isRecurring: boolean;
+      teacherId?: string;
     },
   ): Promise<void> {
     await classroomApi.scheduleLesson(organizationId, classroomId, input);
+  }
+  async rescheduleLesson(
+    organizationId: string,
+    lessonId: string,
+    input: { scheduledAt: string; durationMins?: number },
+  ): Promise<void> {
+    await classroomApi.rescheduleLesson(organizationId, lessonId, input);
   }
   async listLearnerCandidates(
     organizationId: string,
@@ -171,6 +182,10 @@ function toClassroomLesson(value: unknown): ClassroomLesson {
     status: requiredString(lesson, "status"),
     isRecurring:
       typeof lesson.isRecurring === "boolean" ? lesson.isRecurring : false,
+    origin:
+      typeof lesson.origin === "string"
+        ? lesson.origin
+        : "RECURRING_GENERATION",
   };
 }
 

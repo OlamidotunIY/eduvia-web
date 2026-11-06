@@ -16,10 +16,35 @@ export interface IClassroomRepository {
   listLessons(
     organizationId: string,
     classroomId: string,
+    range?: { fromDate?: string; toDate?: string },
   ): Promise<ClassroomLesson[]>;
   listSubjects(organizationId: string): Promise<OrganizationSubject[]>;
   create(organizationId: string, input: CreateClassroomInput): Promise<void>;
-  scheduleLesson(organizationId: string, classroomId: string, input: { scheduledAt: string; durationMins: number; teacherId: string; isRecurring: boolean }): Promise<void>;
-  listLearnerCandidates(organizationId: string, classroomId: string): Promise<Array<{ id: string; firstName: string; lastName: string; email: string; image: string | null }>>;
-  addLearner(organizationId: string, classroomId: string, studentId: string): Promise<void>;
+  scheduleLesson(
+    organizationId: string,
+    classroomId: string,
+    input: { scheduledAt: string; durationMins: number; teacherId?: string },
+  ): Promise<void>;
+  rescheduleLesson(
+    organizationId: string,
+    lessonId: string,
+    input: { scheduledAt: string; durationMins?: number },
+  ): Promise<void>;
+  listLearnerCandidates(
+    organizationId: string,
+    classroomId: string,
+  ): Promise<
+    Array<{
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      image: string | null;
+    }>
+  >;
+  addLearner(
+    organizationId: string,
+    classroomId: string,
+    studentId: string,
+  ): Promise<void>;
 }

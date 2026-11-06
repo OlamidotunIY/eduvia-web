@@ -21,10 +21,17 @@ export const classroomApi = {
       )
       .then((response) => response.data),
 
-  listLessons: (organizationId: string, classroomId: string) =>
+  listLessons: (
+    organizationId: string,
+    classroomId: string,
+    range?: { fromDate?: string; toDate?: string },
+  ) =>
     apiClient
       .get<unknown>(
         `/organizations/${organizationId}/classrooms/${classroomId}/lessons`,
+        {
+          params: range,
+        },
       )
       .then((response) => response.data),
 
@@ -46,13 +53,24 @@ export const classroomApi = {
     input: {
       scheduledAt: string;
       durationMins: number;
-      teacherId: string;
-      isRecurring: boolean;
+      teacherId?: string;
     },
   ) =>
     apiClient
       .post(
         `/organizations/${organizationId}/classrooms/${classroomId}/schedule-lesson`,
+        input,
+      )
+      .then(() => undefined),
+
+  rescheduleLesson: (
+    organizationId: string,
+    lessonId: string,
+    input: { scheduledAt: string; durationMins?: number },
+  ) =>
+    apiClient
+      .patch(
+        `/organizations/${organizationId}/lessons/${lessonId}/reschedule`,
         input,
       )
       .then(() => undefined),
