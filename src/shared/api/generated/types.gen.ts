@@ -281,6 +281,11 @@ export type ScheduleLessonDto = {
   isRecurring?: boolean;
 };
 
+export type RescheduleLessonDto = {
+  scheduledAt: string;
+  durationMins?: number;
+};
+
 export type CancelLessonDto = {
   reason: string;
 };
@@ -1535,6 +1540,47 @@ export type ClassroomAddStudentResponses = {
   201: unknown;
 };
 
+export type ClassroomListLearnerCandidatesData = {
+  body?: never;
+  path: {
+    organizationId: string;
+    classroomId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/classrooms/{classroomId}/learner-candidates";
+};
+
+export type ClassroomListLearnerCandidatesResponses = {
+  200: Array<{
+    [key: string]: unknown;
+  }>;
+};
+
+export type ClassroomListLearnerCandidatesResponse =
+  ClassroomListLearnerCandidatesResponses[keyof ClassroomListLearnerCandidatesResponses];
+
+export type ClassroomListClassroomLessonsData = {
+  body?: never;
+  path: {
+    organizationId: string;
+    classroomId: string;
+  };
+  query?: {
+    fromDate?: string;
+    toDate?: string;
+  };
+  url: "/organizations/{organizationId}/classrooms/{classroomId}/lessons";
+};
+
+export type ClassroomListClassroomLessonsResponses = {
+  200: Array<{
+    [key: string]: unknown;
+  }>;
+};
+
+export type ClassroomListClassroomLessonsResponse =
+  ClassroomListClassroomLessonsResponses[keyof ClassroomListClassroomLessonsResponses];
+
 export type ClassroomPauseClassroomData = {
   body?: never;
   path: {
@@ -1647,6 +1693,20 @@ export type ClassroomGetLessonResponses = {
 
 export type ClassroomGetLessonResponse =
   ClassroomGetLessonResponses[keyof ClassroomGetLessonResponses];
+
+export type ClassroomRescheduleLessonData = {
+  body: RescheduleLessonDto;
+  path: {
+    organizationId: string;
+    lessonId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/lessons/{lessonId}/reschedule";
+};
+
+export type ClassroomRescheduleLessonResponses = {
+  200: unknown;
+};
 
 export type ClassroomStartLessonData = {
   body?: never;
