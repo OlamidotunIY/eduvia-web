@@ -47,6 +47,16 @@ export const classroomApi = {
       .post(`/organizations/${organizationId}/classrooms`, input)
       .then(() => undefined),
 
+  pause: (organizationId: string, classroomId: string) =>
+    apiClient
+      .post(`/organizations/${organizationId}/classrooms/${classroomId}/pause`)
+      .then(() => undefined),
+
+  close: (organizationId: string, classroomId: string) =>
+    apiClient
+      .post(`/organizations/${organizationId}/classrooms/${classroomId}/close`)
+      .then(() => undefined),
+
   scheduleLesson: (
     organizationId: string,
     classroomId: string,

@@ -1,5 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { CalendarPlus, ExternalLink, UsersRound } from "lucide-react";
+import { CircleX, Pause, UsersRound } from "lucide-react";
 import type { Classroom } from "@/shared/domain";
 import type { DataTableFeatures } from "@/shared/composites/data-table";
 import { Badge } from "@/shared/ui/badge";
@@ -18,16 +18,18 @@ export const classroomColumnLabels: Record<string, string> = {
 
 interface ClassroomColumnsOptions {
   subjectNameById: Map<string, string>;
-  onOpen: (classroom: Classroom) => void;
   onManageStudents: (classroom: Classroom) => void;
-  onScheduleLesson: (classroom: Classroom) => void;
+  onPause: (classroom: Classroom) => void;
+  onClose: (classroom: Classroom) => void;
+  canUpdate: boolean;
 }
 
 export function createClassroomColumns({
   subjectNameById,
-  onOpen,
   onManageStudents,
-  onScheduleLesson,
+  onPause,
+  onClose,
+  canUpdate,
 }: ClassroomColumnsOptions) {
   return columnHelper.columns([
     columnHelper.accessor("name", {
@@ -89,22 +91,37 @@ export function createClassroomColumns({
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
           <IconAction
-            label="Open classroom"
-            onClick={() => onOpen(row.original)}
-          >
-            <ExternalLink />
-          </IconAction>
-          <IconAction
             label="Manage learners"
             onClick={() => onManageStudents(row.original)}
           >
             <UsersRound />
           </IconAction>
           <IconAction
-            label="Add extra lesson"
-            onClick={() => onScheduleLesson(row.original)}
+            label={
+              row.original.status.toLowerCase() === "active"
+                ? "Pause classroom"
+                : "Classroom cannot be paused"
+            }
+            disabled={
+              !canUpdate || row.original.status.toLowerCase() !== "active"
+            }
+            onClick={() => onPause(row.original)}
           >
-            <CalendarPlus />
+            <Pause />
+          </IconAction>
+          <IconAction
+            label={
+              row.original.status.toLowerCase() === "closed"
+                ? "Classroom is already closed"
+                : "Close classroom"
+            }
+            disabled={
+              !canUpdate || row.original.status.toLowerCase() === "closed"
+            }
+            variant="destructive"
+            onClick={() => onClose(row.original)}
+          >
+            <CircleX />
           </IconAction>
         </div>
       ),
@@ -114,18 +131,23 @@ export function createClassroomColumns({
 
 function IconAction({
   label,
+  disabled = false,
+  variant = "ghost",
   onClick,
   children,
 }: {
   label: string;
+  disabled?: boolean;
+  variant?: React.ComponentProps<typeof Button>["variant"];
   onClick: () => void;
   children: React.ReactNode;
 }) {
   return (
     <Button
       type="button"
-      variant="ghost"
+      variant={variant}
       size="icon-xs"
+      disabled={disabled}
       title={label}
       aria-label={label}
       onClick={(event) => {

@@ -75,6 +75,12 @@ export class ClassroomRepository implements IClassroomRepository {
   ): Promise<void> {
     await classroomApi.scheduleLesson(organizationId, classroomId, input);
   }
+  async pause(organizationId: string, classroomId: string): Promise<void> {
+    await classroomApi.pause(organizationId, classroomId);
+  }
+  async close(organizationId: string, classroomId: string): Promise<void> {
+    await classroomApi.close(organizationId, classroomId);
+  }
   async rescheduleLesson(
     organizationId: string,
     lessonId: string,

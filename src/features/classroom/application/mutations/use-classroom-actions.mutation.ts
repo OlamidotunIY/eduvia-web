@@ -1,9 +1,34 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { classroomRepository } from "../../infrastructure";
 import {
+  classroomsQueryKey,
   classroomLessonsQueryKey,
   classroomStudentsQueryKey,
 } from "../queries/use-classrooms.query";
+
+export function usePauseClassroomMutation(organizationId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (classroomId: string) =>
+      classroomRepository.pause(organizationId!, classroomId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: classroomsQueryKey(organizationId ?? ""),
+      }),
+  });
+}
+
+export function useCloseClassroomMutation(organizationId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (classroomId: string) =>
+      classroomRepository.close(organizationId!, classroomId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: classroomsQueryKey(organizationId ?? ""),
+      }),
+  });
+}
 
 export function useScheduleLessonMutation(
   organizationId: string | undefined,

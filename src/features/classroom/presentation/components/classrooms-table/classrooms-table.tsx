@@ -22,7 +22,9 @@ interface ClassroomsTableProps {
   onReload?: () => void;
   onOpen: (classroom: Classroom) => void;
   onManageStudents: (classroom: Classroom) => void;
-  onScheduleLesson: (classroom: Classroom) => void;
+  onPause: (classroom: Classroom) => void;
+  onClose: (classroom: Classroom) => void;
+  canUpdate: boolean;
   emptyAction?: React.ReactNode;
 }
 
@@ -34,7 +36,9 @@ export function ClassroomsTable({
   onReload,
   onOpen,
   onManageStudents,
-  onScheduleLesson,
+  onPause,
+  onClose,
+  canUpdate,
   emptyAction,
 }: ClassroomsTableProps) {
   const [status, setStatus] = useState("all");
@@ -46,11 +50,12 @@ export function ClassroomsTable({
     () =>
       createClassroomColumns({
         subjectNameById,
-        onOpen,
         onManageStudents,
-        onScheduleLesson,
+        onPause,
+        onClose,
+        canUpdate,
       }),
-    [subjectNameById, onOpen, onManageStudents, onScheduleLesson],
+    [subjectNameById, onManageStudents, onPause, onClose, canUpdate],
   );
   const filteredClassrooms = useMemo(
     () =>

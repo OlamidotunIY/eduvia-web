@@ -30,6 +30,8 @@ export interface IClassroomRepository {
     lessonId: string,
     input: { scheduledAt: string; durationMins?: number },
   ): Promise<void>;
+  pause(organizationId: string, classroomId: string): Promise<void>;
+  close(organizationId: string, classroomId: string): Promise<void>;
   listLearnerCandidates(
     organizationId: string,
     classroomId: string,

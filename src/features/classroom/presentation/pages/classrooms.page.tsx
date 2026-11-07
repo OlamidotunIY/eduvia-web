@@ -2,6 +2,16 @@ import { useCallback, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { classroomRoute } from "@/shared/constant/routes.constants";
 import { sessionStore } from "@/shared/store";
 import type { Classroom } from "@/shared/domain";
@@ -9,36 +19,33 @@ import {
   useClassroomsQuery,
   useCreateClassroomMutation,
   useOrganizationSubjectsQuery,
-  useScheduleLessonMutation,
   useAddLearnerMutation,
   useLearnerCandidatesQuery,
+  useCloseClassroomMutation,
+  usePauseClassroomMutation,
 } from "../../application";
 import { CreateClassroomDialog } from "../components/create-classroom-dialog";
-import {
-  AddLearnerDialog,
-  ScheduleLessonDialog,
-} from "../components/classroom-action-dialogs";
+import { AddLearnerDialog } from "../components/classroom-action-dialogs";
 import { ClassroomsTable } from "../components/classrooms-table";
 
 export function ClassroomsPage() {
   const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [scheduleClassroom, setScheduleClassroom] = useState<Classroom | null>(
-    null,
-  );
   const [learnerClassroom, setLearnerClassroom] = useState<Classroom | null>(
     null,
   );
+  const [lifecycleAction, setLifecycleAction] = useState<{
+    classroom: Classroom;
+    action: "pause" | "close";
+  } | null>(null);
   const currentUser = sessionStore((state) => state.currentUser);
   const organizationId = currentUser?.activeOrganization?.id;
   const permissions = currentUser?.activeOrganization?.permissions ?? [];
   const classrooms = useClassroomsQuery(organizationId);
   const subjects = useOrganizationSubjectsQuery(organizationId);
   const createClassroom = useCreateClassroomMutation(organizationId);
-  const scheduleLessonMutation = useScheduleLessonMutation(
-    organizationId,
-    scheduleClassroom?.id,
-  );
+  const pauseClassroom = usePauseClassroomMutation(organizationId);
+  const closeClassroom = useCloseClassroomMutation(organizationId);
   const addLearnerMutation = useAddLearnerMutation(
     organizationId,
     learnerClassroom?.id,
@@ -55,10 +62,6 @@ export function ClassroomsPage() {
   );
   const manageStudents = useCallback(
     (classroom: Classroom) => setLearnerClassroom(classroom),
-    [],
-  );
-  const scheduleLesson = useCallback(
-    (classroom: Classroom) => setScheduleClassroom(classroom),
     [],
   );
   const createAction = useMemo(
@@ -78,6 +81,7 @@ export function ClassroomsPage() {
     ),
     [canCreate],
   );
+  const canUpdate = permissions.includes("classrooms:update");
 
   if (!organizationId) {
     return (
@@ -130,7 +134,13 @@ export function ClassroomsPage() {
         onReload={() => void classrooms.refetch()}
         onOpen={openClassroom}
         onManageStudents={manageStudents}
-        onScheduleLesson={scheduleLesson}
+        onPause={(classroom) =>
+          setLifecycleAction({ classroom, action: "pause" })
+        }
+        onClose={(classroom) =>
+          setLifecycleAction({ classroom, action: "close" })
+        }
+        canUpdate={canUpdate}
         emptyAction={createAction}
       />
       <CreateClassroomDialog
@@ -153,16 +163,6 @@ export function ClassroomsPage() {
           )
         }
       />
-      <ScheduleLessonDialog
-        open={Boolean(scheduleClassroom)}
-        onOpenChange={(open) => !open && setScheduleClassroom(null)}
-        isSubmitting={scheduleLessonMutation.isPending}
-        onSubmit={(input) =>
-          scheduleLessonMutation.mutate(input, {
-            onSuccess: () => setScheduleClassroom(null),
-          })
-        }
-      />
       <AddLearnerDialog
         open={Boolean(learnerClassroom)}
         onOpenChange={(open) => !open && setLearnerClassroom(null)}
@@ -174,6 +174,48 @@ export function ClassroomsPage() {
           })
         }
       />
+      <AlertDialog
+        open={Boolean(lifecycleAction)}
+        onOpenChange={(open) => !open && setLifecycleAction(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {lifecycleAction?.action === "close"
+                ? "Close classroom?"
+                : "Pause classroom?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {lifecycleAction?.action === "close"
+                ? `“${lifecycleAction.classroom.name}” will be closed and cannot accept normal teaching activity.`
+                : `“${lifecycleAction?.classroom.name}” will be paused until you reopen it from its classroom settings.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={
+                lifecycleAction?.action === "close" ? "destructive" : "default"
+              }
+              disabled={pauseClassroom.isPending || closeClassroom.isPending}
+              onClick={() => {
+                if (!lifecycleAction) return;
+                const mutation =
+                  lifecycleAction.action === "close"
+                    ? closeClassroom
+                    : pauseClassroom;
+                mutation.mutate(lifecycleAction.classroom.id, {
+                  onSuccess: () => setLifecycleAction(null),
+                });
+              }}
+            >
+              {lifecycleAction?.action === "close"
+                ? "Close classroom"
+                : "Pause classroom"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }
