@@ -46,6 +46,14 @@ export function ScheduleLessonDialog({
   const [durationMins, setDurationMins] = useState("60");
   const isReschedule = mode === "reschedule";
   const times = useMemo(() => createTimeOptions(), []);
+  const availableTimes = useMemo(
+    () =>
+      date
+        ? times.filter((option) => isFutureDateTime(date, option.value))
+        : times,
+    [date, times],
+  );
+  const isPastSelection = Boolean(date && !isFutureDateTime(date, time));
 
   useEffect(() => {
     if (!open) return;
@@ -65,6 +73,11 @@ export function ScheduleLessonDialog({
     setDurationMins("60");
   }, [initialLesson, open]);
 
+  useEffect(() => {
+    if (!date || availableTimes.some((option) => option.value === time)) return;
+    setTime(availableTimes[0]?.value ?? "");
+  }, [availableTimes, date, time]);
+
   const title = isReschedule ? "Reschedule lesson" : "Add extra lesson";
   const description = isReschedule
     ? "Choose the new date, time, and optional duration for this lesson."
@@ -81,7 +94,7 @@ export function ScheduleLessonDialog({
           className="grid gap-6"
           onSubmit={(event) => {
             event.preventDefault();
-            if (!date) return;
+            if (!date || isPastSelection) return;
             onSubmit({
               scheduledAt: toLocalIso(date, time),
               durationMins: Number(durationMins),
@@ -120,7 +133,7 @@ export function ScheduleLessonDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {times.map((option) => (
+                  {availableTimes.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -147,8 +160,21 @@ export function ScheduleLessonDialog({
               </Select>
             </div>
           </div>
+          {isPastSelection ? (
+            <p className="text-sm text-destructive">
+              Choose a future start time for this lesson.
+            </p>
+          ) : null}
           <DialogFooter showCloseButton>
-            <Button type="submit" disabled={!date || isSubmitting}>
+            <Button
+              type="submit"
+              disabled={
+                !date ||
+                !availableTimes.length ||
+                isPastSelection ||
+                isSubmitting
+              }
+            >
               {isSubmitting ? "Saving…" : title}
             </Button>
           </DialogFooter>
@@ -173,6 +199,10 @@ function toLocalIso(date: Date, time: string): string {
     hours,
     minutes,
   ).toISOString();
+}
+
+function isFutureDateTime(date: Date, time: string): boolean {
+  return new Date(toLocalIso(date, time)).getTime() > Date.now();
 }
 
 function formatDate(date: Date): string {
