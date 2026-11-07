@@ -66,8 +66,11 @@ export class CurriculumRepository implements ICurriculumRepository {
       organizationId,
       curriculumId,
     )) as any;
-    const tree: CurriculumTreeNode[] = Array.isArray(raw?.tree)
-      ? raw.tree.map((n: any) => this.toTreeNode(n))
+    // The organization-scoped endpoint returns the tree directly. Keep the
+    // wrapped form supported as well for compatibility with older contracts.
+    const rawTree = Array.isArray(raw) ? raw : raw?.tree;
+    const tree: CurriculumTreeNode[] = Array.isArray(rawTree)
+      ? rawTree.map((n: any) => this.toTreeNode(n))
       : [];
 
     return {
