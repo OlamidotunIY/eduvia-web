@@ -9,6 +9,7 @@ import {
   isSameDay,
   isSameMonth,
   startOfMonth,
+  startOfDay,
   startOfWeek,
 } from "date-fns";
 import {
@@ -61,8 +62,8 @@ import {
 } from "../../application";
 import { ScheduleLessonDialog } from "../components/classroom-action-dialogs";
 
-type CalendarView = "week" | "month";
-const HOURS = Array.from({ length: 13 }, (_, index) => index + 8);
+type CalendarView = "week" | "month" | "schedule";
+const HOURS = Array.from({ length: 24 }, (_, index) => index);
 
 export function CalendarPage() {
   const currentUser = sessionStore((state) => state.currentUser);
@@ -79,6 +80,10 @@ export function CalendarPage() {
   const [scheduleClassroom, setScheduleClassroom] = useState<Classroom | null>(
     null,
   );
+  const [lessonDraft, setLessonDraft] = useState<{
+    scheduledAt: string;
+    durationMins: number;
+  } | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<ClassroomLesson | null>(
     null,
   );
@@ -129,6 +134,12 @@ export function CalendarPage() {
     setIsClassroomPickerOpen(false);
     setScheduleClassroom(classroom);
   };
+  const openExtraLesson = (
+    draft: { scheduledAt: string; durationMins: number } | null = null,
+  ) => {
+    setLessonDraft(draft);
+    setIsClassroomPickerOpen(true);
+  };
   const movePeriod = (direction: -1 | 1) => {
     const shift = (date: Date) =>
       view === "week" ? addWeeks(date, direction) : addMonths(date, direction);
@@ -175,7 +186,7 @@ export function CalendarPage() {
               ? "Add a one-off lesson outside a classroom’s recurring schedule."
               : "You need lesson scheduling permission to add an extra lesson."
           }
-          onClick={() => setIsClassroomPickerOpen(true)}
+          onClick={() => openExtraLesson()}
         >
           <Plus /> Add extra lesson
         </Button>
@@ -218,6 +229,13 @@ export function CalendarPage() {
             onClick={() => setView("month")}
           >
             Month
+          </Button>
+          <Button
+            size="sm"
+            variant={view === "schedule" ? "secondary" : "ghost"}
+            onClick={() => setView("schedule")}
+          >
+            Schedule
           </Button>
         </div>
       </div>
@@ -327,6 +345,7 @@ export function CalendarPage() {
               lessons={visibleLessons}
               classroomNameById={classroomNameById}
               onSelect={setSelectedLesson}
+              onSlotSelect={openExtraLesson}
             />
           </div>
           <div className="lg:hidden">
@@ -340,10 +359,17 @@ export function CalendarPage() {
             />
           </div>
         </>
-      ) : (
+      ) : view === "month" ? (
         <MonthGrid
           days={range.days}
           month={anchorDate}
+          lessons={visibleLessons}
+          classroomNameById={classroomNameById}
+          onSelect={setSelectedLesson}
+          onSlotSelect={openExtraLesson}
+        />
+      ) : (
+        <ScheduleList
           lessons={visibleLessons}
           classroomNameById={classroomNameById}
           onSelect={setSelectedLesson}
@@ -389,11 +415,20 @@ export function CalendarPage() {
 
       <ScheduleLessonDialog
         open={Boolean(scheduleClassroom)}
-        onOpenChange={(open) => !open && setScheduleClassroom(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setScheduleClassroom(null);
+            setLessonDraft(null);
+          }
+        }}
         isSubmitting={scheduleLesson.isPending}
+        initialLesson={lessonDraft}
         onSubmit={(input) =>
           scheduleLesson.mutate(input, {
-            onSuccess: () => setScheduleClassroom(null),
+            onSuccess: () => {
+              setScheduleClassroom(null);
+              setLessonDraft(null);
+            },
           })
         }
       />
@@ -477,56 +512,90 @@ function WeekGrid({
   lessons,
   classroomNameById,
   onSelect,
-}: CalendarGridProps & { days: Date[] }) {
+  onSlotSelect,
+}: CalendarGridProps & {
+  days: Date[];
+  onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
+}) {
   return (
-    <div className="min-w-[72rem] border border-border">
-      <div className="grid grid-cols-[4rem_repeat(7,minmax(9.5rem,1fr))] border-b border-border bg-muted/30">
-        <div />
-        {days.map((day) => (
-          <div
-            key={day.toISOString()}
-            className="border-l border-border px-3 py-3"
-          >
-            <p className="text-xs text-muted-foreground">
-              {format(day, "EEE")}
-            </p>
-            <p className="mt-1 text-lg font-semibold">{format(day, "d")}</p>
+    <div className="max-h-[calc(100dvh-15rem)] overflow-auto rounded-3xl border border-border bg-card/30 shadow-sm">
+      <div className="min-w-[78rem]">
+        <div className="sticky top-0 z-20 grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border bg-card/95 backdrop-blur">
+          <div className="flex items-center px-3 text-[10px] font-semibold text-muted-foreground">
+            {Intl.DateTimeFormat().resolvedOptions().timeZone}
           </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-[4rem_repeat(7,minmax(9.5rem,1fr))]">
-        <div className="relative h-[832px] border-r border-border">
-          {HOURS.map((hour) => (
-            <span
-              key={hour}
-              className="absolute -top-2 right-2 text-[10px] text-muted-foreground"
-              style={{ top: `${(hour - 8) * 64}px` }}
+          {days.map((day) => (
+            <div
+              key={day.toISOString()}
+              className="border-l border-border px-3 py-3 text-center"
             >
-              {formatHour(hour)}
-            </span>
+              <p className="text-[10px] font-semibold tracking-wide text-muted-foreground">
+                {format(day, "EEE").toUpperCase()}
+              </p>
+              <p
+                className="mx-auto mt-1 grid size-9 place-items-center rounded-full text-lg font-medium data-[today=true]:bg-primary data-[today=true]:text-primary-foreground"
+                data-today={isSameDay(day, new Date()) || undefined}
+              >
+                {format(day, "d")}
+              </p>
+            </div>
           ))}
         </div>
-        {days.map((day) => (
-          <div
-            key={day.toISOString()}
-            className="relative h-[832px] border-r border-border last:border-r-0"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(to bottom, transparent, transparent 63px, var(--border) 64px)",
-            }}
-          >
-            {lessons
-              .filter((lesson) => isSameDay(new Date(lesson.scheduledAt), day))
-              .map((lesson) => (
-                <LessonBlock
-                  key={lesson.id}
-                  lesson={lesson}
-                  classroomName={classroomNameById.get(lesson.classroomId)}
-                  onSelect={onSelect}
-                />
-              ))}
+        <div className="grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))]">
+          <div className="relative h-[1536px] border-r border-border bg-card/50">
+            {HOURS.map((hour) => (
+              <span
+                key={hour}
+                className="absolute -top-2 right-3 text-[10px] font-medium text-muted-foreground"
+                style={{ top: `${hour * 64}px` }}
+              >
+                {formatHour(hour)}
+              </span>
+            ))}
           </div>
-        ))}
+          {days.map((day) => (
+            <div
+              key={day.toISOString()}
+              className="relative h-[1536px] border-r border-border last:border-r-0 hover:bg-muted/20"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(to bottom, transparent, transparent 63px, var(--border) 64px)",
+              }}
+              onClick={(event) => {
+                const bounds = event.currentTarget.getBoundingClientRect();
+                const offset = Math.max(
+                  0,
+                  Math.min(bounds.height - 1, event.clientY - bounds.top),
+                );
+                const minutes = Math.round((offset / 64) * 2) * 30;
+                const scheduledAt = new Date(day);
+                scheduledAt.setHours(
+                  Math.floor(minutes / 60),
+                  minutes % 60,
+                  0,
+                  0,
+                );
+                onSlotSelect({
+                  scheduledAt: scheduledAt.toISOString(),
+                  durationMins: 60,
+                });
+              }}
+            >
+              {lessons
+                .filter((lesson) =>
+                  isSameDay(new Date(lesson.scheduledAt), day),
+                )
+                .map((lesson) => (
+                  <LessonBlock
+                    key={lesson.id}
+                    lesson={lesson}
+                    classroomName={classroomNameById.get(lesson.classroomId)}
+                    onSelect={onSelect}
+                  />
+                ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -578,14 +647,18 @@ function MonthGrid({
   lessons,
   classroomNameById,
   onSelect,
-}: CalendarGridProps & { days: Date[]; month: Date }) {
+}: CalendarGridProps & {
+  days: Date[];
+  month: Date;
+  onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
+}) {
   return (
-    <div className="overflow-x-auto border border-border">
-      <div className="grid min-w-[48rem] grid-cols-7 border-b border-border bg-muted/30">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+    <div className="overflow-x-auto rounded-3xl border border-border bg-card/30 shadow-sm">
+      <div className="grid min-w-[48rem] grid-cols-7 border-b border-border bg-card/95">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <p
             key={day}
-            className="px-3 py-2 text-xs font-medium text-muted-foreground"
+            className="px-3 py-3 text-center text-[10px] font-semibold tracking-wide text-muted-foreground"
           >
             {day}
           </p>
@@ -599,7 +672,15 @@ function MonthGrid({
           return (
             <div
               key={day.toISOString()}
-              className="min-h-32 border-r border-b border-border p-2 last:border-r-0"
+              className="min-h-36 border-r border-b border-border p-3 last:border-r-0 hover:bg-muted/20"
+              onClick={() => {
+                const scheduledAt = new Date(day);
+                scheduledAt.setHours(9, 0, 0, 0);
+                onSlotSelect({
+                  scheduledAt: scheduledAt.toISOString(),
+                  durationMins: 60,
+                });
+              }}
             >
               <p
                 className={
@@ -615,10 +696,14 @@ function MonthGrid({
                   <button
                     type="button"
                     key={lesson.id}
-                    onClick={() => onSelect(lesson)}
-                    className="block w-full truncate rounded bg-primary/10 px-2 py-1 text-left text-[11px] font-medium text-primary hover:bg-primary/15"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSelect(lesson);
+                    }}
+                    className="block w-full truncate text-left text-[11px] font-medium text-primary hover:underline"
                   >
-                    {formatLessonTime(lesson.scheduledAt)} ·{" "}
+                    <span className="mr-1 inline-block size-1.5 rounded-full bg-primary" />
+                    {formatLessonTime(lesson.scheduledAt)}{" "}
                     {classroomNameById.get(lesson.classroomId) ?? "Lesson"}
                   </button>
                 ))}
@@ -633,6 +718,64 @@ function MonthGrid({
         })}
       </div>
     </div>
+  );
+}
+
+function ScheduleList({
+  lessons,
+  classroomNameById,
+  onSelect,
+}: CalendarGridProps) {
+  const orderedLessons = [...lessons].sort(
+    (left, right) =>
+      new Date(left.scheduledAt).getTime() -
+      new Date(right.scheduledAt).getTime(),
+  );
+
+  if (!orderedLessons.length) {
+    return (
+      <div className="rounded-3xl border border-border bg-card/30 py-20 text-center text-sm text-muted-foreground">
+        No lessons in this period.
+      </div>
+    );
+  }
+
+  return (
+    <ol className="overflow-hidden rounded-3xl border border-border bg-card/30 shadow-sm">
+      {orderedLessons.map((lesson) => {
+        const lessonDate = new Date(lesson.scheduledAt);
+        return (
+          <li
+            key={lesson.id}
+            className="border-b border-border last:border-b-0"
+          >
+            <button
+              type="button"
+              className="grid w-full grid-cols-[4rem_minmax(8rem,11rem)_1fr_auto] items-center gap-3 px-4 py-3 text-left hover:bg-muted/30 sm:px-6"
+              onClick={() => onSelect(lesson)}
+            >
+              <div className="text-center">
+                <p className="text-xl font-semibold leading-none">
+                  {format(lessonDate, "d")}
+                </p>
+                <p className="mt-1 text-[10px] font-semibold tracking-wide text-muted-foreground">
+                  {format(lessonDate, "MMM, EEE").toUpperCase()}
+                </p>
+              </div>
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <span className="size-2 rounded-full bg-primary" />
+                {formatLessonTime(lesson.scheduledAt)}
+              </p>
+              <p className="truncate font-medium">
+                {classroomNameById.get(lesson.classroomId) ??
+                  "Classroom lesson"}
+              </p>
+              <LessonStatus status={lesson.status} />
+            </button>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -687,12 +830,15 @@ function LessonBlock({
 }) {
   const date = new Date(lesson.scheduledAt);
   const minutes = date.getHours() * 60 + date.getMinutes();
-  const top = Math.max(0, ((minutes - 8 * 60) / 60) * 64);
+  const top = Math.max(0, (minutes / 60) * 64);
   const height = Math.max(34, (lesson.durationMins / 60) * 64 - 4);
   return (
     <button
       type="button"
-      onClick={() => onSelect(lesson)}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect(lesson);
+      }}
       className="absolute inset-x-1 overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-2 py-1 text-left text-xs hover:bg-primary/15"
       style={{ top: `${top}px`, height: `${height}px` }}
     >
@@ -729,29 +875,36 @@ type CalendarGridProps = {
 };
 
 function getRange(anchorDate: Date, view: CalendarView) {
+  const weekStartsOn = 0 as const;
   const start =
     view === "week"
-      ? startOfWeek(anchorDate, { weekStartsOn: 1 })
-      : startOfMonth(anchorDate);
+      ? startOfWeek(anchorDate, { weekStartsOn })
+      : view === "month"
+        ? startOfMonth(anchorDate)
+        : startOfDay(anchorDate);
   const end =
     view === "week"
-      ? endOfWeek(anchorDate, { weekStartsOn: 1 })
-      : endOfMonth(anchorDate);
-  const gridStart = startOfWeek(start, { weekStartsOn: 1 });
-  const gridEnd = endOfWeek(end, { weekStartsOn: 1 });
+      ? endOfWeek(anchorDate, { weekStartsOn })
+      : view === "month"
+        ? endOfMonth(anchorDate)
+        : addWeeks(start, 8);
+  const gridStart = startOfWeek(start, { weekStartsOn });
+  const gridEnd = endOfWeek(end, { weekStartsOn });
   return {
     fromDate: start.toISOString(),
     toDate: end.toISOString(),
     label:
       view === "week"
         ? `${format(start, "MMM d")} – ${format(end, "MMM d, yyyy")}`
-        : format(anchorDate, "MMMM yyyy"),
+        : view === "month"
+          ? format(anchorDate, "MMMM yyyy")
+          : `Upcoming schedule · ${format(start, "MMM d")} – ${format(end, "MMM d")}`,
     days: eachDayOfInterval({ start: gridStart, end: gridEnd }),
   };
 }
 
 function formatHour(hour: number) {
-  return format(new Date(2024, 0, 1, hour), "ha");
+  return format(new Date(2024, 0, 1, hour), "h a");
 }
 function formatLessonTime(value: string) {
   return format(new Date(value), "h:mm a");
