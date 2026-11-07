@@ -216,6 +216,7 @@ export function AddLearnerDialog({
   isSubmitting: boolean;
 }) {
   const [learnerId, setLearnerId] = useState("");
+  const selectedLearner = learners.find((learner) => learner.id === learnerId);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -239,7 +240,17 @@ export function AddLearnerDialog({
               onValueChange={(value) => setLearnerId(value ?? "")}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a learner" />
+                <span
+                  className={
+                    selectedLearner
+                      ? "flex-1 truncate text-left"
+                      : "flex-1 text-left text-muted-foreground"
+                  }
+                >
+                  {selectedLearner
+                    ? `${selectedLearner.firstName} ${selectedLearner.lastName} · ${selectedLearner.email}`
+                    : "Select a learner"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {learners.map((learner) => (

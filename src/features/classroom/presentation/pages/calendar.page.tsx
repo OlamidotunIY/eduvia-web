@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   addMonths,
@@ -25,6 +25,7 @@ import { sessionStore } from "@/shared/store";
 import type { Classroom, ClassroomLesson } from "@/shared/domain";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +39,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/shared/ui/select";
 import {
   Popover,
@@ -72,9 +72,9 @@ export function CalendarPage() {
   const [view, setView] = useState<CalendarView>("week");
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(() => new Date());
-  const [classroomId, setClassroomId] = useState("all");
-  const [status, setStatus] = useState("all");
-  const [scope, setScope] = useState<"all" | "mine">("all");
+  const [classroomIds, setClassroomIds] = useState<string[]>([]);
+  const [lessonStatuses, setLessonStatuses] = useState<string[]>([]);
+  const [mineOnly, setMineOnly] = useState(false);
   const [isClassroomPickerOpen, setIsClassroomPickerOpen] = useState(false);
   const [selectedExtraClassroomId, setSelectedExtraClassroomId] = useState("");
   const [scheduleClassroom, setScheduleClassroom] = useState<Classroom | null>(
@@ -105,9 +105,7 @@ export function CalendarPage() {
   const canSchedule = permissions.includes("lessons:schedule");
   const canManage = permissions.includes("lessons:manage");
   const activeFilterCount =
-    Number(classroomId !== "all") +
-    Number(status !== "all") +
-    Number(scope !== "all");
+    classroomIds.length + lessonStatuses.length + Number(mineOnly);
 
   const classroomNameById = useMemo(
     () => new Map((classrooms.data ?? []).map((item) => [item.id, item.name])),
@@ -116,16 +114,34 @@ export function CalendarPage() {
   const visibleLessons = useMemo(
     () =>
       (lessons.data ?? []).filter((lesson) => {
-        if (classroomId !== "all" && lesson.classroomId !== classroomId)
+        if (
+          classroomIds.length > 0 &&
+          !classroomIds.includes(lesson.classroomId)
+        )
           return false;
-        if (status !== "all" && lesson.status.toLowerCase() !== status)
+        if (
+          lessonStatuses.length > 0 &&
+          !lessonStatuses.includes(lesson.status.toLowerCase())
+        )
           return false;
-        if (scope === "mine" && lesson.teacherId !== currentUser?.user.id)
-          return false;
+        if (mineOnly && lesson.teacherId !== currentUser?.user.id) return false;
         return true;
       }),
-    [classroomId, currentUser?.user.id, lessons.data, scope, status],
+    [
+      classroomIds,
+      currentUser?.user.id,
+      lessonStatuses,
+      lessons.data,
+      mineOnly,
+    ],
   );
+
+  const toggleClassroom = (id: string) => {
+    setClassroomIds((current) => toggleFilterValue(current, id));
+  };
+  const toggleLessonStatus = (value: string) => {
+    setLessonStatuses((current) => toggleFilterValue(current, value));
+  };
 
   const selectExtraClassroom = () => {
     const classroom = (classrooms.data ?? []).find(
@@ -223,73 +239,60 @@ export function CalendarPage() {
                         Refine the visible lesson schedule.
                       </p>
                     </PopoverHeader>
-                    <div className="grid gap-4">
-                      <label className="grid gap-2 text-sm font-medium">
-                        Classroom
-                        <Select
-                          value={classroomId}
-                          onValueChange={(value) =>
-                            setClassroomId(value ?? "all")
-                          }
+                    <div className="grid gap-5">
+                      <FilterGroup title="Classrooms">
+                        {(classrooms.data ?? []).map((classroom) => (
+                          <FilterOption
+                            key={classroom.id}
+                            checked={classroomIds.includes(classroom.id)}
+                            onCheckedChange={() =>
+                              toggleClassroom(classroom.id)
+                            }
+                          >
+                            {classroom.name}
+                          </FilterOption>
+                        ))}
+                        {!classrooms.data?.length ? (
+                          <p className="text-sm text-muted-foreground">
+                            No classrooms available.
+                          </p>
+                        ) : null}
+                      </FilterGroup>
+                      <FilterGroup
+                        title="Lesson status"
+                        className="sm:grid-cols-3"
+                      >
+                        {[
+                          ["scheduled", "Scheduled"],
+                          ["completed", "Completed"],
+                          ["cancelled", "Cancelled"],
+                        ].map(([value, label]) => (
+                          <FilterOption
+                            key={value}
+                            checked={lessonStatuses.includes(value)}
+                            onCheckedChange={() => toggleLessonStatus(value)}
+                          >
+                            {label}
+                          </FilterOption>
+                        ))}
+                      </FilterGroup>
+                      <FilterGroup title="Teaching scope">
+                        <FilterOption
+                          checked={mineOnly}
+                          onCheckedChange={setMineOnly}
                         >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All classrooms</SelectItem>
-                            {(classrooms.data ?? []).map((item) => (
-                              <SelectItem key={item.id} value={item.id}>
-                                {item.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </label>
-                      <label className="grid gap-2 text-sm font-medium">
-                        Lesson status
-                        <Select
-                          value={status}
-                          onValueChange={(value) => setStatus(value ?? "all")}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All statuses</SelectItem>
-                            <SelectItem value="scheduled">Scheduled</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </label>
-                      <label className="grid gap-2 text-sm font-medium">
-                        Teaching scope
-                        <Select
-                          value={scope}
-                          onValueChange={(value) =>
-                            setScope((value ?? "all") as "all" | "mine")
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">
-                              Organization lessons
-                            </SelectItem>
-                            <SelectItem value="mine">My lessons</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </label>
+                          My lessons only
+                        </FilterOption>
+                      </FilterGroup>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="justify-start"
                         disabled={!activeFilterCount}
                         onClick={() => {
-                          setClassroomId("all");
-                          setStatus("all");
-                          setScope("all");
+                          setClassroomIds([]);
+                          setLessonStatuses([]);
+                          setMineOnly(false);
                         }}
                       >
                         Clear all filters
@@ -387,7 +390,17 @@ export function CalendarPage() {
               }
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a classroom" />
+                <span
+                  className={
+                    selectedExtraClassroomId
+                      ? "flex-1 truncate text-left"
+                      : "flex-1 text-left text-muted-foreground"
+                  }
+                >
+                  {(classrooms.data ?? []).find(
+                    (item) => item.id === selectedExtraClassroomId,
+                  )?.name ?? "Select a classroom"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {(classrooms.data ?? []).map((item) => (
@@ -554,31 +567,22 @@ function WeekGrid({
           {days.map((day) => (
             <div
               key={day.toISOString()}
-              className="relative h-[1536px] border-r border-border last:border-r-0 hover:bg-muted/20"
+              className="relative h-[1536px] border-r border-border last:border-r-0"
               style={{
                 backgroundImage:
                   "repeating-linear-gradient(to bottom, transparent, transparent 63px, var(--border) 64px)",
               }}
-              onClick={(event) => {
-                const bounds = event.currentTarget.getBoundingClientRect();
-                const offset = Math.max(
-                  0,
-                  Math.min(bounds.height - 1, event.clientY - bounds.top),
-                );
-                const minutes = Math.round((offset / 64) * 2) * 30;
-                const scheduledAt = new Date(day);
-                scheduledAt.setHours(
-                  Math.floor(minutes / 60),
-                  minutes % 60,
-                  0,
-                  0,
-                );
-                onSlotSelect({
-                  scheduledAt: scheduledAt.toISOString(),
-                  durationMins: 60,
-                });
-              }}
             >
+              {HOURS.map((hour) => (
+                <button
+                  type="button"
+                  key={hour}
+                  className="absolute inset-x-0 h-16 border-b border-transparent text-left outline-none hover:border-primary/20 hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring"
+                  style={{ top: `${hour * 64}px` }}
+                  aria-label={`Add a lesson on ${format(day, "EEEE, MMMM d")} at ${formatHour(hour)}`}
+                  onClick={() => onSlotSelect(createSlotDraft(day, hour))}
+                />
+              ))}
               {lessons
                 .filter((lesson) =>
                   isSameDay(new Date(lesson.scheduledAt), day),
@@ -837,7 +841,7 @@ function LessonBlock({
         event.stopPropagation();
         onSelect(lesson);
       }}
-      className="absolute inset-x-1 overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-2 py-1 text-left text-xs hover:bg-primary/15"
+      className="absolute inset-x-1 z-10 overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-2 py-1 text-left text-xs hover:bg-primary/15"
       style={{ top: `${top}px`, height: `${height}px` }}
     >
       <p className="truncate font-semibold">
@@ -904,6 +908,55 @@ function getRange(anchorDate: Date, view: CalendarView) {
 function formatHour(hour: number) {
   return format(new Date(2024, 0, 1, hour), "h a");
 }
+
+function createSlotDraft(day: Date, hour: number) {
+  const scheduledAt = new Date(day);
+  scheduledAt.setHours(hour, 0, 0, 0);
+  return { scheduledAt: scheduledAt.toISOString(), durationMins: 60 };
+}
+
+function toggleFilterValue(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+}
+
+function FilterGroup({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <fieldset>
+      <legend className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        {title}
+      </legend>
+      <div className={`grid gap-2 ${className ?? ""}`}>{children}</div>
+    </fieldset>
+  );
+}
+
+function FilterOption({
+  checked,
+  onCheckedChange,
+  children,
+}: {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/70">
+      <Checkbox checked={checked} onCheckedChange={onCheckedChange} />
+      <span className="min-w-0 truncate">{children}</span>
+    </label>
+  );
+}
+
 function formatLessonTime(value: string) {
   return format(new Date(value), "h:mm a");
 }
