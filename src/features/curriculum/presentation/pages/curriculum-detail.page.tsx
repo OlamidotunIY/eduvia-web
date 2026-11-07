@@ -51,8 +51,10 @@ import {
   useCurriculumDetailQuery,
   useCurriculumOverviewQuery,
   useCurriculumTreeQuery,
+  useDeactivateCurriculumNodeMutation,
   useToggleCurriculumActiveMutation,
   useUpdateCurriculumMutation,
+  useUpdateCurriculumNodeMutation,
 } from "../../application";
 import { CreateCurriculumDialog } from "../components/create-curriculum-dialog";
 import { CreateNodeDialog } from "../components/create-node-dialog";
@@ -164,6 +166,26 @@ function nodeOrDescendantMatches(
   return false;
 }
 
+function findFirstLeafOrTopic(nodes: CurriculumTreeNode[]): {
+  target: CurriculumTreeNode;
+  ancestorIds: string[];
+} | null {
+  for (const node of nodes) {
+    if (node.children && node.children.length > 0) {
+      if (node.nodeType === "topic") {
+        return { target: node, ancestorIds: [] };
+      }
+      const res = findFirstLeafOrTopic(node.children);
+      if (res) {
+        return { target: res.target, ancestorIds: [node.id, ...res.ancestorIds] };
+      }
+    } else {
+      return { target: node, ancestorIds: [] };
+    }
+  }
+  return null;
+}
+
 export function CurriculumDetailPage() {
   const { curriculumId } = useParams();
   const currentUser = sessionStore((state) => state.currentUser);
@@ -178,6 +200,7 @@ export function CurriculumDetailPage() {
   const [editCurriculumOpen, setEditCurriculumOpen] = useState(false);
   const [addNodeOpen, setAddNodeOpen] = useState(false);
   const [addNodeParent, setAddNodeParent] = useState<CurriculumTreeNode | null>(null);
+  const [nodeToEdit, setNodeToEdit] = useState<CurriculumTreeNode | null>(null);
 
   // Queries & Mutations
   const detailQuery = useCurriculumDetailQuery(curriculumId);
@@ -187,6 +210,8 @@ export function CurriculumDetailPage() {
   const toggleActiveMutation = useToggleCurriculumActiveMutation();
   const updateCurriculumMutation = useUpdateCurriculumMutation();
   const createNodeMutation = useCreateCurriculumNodeMutation();
+  const updateNodeMutation = useUpdateCurriculumNodeMutation();
+  const deactivateNodeMutation = useDeactivateCurriculumNodeMutation();
 
   // Resolve curriculum metadata
   const curriculum: CurriculumProfileSummary | null = useMemo(() => {
@@ -204,20 +229,17 @@ export function CurriculumDetailPage() {
 
   const treeNodes = treeQuery.data?.tree ?? [];
 
-  // Default expand top nodes and select first node
+  // Default expand top nodes and select first node matching design
   useEffect(() => {
-    if (treeNodes.length > 0) {
+    if (treeNodes.length > 0 && !selectedNodeId) {
       const topIds = treeNodes.map((n) => n.id);
-      setExpandedIds((prev) => new Set([...prev, ...topIds]));
-
-      if (!selectedNodeId) {
-        const first = treeNodes[0];
-        if (first.children && first.children.length > 0) {
-          // Find first topic or child if available
-          setSelectedNodeId(first.children[0].id);
-        } else {
-          setSelectedNodeId(first.id);
-        }
+      const firstSelection = findFirstLeafOrTopic(treeNodes);
+      if (firstSelection) {
+        setSelectedNodeId(firstSelection.target.id);
+        setExpandedIds(new Set([...topIds, ...firstSelection.ancestorIds]));
+      } else {
+        setSelectedNodeId(treeNodes[0].id);
+        setExpandedIds(new Set(topIds));
       }
     }
   }, [treeNodes, selectedNodeId]);
@@ -317,11 +339,28 @@ export function CurriculumDetailPage() {
     });
   };
 
-  const handleCreateNodeSubmit = async (data: any) => {
+  const handleSaveNodeSubmit = async (data: any) => {
     if (!curriculum) return;
-    await createNodeMutation.mutateAsync({
+    if (nodeToEdit) {
+      await updateNodeMutation.mutateAsync({
+        nodeId: nodeToEdit.id,
+        curriculumId: curriculum.id,
+        data,
+      });
+      setNodeToEdit(null);
+    } else {
+      await createNodeMutation.mutateAsync({
+        curriculumId: curriculum.id,
+        data,
+      });
+    }
+  };
+
+  const handleDeactivateNode = async () => {
+    if (!curriculum || !selectedNode) return;
+    await deactivateNodeMutation.mutateAsync({
+      nodeId: selectedNode.id,
       curriculumId: curriculum.id,
-      data,
     });
   };
 
@@ -415,6 +454,7 @@ export function CurriculumDetailPage() {
           <Button
             size="sm"
             onClick={() => {
+              setNodeToEdit(null);
               setAddNodeParent(null);
               setAddNodeOpen(true);
             }}
@@ -747,7 +787,8 @@ export function CurriculumDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setAddNodeParent(parentNode);
+                    setNodeToEdit(selectedNode);
+                    setAddNodeParent(null);
                     setAddNodeOpen(true);
                   }}
                   className="h-9 gap-1.5 border-border/70 bg-card/60 text-xs font-medium text-foreground hover:bg-muted"
@@ -760,6 +801,7 @@ export function CurriculumDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    setNodeToEdit(null);
                     setAddNodeParent(selectedNode);
                     setAddNodeOpen(true);
                   }}
@@ -772,11 +814,18 @@ export function CurriculumDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {}}
+                  onClick={handleDeactivateNode}
+                  disabled={deactivateNodeMutation.isPending}
                   className="h-9 gap-1.5 border-destructive/40 text-xs font-medium text-destructive hover:bg-destructive/10 ml-auto"
                 >
                   <Power className="size-3.5" />
-                  <span>Deactivate</span>
+                  <span>
+                    {deactivateNodeMutation.isPending
+                      ? "Deactivating..."
+                      : selectedNode.isActive
+                        ? "Deactivate"
+                        : "Activate"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -808,14 +857,18 @@ export function CurriculumDetailPage() {
         }}
       />
 
-      {/* Add / Child Node Dialog */}
+      {/* Add / Child / Edit Node Dialog */}
       <CreateNodeDialog
         open={addNodeOpen}
-        onOpenChange={setAddNodeOpen}
+        onOpenChange={(isOpen) => {
+          setAddNodeOpen(isOpen);
+          if (!isOpen) setNodeToEdit(null);
+        }}
         curriculumId={curriculum.id}
         parentNode={addNodeParent}
-        onSubmit={handleCreateNodeSubmit}
-        isSubmitting={createNodeMutation.isPending}
+        nodeToEdit={nodeToEdit}
+        onSubmit={handleSaveNodeSubmit}
+        isSubmitting={createNodeMutation.isPending || updateNodeMutation.isPending}
       />
     </div>
   );
@@ -863,7 +916,6 @@ function TreeNodeItem({
             ? "border border-emerald-500/50 bg-emerald-500/10 text-foreground"
             : "hover:bg-muted/40 text-muted-foreground hover:text-foreground",
         )}
-        style={{ paddingLeft: `${Math.max(10, depth * 20)}px` }}
       >
         <div className="flex min-w-0 items-center gap-2">
           {/* Chevron expand trigger */}
@@ -891,7 +943,12 @@ function TreeNodeItem({
               <Folder className="size-4 text-cyan-400 shrink-0" />
             )
           ) : (
-            <FileText className="size-4 text-emerald-400 shrink-0" />
+            <FileText
+              className={cn(
+                "size-4 shrink-0",
+                isSelected ? "text-emerald-400" : "text-muted-foreground",
+              )}
+            />
           )}
 
           {/* Node name */}
@@ -905,14 +962,14 @@ function TreeNodeItem({
           </span>
 
           {/* Node type badge */}
-          <span className="rounded bg-muted/60 px-1.5 py-0.2 text-[10px] font-normal capitalize text-muted-foreground">
+          <span className="rounded-md bg-muted/70 px-2 py-0.5 text-[10px] font-normal capitalize text-muted-foreground">
             {node.nodeType === "keystage" ? "Grade" : node.nodeType.replace("_", " ")}
           </span>
         </div>
 
         {/* Count badge on the far right */}
         {childCount > 0 && (
-          <span className="text-[11px] font-medium text-muted-foreground shrink-0">
+          <span className="shrink-0 rounded-full bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
             {childCount}
           </span>
         )}
@@ -920,7 +977,7 @@ function TreeNodeItem({
 
       {/* Render children if expanded */}
       {hasChildren && isExpanded && (
-        <div className="relative border-l border-border/40 ml-4 pl-1">
+        <div className="relative border-l border-border/50 ml-3 pl-2 mt-0.5 space-y-0.5">
           {node.children.map((child) => (
             <TreeNodeItem
               key={child.id}

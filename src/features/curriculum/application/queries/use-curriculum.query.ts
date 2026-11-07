@@ -138,6 +138,49 @@ export function useCreateCurriculumNodeMutation() {
       queryClient.invalidateQueries({
         queryKey: ["curricula", "detail", variables.curriculumId],
       });
+      queryClient.invalidateQueries({ queryKey: ["curricula"] });
+    },
+  });
+}
+
+export function useUpdateCurriculumNodeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      nodeId,
+      curriculumId: _curriculumId,
+      data,
+    }: {
+      nodeId: string;
+      curriculumId: string;
+      data: any;
+    }) => curriculumRepository.updateNode(nodeId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      queryClient.invalidateQueries({
+        queryKey: ["curricula", "detail", variables.curriculumId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["curricula"] });
+    },
+  });
+}
+
+export function useDeactivateCurriculumNodeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      nodeId,
+      curriculumId: _curriculumId,
+    }: {
+      nodeId: string;
+      curriculumId: string;
+    }) => curriculumRepository.deactivateNode(nodeId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      queryClient.invalidateQueries({
+        queryKey: ["curricula", "detail", variables.curriculumId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["curricula"] });
     },
   });
 }

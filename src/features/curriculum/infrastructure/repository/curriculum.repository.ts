@@ -132,6 +132,14 @@ export class CurriculumRepository implements ICurriculumRepository {
     return curriculumApi.createNode(curriculumId, data);
   }
 
+  async updateNode(nodeId: string, data: any): Promise<any> {
+    return curriculumApi.updateNode(nodeId, data);
+  }
+
+  async deactivateNode(nodeId: string): Promise<any> {
+    return curriculumApi.deactivateNode(nodeId);
+  }
+
   async getTreeDirect(curriculumId: string): Promise<CurriculumTreeResponse> {
     const raw = (await curriculumApi.getTreeDirect(curriculumId)) as any;
     if (!raw) {

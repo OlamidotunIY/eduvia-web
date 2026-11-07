@@ -13,6 +13,9 @@ export interface ICurriculumRepository {
   create(data: CreateCurriculumInput): Promise<CurriculumProfileSummary>;
   activate(id: string): Promise<void>;
   deactivate(id: string): Promise<void>;
+  createNode(curriculumId: string, data: any): Promise<any>;
+  updateNode(nodeId: string, data: any): Promise<any>;
+  deactivateNode(nodeId: string): Promise<any>;
   getTree(
     organizationId: string,
     curriculumId: string,

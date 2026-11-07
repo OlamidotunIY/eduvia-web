@@ -40,6 +40,16 @@ export const curriculumApi = {
       .post<unknown>(`/curricula/${curriculumId}/nodes`, data)
       .then((response) => response.data),
 
+  updateNode: (nodeId: string, data: any) =>
+    apiClient
+      .patch<unknown>(`/curriculum-nodes/${nodeId}`, data)
+      .then((response) => response.data),
+
+  deactivateNode: (nodeId: string) =>
+    apiClient
+      .post<unknown>(`/curriculum-nodes/${nodeId}/deactivate`)
+      .then((response) => response.data),
+
   getTreeDirect: (curriculumId: string) =>
     apiClient
       .get<unknown>(`/curricula/${curriculumId}/tree`)

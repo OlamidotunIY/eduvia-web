@@ -25,6 +25,7 @@ interface CreateNodeDialogProps {
   onOpenChange: (open: boolean) => void;
   curriculumId: string;
   parentNode?: CurriculumTreeNode | null;
+  nodeToEdit?: CurriculumTreeNode | null;
   onSubmit: (data: {
     nodeType: string;
     name: string;
@@ -41,6 +42,7 @@ export function CreateNodeDialog({
   open,
   onOpenChange,
   parentNode,
+  nodeToEdit,
   onSubmit,
   isSubmitting = false,
 }: CreateNodeDialogProps) {
@@ -51,10 +53,16 @@ export function CreateNodeDialog({
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Suggest default child nodeType based on parent
+  // Suggest default child nodeType based on parent or prefill if editing
   useEffect(() => {
     if (open) {
-      if (parentNode) {
+      if (nodeToEdit) {
+        setName(nodeToEdit.name);
+        setNodeType(nodeToEdit.nodeType);
+        setCode(nodeToEdit.code || "");
+        setGradeLevel(nodeToEdit.gradeLevel || "");
+        setDescription(nodeToEdit.description || "");
+      } else if (parentNode) {
         if (parentNode.nodeType === "subject") setNodeType("keystage");
         else if (parentNode.nodeType === "keystage") setNodeType("strand");
         else if (parentNode.nodeType === "strand") setNodeType("topic");
@@ -62,16 +70,19 @@ export function CreateNodeDialog({
         else setNodeType("topic");
 
         setGradeLevel(parentNode.gradeLevel || "");
+        setName("");
+        setCode("");
+        setDescription("");
       } else {
         setNodeType("subject");
         setGradeLevel("");
+        setName("");
+        setCode("");
+        setDescription("");
       }
-      setName("");
-      setCode("");
-      setDescription("");
       setError(null);
     }
-  }, [open, parentNode]);
+  }, [open, parentNode, nodeToEdit]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,12 +114,18 @@ export function CreateNodeDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-heading text-lg font-bold">
-            {parentNode ? `Add Child Node to "${parentNode.name}"` : "Add Curriculum Node"}
+            {nodeToEdit
+              ? `Edit Node "${nodeToEdit.name}"`
+              : parentNode
+                ? `Add Child Node to "${parentNode.name}"`
+                : "Add Curriculum Node"}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {parentNode
-              ? `Creating a new nested item under ${parentNode.name} (${parentNode.nodeType}).`
-              : "Create a root or framework node under this curriculum profile."}
+            {nodeToEdit
+              ? "Update standard attributes, code, or description for this node."
+              : parentNode
+                ? `Creating a new nested item under ${parentNode.name} (${parentNode.nodeType}).`
+                : "Create a root or framework node under this curriculum profile."}
           </DialogDescription>
         </DialogHeader>
 
@@ -209,7 +226,13 @@ export function CreateNodeDialog({
               className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="size-3.5" />
-              <span>{isSubmitting ? "Adding..." : "Add node"}</span>
+              <span>
+                {isSubmitting
+                  ? "Saving..."
+                  : nodeToEdit
+                    ? "Save changes"
+                    : "Add node"}
+              </span>
             </Button>
           </DialogFooter>
         </form>
