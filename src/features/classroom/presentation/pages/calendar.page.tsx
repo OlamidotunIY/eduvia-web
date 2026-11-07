@@ -615,9 +615,9 @@ function WeekGrid({
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div>
       <div className="min-w-[78rem]">
-        <div className="sticky top-0 z-20 grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border bg-card/95 backdrop-blur">
+        <div className="sticky top-0 z-20 grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border bg-transparent">
           <div className="flex items-center px-3 text-[10px] font-semibold text-muted-foreground">
             {Intl.DateTimeFormat().resolvedOptions().timeZone}
           </div>
@@ -744,8 +744,8 @@ function MonthGrid({
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <div className="grid min-w-[48rem] grid-cols-7 border-b border-border bg-card/95">
+    <div>
+      <div className="grid min-w-[48rem] grid-cols-7 border-b border-border bg-transparent">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <p
             key={day}
