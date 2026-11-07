@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UpdateQuestionInput } from "@/shared/domain";
+import type { UpdateQuestionDto } from "@/shared/api/generated";
 import { questionRepository } from "../../infrastructure";
 import { questionDetailQueryKey } from "../queries/use-question-detail.query";
 
@@ -11,7 +11,7 @@ export function useUpdateQuestionMutation(organizationId: string | undefined) {
       input,
     }: {
       questionId: string;
-      input: UpdateQuestionInput;
+      input: UpdateQuestionDto;
     }) => {
       if (!organizationId) throw new Error("Organization context is required");
       return questionRepository.update(organizationId, questionId, input);

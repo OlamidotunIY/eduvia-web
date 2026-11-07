@@ -19,14 +19,15 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
-import type { CreateQuestionInput, QuestionType } from "@/shared/domain";
+import type { QuestionType } from "@/shared/domain";
+import type { CreateQuestionDto } from "@/shared/api/generated";
 
 interface CreateQuestionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   subjects: Array<{ id: string; name: string }>;
   isSubmitting?: boolean;
-  onSubmit: (input: CreateQuestionInput) => void;
+  onSubmit: (input: CreateQuestionDto) => void;
 }
 
 export function CreateQuestionDialog({
@@ -71,13 +72,17 @@ export function CreateQuestionDialog({
     e.preventDefault();
     if (!stem.trim()) return;
 
-    const payload: CreateQuestionInput = {
+    const payload: CreateQuestionDto = {
       stem: stem.trim(),
       subject,
       type,
       difficultyLevel: Number(difficultyLevel) || 2,
       maxMarks: Number(maxMarks) || 1,
-      isPublished,
+      ownerType: "org",
+      provenance: {
+        source: "original",
+        createdBy: "organization",
+      },
     };
 
     if (type === "mcq") {

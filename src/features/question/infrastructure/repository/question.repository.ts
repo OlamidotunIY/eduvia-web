@@ -1,11 +1,10 @@
-import type {
-  CreateQuestionInput,
-  IQuestionRepository,
-  QuestionFilter,
+import {
+  type IQuestionRepository,
+  type QuestionFilter,
   QuestionRecord,
-  QuestionSummary,
-  UpdateQuestionInput,
+  type QuestionSummary,
 } from "@/shared/domain";
+import type { CreateQuestionDto, UpdateQuestionDto } from "@/shared/api/generated";
 import { questionApi } from "../rest/question.api";
 
 export class QuestionRepository implements IQuestionRepository {
@@ -14,7 +13,7 @@ export class QuestionRepository implements IQuestionRepository {
     filter?: QuestionFilter,
   ): Promise<QuestionRecord[]> {
     const res = await questionApi.search(organizationId, filter);
-    return res.items ?? [];
+    return (res.items ?? []).map((item) => this.toQuestionRecord(item));
   }
 
   async getSummary(organizationId: string): Promise<QuestionSummary> {
@@ -25,22 +24,25 @@ export class QuestionRepository implements IQuestionRepository {
     organizationId: string,
     questionId: string,
   ): Promise<QuestionRecord> {
-    return questionApi.getById(organizationId, questionId);
+    const raw = await questionApi.getById(organizationId, questionId);
+    return this.toQuestionRecord(raw);
   }
 
   async create(
     organizationId: string,
-    input: CreateQuestionInput,
+    input: CreateQuestionDto,
   ): Promise<QuestionRecord> {
-    return questionApi.create(organizationId, input);
+    const raw = await questionApi.create(organizationId, input);
+    return this.toQuestionRecord(raw);
   }
 
   async update(
     organizationId: string,
     questionId: string,
-    input: UpdateQuestionInput,
+    input: UpdateQuestionDto,
   ): Promise<QuestionRecord> {
-    return questionApi.update(organizationId, questionId, input);
+    const raw = await questionApi.update(organizationId, questionId, input);
+    return this.toQuestionRecord(raw);
   }
 
   async publish(
@@ -62,6 +64,35 @@ export class QuestionRepository implements IQuestionRepository {
     questionId: string,
   ): Promise<unknown> {
     return questionApi.delete(organizationId, questionId);
+  }
+
+  private toQuestionRecord(raw: any): QuestionRecord {
+    if (raw instanceof QuestionRecord) return raw;
+    return new QuestionRecord({
+      id: String(raw.id),
+      ownerType: raw.ownerType ?? "platform",
+      ownerId: raw.ownerId ?? null,
+      orgId: raw.orgId ?? null,
+      type: raw.type ?? "mcq",
+      stem: String(raw.stem ?? ""),
+      options: Array.isArray(raw.options) ? raw.options : [],
+      correctOptionKey: raw.correctOptionKey ?? null,
+      markScheme: raw.markScheme ?? null,
+      maxMarks: Number(raw.maxMarks ?? 1),
+      difficultyLevel: Number(raw.difficultyLevel ?? 1),
+      subject: String(raw.subject ?? ""),
+      curriculumNodeId: raw.curriculumNodeId ?? null,
+      examBoard: raw.examBoard ?? null,
+      yearGroup: raw.yearGroup ?? null,
+      tags: Array.isArray(raw.tags) ? raw.tags : [],
+      provenance: raw.provenance ?? { source: "original", createdBy: "user" },
+      isPublished: Boolean(raw.isPublished),
+      usageCount: Number(raw.usageCount ?? 0),
+      avgScore: raw.avgScore != null ? Number(raw.avgScore) : null,
+      correctRate: raw.correctRate != null ? Number(raw.correctRate) : null,
+      createdAt: String(raw.createdAt ?? new Date().toISOString()),
+      updatedAt: String(raw.updatedAt ?? new Date().toISOString()),
+    });
   }
 }
 

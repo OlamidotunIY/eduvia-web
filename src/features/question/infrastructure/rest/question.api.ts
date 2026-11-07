@@ -1,11 +1,10 @@
 import { apiClient } from "@/shared/api";
 import type {
-  CreateQuestionInput,
   QuestionFilter,
   QuestionRecord,
   QuestionSummary,
-  UpdateQuestionInput,
 } from "@/shared/domain";
+import type { CreateQuestionDto, UpdateQuestionDto } from "@/shared/api/generated";
 
 export const questionApi = {
   search: (organizationId: string, filter?: QuestionFilter) =>
@@ -32,7 +31,7 @@ export const questionApi = {
       })
       .then((res) => res.data),
 
-  create: (organizationId: string, input: CreateQuestionInput) =>
+  create: (organizationId: string, input: CreateQuestionDto) =>
     apiClient
       .post<QuestionRecord>("/questions", input, {
         headers: { "x-organization-id": organizationId },
@@ -42,7 +41,7 @@ export const questionApi = {
   update: (
     organizationId: string,
     questionId: string,
-    input: UpdateQuestionInput,
+    input: UpdateQuestionDto,
   ) =>
     apiClient
       .patch<QuestionRecord>(`/questions/${questionId}`, input, {
