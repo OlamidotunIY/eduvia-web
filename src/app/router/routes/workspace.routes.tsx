@@ -7,6 +7,10 @@ import {
   ClassroomDetailPage,
   ClassroomsPage,
 } from "@/features/classroom";
+import {
+  CurriculumDetailPage,
+  CurriculumPage,
+} from "@/features/curriculum";
 import { SubjectsPage } from "@/features/subject";
 import { AssessmentsPage } from "@/features/assessment";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
@@ -28,6 +32,11 @@ export const workspaceRoutes: RouteObject[] = [
         element: <ClassroomDetailPage />,
       },
       { path: APP_ROUTES.CALENDAR, element: <CalendarPage /> },
+      { path: APP_ROUTES.CURRICULUM, element: <CurriculumPage /> },
+      {
+        path: `${APP_ROUTES.CURRICULUM}/:curriculumId`,
+        element: <CurriculumDetailPage />,
+      },
       { path: APP_ROUTES.SUBJECTS, element: <SubjectsPage /> },
       { path: APP_ROUTES.ASSESSMENTS, element: <AssessmentsPage /> },
       { path: "*", element: <PlaceholderPage /> },
