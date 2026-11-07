@@ -208,7 +208,7 @@ export function CalendarPage() {
     <>
       {headerSlot
         ? createPortal(
-            <div className="flex w-full min-w-0 items-center justify-between gap-3 overflow-x-auto">
+            <div className="flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden">
               <div className="flex shrink-0 items-center gap-1">
                 <div className="mr-2 hidden items-center gap-2 border-r border-border pr-4 lg:flex">
                   <CalendarDays className="size-4 text-primary" />
