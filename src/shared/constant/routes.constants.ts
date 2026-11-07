@@ -16,6 +16,8 @@ export const APP_ROUTES = {
   CURRICULUM: "/curriculum",
   SUBJECTS: "/organization/subjects",
   ASSESSMENTS: "/assessments",
+  QUESTIONS: "/questions",
+  MESSAGES: "/messages",
   NOTIFICATIONS: "/notifications",
 } as const;
 
@@ -25,6 +27,10 @@ export function classroomRoute(classroomId: string): string {
 
 export function curriculumDetailRoute(curriculumId: string): string {
   return `${APP_ROUTES.CURRICULUM}/${curriculumId}`;
+}
+
+export function questionRoute(questionId: string): string {
+  return `${APP_ROUTES.QUESTIONS}/${questionId}`;
 }
 
 export const ADMIN_ROUTES = {
