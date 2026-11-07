@@ -666,34 +666,52 @@ function WeekGrid({
               </span>
             ))}
           </div>
-          {days.map((day) => (
-            <div
-              key={day.toISOString()}
-              className="relative border-r border-border last:border-r-0"
-              style={{
-                height: `${WEEK_GRID_HEIGHT}px`,
-                backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent ${SLOT_HEIGHT - 1}px, var(--border) ${SLOT_HEIGHT}px)`,
-              }}
-            >
-              {HOURS.map((hour) => (
-                <button
-                  type="button"
-                  key={hour}
-                  disabled={isPastSlot(day, hour)}
-                  className="absolute inset-x-0 border-b border-transparent text-left outline-none hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
-                  style={{
-                    top: `${hour * SLOT_HEIGHT}px`,
-                    height: `${SLOT_HEIGHT}px`,
-                  }}
-                  aria-label={`Add a lesson on ${format(day, "EEEE, MMMM d")} at ${formatHour(hour)}`}
-                  onClick={() => onSlotSelect(createSlotDraft(day, hour))}
-                />
-              ))}
-              {lessons
-                .filter((lesson) =>
-                  isSameDay(new Date(lesson.scheduledAt), day),
-                )
-                .map((lesson) => (
+          {days.map((day) => {
+            const dayLessons = lessons.filter((lesson) =>
+              isSameDay(new Date(lesson.scheduledAt), day),
+            );
+
+            return (
+              <div
+                key={day.toISOString()}
+                className="relative border-r border-border last:border-r-0"
+                style={{
+                  height: `${WEEK_GRID_HEIGHT}px`,
+                  backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent ${SLOT_HEIGHT - 1}px, var(--border) ${SLOT_HEIGHT}px)`,
+                }}
+              >
+                {HOURS.map((hour) => {
+                  const occupiedLesson = dayLessons.find((lesson) =>
+                    doesLessonOccupySlot(lesson, day, hour),
+                  );
+                  const past = isPastSlot(day, hour);
+
+                  return (
+                    <button
+                      type="button"
+                      key={hour}
+                      disabled={past}
+                      data-past={past || undefined}
+                      data-occupied={Boolean(occupiedLesson) || undefined}
+                      className="absolute inset-x-0 border-b border-transparent text-left outline-none hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring data-[past=true]:cursor-not-allowed data-[past=true]:bg-muted/15 data-[past=true]:hover:bg-muted/15 data-[occupied=true]:cursor-pointer data-[occupied=true]:bg-primary/[0.04] data-[occupied=true]:hover:bg-primary/[0.08]"
+                      style={{
+                        top: `${hour * SLOT_HEIGHT}px`,
+                        height: `${SLOT_HEIGHT}px`,
+                      }}
+                      aria-label={
+                        occupiedLesson
+                          ? `View lesson at ${formatHour(hour)} on ${format(day, "EEEE, MMMM d")}`
+                          : `Add a lesson on ${format(day, "EEEE, MMMM d")} at ${formatHour(hour)}`
+                      }
+                      onClick={() =>
+                        occupiedLesson
+                          ? onSelect(occupiedLesson)
+                          : onSlotSelect(createSlotDraft(day, hour))
+                      }
+                    />
+                  );
+                })}
+                {dayLessons.map((lesson) => (
                   <LessonBlock
                     key={lesson.id}
                     lesson={lesson}
@@ -701,8 +719,9 @@ function WeekGrid({
                     onSelect={onSelect}
                   />
                 ))}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -1038,6 +1057,24 @@ function isPastDay(day: Date) {
   const endOfDay = new Date(day);
   endOfDay.setHours(23, 59, 59, 999);
   return endOfDay.getTime() <= Date.now();
+}
+
+function doesLessonOccupySlot(
+  lesson: ClassroomLesson,
+  day: Date,
+  hour: number,
+) {
+  if (lesson.status.toLowerCase() === "cancelled") return false;
+
+  const slotStart = new Date(day);
+  slotStart.setHours(hour, 0, 0, 0);
+  const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+  const lessonStart = new Date(lesson.scheduledAt);
+  const lessonEnd = new Date(
+    lessonStart.getTime() + lesson.durationMins * 60 * 1000,
+  );
+
+  return lessonStart < slotEnd && lessonEnd > slotStart;
 }
 
 function toggleFilterValue(values: string[], value: string) {
