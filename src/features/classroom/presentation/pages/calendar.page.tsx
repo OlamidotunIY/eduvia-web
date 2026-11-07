@@ -25,7 +25,6 @@ import { sessionStore } from "@/shared/store";
 import type { Classroom, ClassroomLesson } from "@/shared/domain";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { Separator } from "@/shared/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -172,132 +171,7 @@ export function CalendarPage() {
     <>
       {headerSlot
         ? createPortal(
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
-              <Separator orientation="vertical" className="h-5 shrink-0" />
-              <Popover>
-                <PopoverTrigger
-                  render={
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      className="relative shrink-0"
-                      aria-label="Filter calendar"
-                      title="Filter calendar"
-                    >
-                      <Funnel />
-                      {activeFilterCount ? (
-                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                          {activeFilterCount}
-                        </span>
-                      ) : null}
-                    </Button>
-                  }
-                />
-                <PopoverContent align="start" className="w-80">
-                  <PopoverHeader>
-                    <PopoverTitle>Filter calendar</PopoverTitle>
-                    <p className="text-xs text-muted-foreground">
-                      Refine the visible lesson schedule.
-                    </p>
-                  </PopoverHeader>
-                  <div className="grid gap-4">
-                    <label className="grid gap-2 text-sm font-medium">
-                      Classroom
-                      <Select
-                        value={classroomId}
-                        onValueChange={(value) =>
-                          setClassroomId(value ?? "all")
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All classrooms</SelectItem>
-                          {(classrooms.data ?? []).map((item) => (
-                            <SelectItem key={item.id} value={item.id}>
-                              {item.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </label>
-                    <label className="grid gap-2 text-sm font-medium">
-                      Lesson status
-                      <Select
-                        value={status}
-                        onValueChange={(value) => setStatus(value ?? "all")}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All statuses</SelectItem>
-                          <SelectItem value="scheduled">Scheduled</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </label>
-                    <label className="grid gap-2 text-sm font-medium">
-                      Teaching scope
-                      <Select
-                        value={scope}
-                        onValueChange={(value) =>
-                          setScope((value ?? "all") as "all" | "mine")
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">
-                            Organization lessons
-                          </SelectItem>
-                          <SelectItem value="mine">My lessons</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start"
-                      disabled={!activeFilterCount}
-                      onClick={() => {
-                        setClassroomId("all");
-                        setStatus("all");
-                        setScope("all");
-                      }}
-                    >
-                      Clear all filters
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <div className="flex shrink-0 items-center rounded-md border border-border p-0.5">
-                <Button
-                  size="sm"
-                  variant={view === "week" ? "secondary" : "ghost"}
-                  onClick={() => setView("week")}
-                >
-                  Week
-                </Button>
-                <Button
-                  size="sm"
-                  variant={view === "month" ? "secondary" : "ghost"}
-                  onClick={() => setView("month")}
-                >
-                  Month
-                </Button>
-                <Button
-                  size="sm"
-                  variant={view === "schedule" ? "secondary" : "ghost"}
-                  onClick={() => setView("schedule")}
-                >
-                  Schedule
-                </Button>
-              </div>
-              <Separator orientation="vertical" className="h-5 shrink-0" />
+            <div className="flex w-full min-w-0 items-center justify-between gap-3 overflow-x-auto">
               <div className="flex shrink-0 items-center gap-1">
                 <Button
                   variant="ghost"
@@ -321,6 +195,131 @@ export function CalendarPage() {
                 <p className="ml-1 hidden whitespace-nowrap text-sm font-medium lg:block">
                   {range.label}
                 </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Popover>
+                  <PopoverTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        className="relative shrink-0"
+                        aria-label="Filter calendar"
+                        title="Filter calendar"
+                      >
+                        <Funnel />
+                        {activeFilterCount ? (
+                          <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                            {activeFilterCount}
+                          </span>
+                        ) : null}
+                      </Button>
+                    }
+                  />
+                  <PopoverContent align="start" className="w-80">
+                    <PopoverHeader>
+                      <PopoverTitle>Filter calendar</PopoverTitle>
+                      <p className="text-xs text-muted-foreground">
+                        Refine the visible lesson schedule.
+                      </p>
+                    </PopoverHeader>
+                    <div className="grid gap-4">
+                      <label className="grid gap-2 text-sm font-medium">
+                        Classroom
+                        <Select
+                          value={classroomId}
+                          onValueChange={(value) =>
+                            setClassroomId(value ?? "all")
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All classrooms</SelectItem>
+                            {(classrooms.data ?? []).map((item) => (
+                              <SelectItem key={item.id} value={item.id}>
+                                {item.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </label>
+                      <label className="grid gap-2 text-sm font-medium">
+                        Lesson status
+                        <Select
+                          value={status}
+                          onValueChange={(value) => setStatus(value ?? "all")}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All statuses</SelectItem>
+                            <SelectItem value="scheduled">Scheduled</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </label>
+                      <label className="grid gap-2 text-sm font-medium">
+                        Teaching scope
+                        <Select
+                          value={scope}
+                          onValueChange={(value) =>
+                            setScope((value ?? "all") as "all" | "mine")
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">
+                              Organization lessons
+                            </SelectItem>
+                            <SelectItem value="mine">My lessons</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start"
+                        disabled={!activeFilterCount}
+                        onClick={() => {
+                          setClassroomId("all");
+                          setStatus("all");
+                          setScope("all");
+                        }}
+                      >
+                        Clear all filters
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <div className="flex items-center rounded-md border border-border p-0.5">
+                  <Button
+                    size="sm"
+                    variant={view === "week" ? "secondary" : "ghost"}
+                    onClick={() => setView("week")}
+                  >
+                    Week
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={view === "month" ? "secondary" : "ghost"}
+                    onClick={() => setView("month")}
+                  >
+                    Month
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={view === "schedule" ? "secondary" : "ghost"}
+                    onClick={() => setView("schedule")}
+                  >
+                    Schedule
+                  </Button>
+                </div>
               </div>
             </div>,
             headerSlot,
