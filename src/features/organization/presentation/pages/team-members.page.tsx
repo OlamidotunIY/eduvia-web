@@ -11,10 +11,8 @@ import {
   useOrganizationMembersQuery,
   useSuspendMemberMutation,
 } from "../../application";
-import type {
-  OrganizationMemberRecord,
-  SendInvitationInput,
-} from "@/shared/domain";
+import type { OrganizationMemberRecord } from "@/shared/domain";
+import type { ChangeMemberRoleDto, SendInvitationDto } from "@/shared/api/generated";
 import {
   ChangeRoleDialog,
   InviteMemberDialog,
@@ -56,7 +54,7 @@ export function TeamMembersPage() {
   ).length;
 
   // Handlers
-  const handleInviteSubmit = (input: SendInvitationInput) => {
+  const handleInviteSubmit = (input: SendInvitationDto) => {
     inviteMutation.mutate(input, {
       onSuccess: () => {
         setIsInviteOpen(false);
@@ -69,7 +67,7 @@ export function TeamMembersPage() {
     changeRoleMutation.mutate(
       {
         userId: roleTargetMember.userId,
-        input: { role: newRole },
+        input: { role: newRole as NonNullable<ChangeMemberRoleDto["role"]> },
       },
       {
         onSuccess: () => {
@@ -91,7 +89,7 @@ export function TeamMembersPage() {
   const handleActivateMember = (member: OrganizationMemberRecord) => {
     changeRoleMutation.mutate({
       userId: member.userId,
-      input: { role: member.role },
+      input: { role: member.role as NonNullable<ChangeMemberRoleDto["role"]> },
     });
   };
 

@@ -18,13 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import type { SendInvitationInput } from "@/shared/domain";
+import type { SendInvitationDto } from "@/shared/api/generated";
 
 interface InviteMemberDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isSubmitting?: boolean;
-  onSubmit: (input: SendInvitationInput) => void;
+  onSubmit: (input: SendInvitationDto) => void;
 }
 
 export function InviteMemberDialog({
@@ -34,7 +34,7 @@ export function InviteMemberDialog({
   onSubmit,
 }: InviteMemberDialogProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("Teacher");
+  const [role, setRole] = useState<SendInvitationDto["role"]>("Teacher");
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {

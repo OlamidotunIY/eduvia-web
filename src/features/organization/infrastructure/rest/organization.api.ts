@@ -1,28 +1,28 @@
-import { apiClient } from '@/shared/api'
+import { apiClient } from '@/shared/api';
 import type {
-  ChangeMemberRoleInput,
-  OrganizationMemberRecord,
-  OrganizationRoleRecord,
-  SendInvitationInput,
-} from '@/shared/domain'
+  CreateOrganizationDto,
+  CreateOrganizationRoleDto,
+  UpdateOrganizationRoleDto,
+  SendInvitationDto,
+  ChangeMemberRoleDto,
+} from '@/shared/api/generated';
+import type { OrganizationRoleRecord } from '@/shared/domain';
 
 export const organizationApi = {
-  create: (body: {
-    name: string
-    slug: string
-    contactEmail: string
-    country: string
-    timezone: string
-  }) => apiClient.post('/organizations', body).then(() => undefined),
+  create: (body: CreateOrganizationDto) =>
+    apiClient.post('/organizations', body).then(() => undefined),
 
-  listMarketplace: () => apiClient.get<unknown>('/marketplace/organizations').then((response) => response.data),
+  listMarketplace: () =>
+    apiClient.get<unknown>('/marketplace/organizations').then((response) => response.data),
 
   apply: (organizationId: string) =>
-    apiClient.post(`/organizations/${organizationId}/applications`, {
-      orgId: organizationId,
-      applicantUserId: '',
-      appliedSubjects: [],
-    }).then(() => undefined),
+    apiClient
+      .post(`/organizations/${organizationId}/applications`, {
+        orgId: organizationId,
+        applicantUserId: '',
+        appliedSubjects: [],
+      })
+      .then(() => undefined),
 
   selectActive: (organizationId: string) =>
     apiClient.post(`/organizations/active/${organizationId}`).then(() => undefined),
@@ -35,29 +35,33 @@ export const organizationApi = {
   provisionRoles: (organizationId: string) =>
     apiClient.post(`/organizations/${organizationId}/roles/provision`).then(() => undefined),
 
-  createRole: (organizationId: string, body: { name: string; description: string | null; permissions: string[] }) =>
+  createRole: (organizationId: string, body: CreateOrganizationRoleDto) =>
     apiClient.post(`/organizations/${organizationId}/roles`, body).then(() => undefined),
 
-  updateRole: (organizationId: string, roleId: string, body: { name: string; description: string | null; permissions: string[] }) =>
+  updateRole: (organizationId: string, roleId: string, body: UpdateOrganizationRoleDto) =>
     apiClient.patch(`/organizations/${organizationId}/roles/${roleId}`, body).then(() => undefined),
 
   listMembers: (organizationId: string) =>
     apiClient
-      .get<OrganizationMemberRecord[]>(`/organizations/${organizationId}/members`)
+      .get<unknown[]>(`/organizations/${organizationId}/members`)
       .then((response) => response.data),
 
-  inviteMember: (organizationId: string, body: SendInvitationInput) =>
+  inviteMember: (organizationId: string, body: SendInvitationDto) =>
     apiClient
-      .post<{ id: string; rawToken?: string }>(`/organizations/${organizationId}/invitations`, body)
+      .post(`/organizations/${organizationId}/invitations`, body)
       .then((response) => response.data),
 
-  changeMemberRole: (organizationId: string, userId: string, body: ChangeMemberRoleInput) =>
+  changeMemberRole: (
+    organizationId: string,
+    userId: string,
+    body: ChangeMemberRoleDto,
+  ) =>
     apiClient
       .patch(`/organizations/${organizationId}/members/${userId}/role`, body)
-      .then(() => undefined),
+      .then((response) => response.data),
 
   suspendMember: (organizationId: string, userId: string) =>
     apiClient
-      .delete(`/organizations/${organizationId}/members/${userId}`)
-      .then(() => undefined),
-}
+      .post(`/organizations/${organizationId}/members/${userId}/suspend`, {})
+      .then((response) => response.data),
+};
