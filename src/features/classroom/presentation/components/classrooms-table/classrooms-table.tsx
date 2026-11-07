@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenuGroup,
   DropdownMenuLabel,
@@ -6,6 +7,13 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
 } from "@/shared/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { DataTable } from "@/shared/composites/data-table";
 import type { Classroom, OrganizationSubject } from "@/shared/domain";
 import { School } from "lucide-react";
@@ -71,7 +79,10 @@ export function ClassroomsTable({
     <div className="space-y-3">
       <DropdownMenuGroup>
         <DropdownMenuLabel>Classroom status</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={status} onValueChange={setStatus}>
+        <DropdownMenuRadioGroup
+          value={status}
+          onValueChange={(value) => setStatus(value ?? "all")}
+        >
           <DropdownMenuRadioItem value="all">
             All classrooms
           </DropdownMenuRadioItem>
@@ -83,16 +94,39 @@ export function ClassroomsTable({
       {isFiltered ? (
         <>
           <DropdownMenuSeparator />
-          <button
+          <Button
             type="button"
-            className="w-full rounded-sm px-2 py-1.5 text-left text-xs font-medium text-destructive hover:bg-destructive/10"
+            variant="ghost"
+            size="xs"
+            className="w-full justify-start text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={() => setStatus("all")}
           >
             Clear filter
-          </button>
+          </Button>
         </>
       ) : null}
     </div>
+  );
+
+  const filterSlot = (
+    <Select
+      value={status}
+      onValueChange={(value) => setStatus(value ?? "all")}
+    >
+      <SelectTrigger size="sm" className="h-8 min-w-32 rounded-lg text-xs">
+        <SelectValue>
+          {status === "all"
+            ? "All statuses"
+            : status.charAt(0).toUpperCase() + status.slice(1)}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All statuses</SelectItem>
+        <SelectItem value="active">Active</SelectItem>
+        <SelectItem value="paused">Paused</SelectItem>
+        <SelectItem value="closed">Closed</SelectItem>
+      </SelectContent>
+    </Select>
   );
 
   return (
@@ -103,6 +137,7 @@ export function ClassroomsTable({
       isReloading={isReloading}
       onReload={onReload}
       filterContent={filterContent}
+      filterSlot={filterSlot}
       isFiltered={isFiltered}
       searchKey="name"
       searchPlaceholder="Search classrooms..."

@@ -534,9 +534,17 @@ export function CalendarPage() {
           isSubmitting={createClassroom.isPending}
           error={createClassroom.error}
           onSubmit={(input) =>
-            createClassroom.mutate(input, {
-              onSuccess: () => setRecurringScheduleDraft(null),
-            })
+            createClassroom.mutate(
+              {
+                ...input,
+                primaryTeacherId: currentUser!.user.id,
+                recurrenceTimezone:
+                  Intl.DateTimeFormat().resolvedOptions().timeZone,
+              },
+              {
+                onSuccess: () => setRecurringScheduleDraft(null),
+              },
+            )
           }
         />
 

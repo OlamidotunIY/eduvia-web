@@ -1,5 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { CircleX, Pause, UsersRound } from "lucide-react";
+import { CircleX, Pause, UserPlus } from "lucide-react";
 import type { Classroom } from "@/shared/domain";
 import type { DataTableFeatures } from "@/shared/composites/data-table";
 import { Badge } from "@/shared/ui/badge";
@@ -53,15 +53,29 @@ export function createClassroomColumns({
       id: "subject",
       header: "Subject",
       cell: ({ getValue }) => (
-        <span className="inline-flex rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <Badge
+          variant="secondary"
+          className="rounded-md bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+        >
           {subjectNameById.get(getValue()) ?? "Subject unavailable"}
-        </span>
+        </Badge>
       ),
     }),
     columnHelper.accessor((classroom) => classroom.recurrence, {
       id: "schedule",
       header: "Schedule",
-      cell: ({ getValue }) => <ScheduleCell recurrence={getValue()} />,
+      cell: ({ getValue }) => {
+        const recurrence = getValue();
+        const days = recurrence.daysOfWeek.map(formatWeekday).join(", ");
+        return (
+          <div className="min-w-32">
+            <p className="text-xs font-semibold text-foreground">
+              {days} · {formatTime(recurrence.startTime)}
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Weekly</p>
+          </div>
+        );
+      },
     }),
     columnHelper.accessor("lessonDurationMins", {
       id: "duration",
@@ -82,114 +96,98 @@ export function createClassroomColumns({
     columnHelper.accessor("status", {
       id: "status",
       header: "Status",
-      cell: ({ getValue }) => <ClassroomStatusBadge status={getValue()} />,
+      cell: ({ getValue }) => {
+        const status = getValue();
+        const normalized = status.toLowerCase();
+        const statusClassName =
+          normalized === "active"
+            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+            : normalized === "paused"
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+              : "border-muted-foreground/20 bg-muted text-muted-foreground";
+        return (
+          <Badge
+            variant="outline"
+            className={`rounded-full px-3 py-0.5 text-[11px] font-medium capitalize ${statusClassName}`}
+          >
+            {status.toLowerCase()}
+          </Badge>
+        );
+      },
     }),
     columnHelper.display({
       id: "actions",
       header: () => <div className="text-right">Actions</div>,
       enableHiding: false,
       cell: ({ row }) => (
-        <div className="flex justify-end gap-1">
-          <IconAction
-            label="Manage learners"
+        <div
+          className="flex items-center justify-end gap-1"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="size-7 text-muted-foreground hover:text-foreground"
+            title="Manage learners"
+            aria-label="Manage learners"
             onClick={() => onManageStudents(row.original)}
           >
-            <UsersRound />
-          </IconAction>
-          <IconAction
-            label={
+            <UserPlus className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="size-7 text-muted-foreground hover:text-foreground"
+            disabled={
+              !canUpdate || row.original.status.toLowerCase() !== "active"
+            }
+            title={
               row.original.status.toLowerCase() === "active"
                 ? "Pause classroom"
                 : "Classroom cannot be paused"
             }
-            disabled={
-              !canUpdate || row.original.status.toLowerCase() !== "active"
+            aria-label={
+              row.original.status.toLowerCase() === "active"
+                ? "Pause classroom"
+                : "Classroom cannot be paused"
             }
             onClick={() => onPause(row.original)}
           >
-            <Pause />
-          </IconAction>
-          <IconAction
-            label={
+            <Pause className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="size-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            disabled={
+              !canUpdate || row.original.status.toLowerCase() === "closed"
+            }
+            title={
               row.original.status.toLowerCase() === "closed"
                 ? "Classroom is already closed"
                 : "Close classroom"
             }
-            disabled={
-              !canUpdate || row.original.status.toLowerCase() === "closed"
+            aria-label={
+              row.original.status.toLowerCase() === "closed"
+                ? "Classroom is already closed"
+                : "Close classroom"
             }
-            variant="destructive"
             onClick={() => onClose(row.original)}
           >
-            <CircleX />
-          </IconAction>
+            <CircleX className="size-4" />
+          </Button>
         </div>
       ),
     }),
   ]);
 }
 
-function IconAction({
-  label,
-  disabled = false,
-  variant = "ghost",
-  onClick,
-  children,
-}: {
-  label: string;
-  disabled?: boolean;
-  variant?: React.ComponentProps<typeof Button>["variant"];
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      type="button"
-      variant={variant}
-      size="icon-xs"
-      disabled={disabled}
-      title={label}
-      aria-label={label}
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick();
-      }}
-    >
-      {children}
-    </Button>
-  );
-}
-
-function ScheduleCell({ recurrence }: Pick<Classroom, "recurrence">) {
-  const days = recurrence.daysOfWeek.map(formatWeekday).join(", ");
-  return (
-    <div className="min-w-32">
-      <p className="text-xs font-medium">
-        {days} · {formatTime(recurrence.startTime)}
-      </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">Weekly</p>
-    </div>
-  );
-}
-
 function formatWeekday(dayOfWeek: number): string {
   return new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(
     new Date(Date.UTC(2024, 0, dayOfWeek + 1)),
-  );
-}
-
-function ClassroomStatusBadge({ status }: { status: string }) {
-  const normalized = status.toLowerCase();
-  const className =
-    normalized === "active"
-      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-      : normalized === "paused"
-        ? "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-        : "border-muted-foreground/20 bg-muted text-muted-foreground";
-  return (
-    <Badge variant="outline" className={`capitalize ${className}`}>
-      {status}
-    </Badge>
   );
 }
 

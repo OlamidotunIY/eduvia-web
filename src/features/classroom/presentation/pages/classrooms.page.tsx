@@ -81,7 +81,7 @@ export function ClassroomsPage() {
   const createAction = useMemo(
     () => (
       <Button
-        className="h-13 px-7 text-base"
+        className="h-10 rounded-lg px-5 text-sm font-semibold"
         disabled={!canCreate}
         title={
           canCreate
@@ -90,7 +90,7 @@ export function ClassroomsPage() {
         }
         onClick={() => setIsCreateOpen(true)}
       >
-        <Plus />
+        <Plus className="size-4" />
         Create classroom
       </Button>
     ),
@@ -102,7 +102,7 @@ export function ClassroomsPage() {
     return (
       <section className="mx-auto flex max-w-xl flex-col items-start py-16">
         <p className="text-sm font-medium text-primary">Classrooms</p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold">
+        <h1 className="mt-2 font-sans text-3xl font-bold">
           Choose an organization first
         </h1>
         <p className="mt-3 text-muted-foreground">
@@ -114,37 +114,61 @@ export function ClassroomsPage() {
   }
 
   return (
-    <section className="mx-auto flex min-h-0 w-full max-w-[1460px] flex-1 flex-col gap-8 px-2 py-3">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <section className="flex min-h-0 w-full flex-1 flex-col gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium tracking-wide text-primary uppercase">
+          <p className="text-xs font-semibold tracking-wider text-primary uppercase">
             Classroom management
           </p>
-          <h1 className="mt-1 font-heading text-5xl font-semibold tracking-tight">
+          <h1 className="mt-1 font-sans text-4xl font-bold tracking-tight text-foreground">
             Classrooms
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Manage learning groups, schedules, and enrolled learners.
+          <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
+            Manage learning groups, schedules, and enrolled students.
           </p>
         </div>
         {createAction}
       </div>
       <div className="grid gap-4 md:grid-cols-3">
-        <ClassroomMetric
-          icon={Layers3}
-          label="Total classrooms"
-          value={classroomItems.length}
-        />
-        <ClassroomMetric
-          icon={PlayCircle}
-          label="Active classrooms"
-          value={activeClassrooms}
-        />
-        <ClassroomMetric
-          icon={UsersRound}
-          label="Enrolled learners"
-          value={totalLearners}
-        />
+        <Card className="bg-card/60 py-0 shadow-none">
+          <CardContent className="flex flex-row items-center gap-4 px-5 py-4">
+            <Layers3 className="size-7 shrink-0 text-primary" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">
+                Total classrooms
+              </p>
+              <p className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground">
+                {classroomItems.length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card/60 py-0 shadow-none">
+          <CardContent className="flex flex-row items-center gap-4 px-5 py-4">
+            <PlayCircle className="size-7 shrink-0 text-primary" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">
+                Active classrooms
+              </p>
+              <p className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground">
+                {activeClassrooms}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card/60 py-0 shadow-none">
+          <CardContent className="flex flex-row items-center gap-4 px-5 py-4">
+            <UsersRound className="size-7 shrink-0 text-primary" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">
+                Enrolled learners
+              </p>
+              <p className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground">
+                {totalLearners}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       {classrooms.error ? (
         <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -159,8 +183,8 @@ export function ClassroomsPage() {
           available.
         </p>
       ) : null}
-      <div className="mt-4">
-        <h2 className="font-heading text-4xl font-semibold tracking-tight">
+      <div>
+        <h2 className="font-sans text-2xl font-bold tracking-tight text-foreground">
           All classrooms
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -258,31 +282,5 @@ export function ClassroomsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </section>
-  );
-}
-
-function ClassroomMetric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number;
-}) {
-  return (
-    <Card className="h-[115px] gap-0 bg-card/60 py-0 shadow-none">
-      <CardContent className="flex h-full items-center gap-6 px-10 py-5">
-        <span className="grid size-12 shrink-0 place-items-center text-primary">
-          <Icon className="size-9" />
-        </span>
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-1 font-heading text-3xl font-semibold tracking-tight">
-            {value}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

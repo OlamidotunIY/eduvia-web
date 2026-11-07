@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { classroomRepository } from "../../infrastructure";
 import {
   classroomsQueryKey,
-  classroomLessonsQueryKey,
   classroomStudentsQueryKey,
 } from "../queries/use-classrooms.query";
 
