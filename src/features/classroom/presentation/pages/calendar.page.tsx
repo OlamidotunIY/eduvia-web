@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   addMonths,
   addWeeks,
@@ -13,18 +14,18 @@ import {
   startOfWeek,
 } from "date-fns";
 import {
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock3,
   Funnel,
-  Plus,
   RotateCcw,
 } from "lucide-react";
+import { useMainHeaderSlot } from "@/app/shell/main/header";
 import { sessionStore } from "@/shared/store";
 import type { Classroom, ClassroomLesson } from "@/shared/domain";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { Separator } from "@/shared/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -89,6 +90,7 @@ export function CalendarPage() {
   );
   const [reschedulingLesson, setReschedulingLesson] =
     useState<ClassroomLesson | null>(null);
+  const { element: headerSlot } = useMainHeaderSlot();
 
   const range = useMemo(() => getRange(anchorDate, view), [anchorDate, view]);
   const classrooms = useClassroomsQuery(organizationId);
@@ -167,343 +169,340 @@ export function CalendarPage() {
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-primary">Teaching workspace</p>
-          <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight">
-            Calendar
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Lessons across your organization, focused on the period you are
-            teaching now.
-          </p>
-        </div>
-        <Button
-          disabled={!canSchedule || !(classrooms.data ?? []).length}
-          title={
-            canSchedule
-              ? "Add a one-off lesson outside a classroom’s recurring schedule."
-              : "You need lesson scheduling permission to add an extra lesson."
-          }
-          onClick={() => openExtraLesson()}
-        >
-          <Plus /> Add extra lesson
-        </Button>
-      </header>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border py-3">
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={() => movePeriod(-1)}
-            aria-label="Previous period"
-          >
-            <ChevronLeft />
-          </Button>
-          <Button variant="outline" size="sm" onClick={goToToday}>
-            Today
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={() => movePeriod(1)}
-            aria-label="Next period"
-          >
-            <ChevronRight />
-          </Button>
-          <p className="ml-2 text-sm font-medium sm:text-base">{range.label}</p>
-        </div>
-        <div className="flex items-center rounded-md border border-border p-0.5">
-          <Button
-            size="sm"
-            variant={view === "week" ? "secondary" : "ghost"}
-            onClick={() => setView("week")}
-          >
-            Week
-          </Button>
-          <Button
-            size="sm"
-            variant={view === "month" ? "secondary" : "ghost"}
-            onClick={() => setView("month")}
-          >
-            Month
-          </Button>
-          <Button
-            size="sm"
-            variant={view === "schedule" ? "secondary" : "ghost"}
-            onClick={() => setView("schedule")}
-          >
-            Schedule
-          </Button>
-        </div>
-      </div>
-
-      <div>
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button variant="outline">
-                <Funnel /> Filter
-                {activeFilterCount ? (
-                  <span className="rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                    {activeFilterCount}
-                  </span>
-                ) : null}
-              </Button>
-            }
-          />
-          <PopoverContent align="start" className="w-80">
-            <PopoverHeader>
-              <PopoverTitle>Filter calendar</PopoverTitle>
-              <p className="text-xs text-muted-foreground">
-                Refine the visible lesson schedule.
-              </p>
-            </PopoverHeader>
-            <div className="grid gap-4">
-              <label className="grid gap-2 text-sm font-medium">
-                Classroom
-                <Select
-                  value={classroomId}
-                  onValueChange={(value) => setClassroomId(value ?? "all")}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All classrooms</SelectItem>
-                    {(classrooms.data ?? []).map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </label>
-              <label className="grid gap-2 text-sm font-medium">
-                Lesson status
-                <Select
-                  value={status}
-                  onValueChange={(value) => setStatus(value ?? "all")}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </label>
-              <label className="grid gap-2 text-sm font-medium">
-                Teaching scope
-                <Select
-                  value={scope}
-                  onValueChange={(value) =>
-                    setScope((value ?? "all") as "all" | "mine")
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Organization lessons</SelectItem>
-                    <SelectItem value="mine">My lessons</SelectItem>
-                  </SelectContent>
-                </Select>
-              </label>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start"
-                disabled={!activeFilterCount}
-                onClick={() => {
-                  setClassroomId("all");
-                  setStatus("all");
-                  setScope("all");
-                }}
-              >
-                Clear all filters
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {lessons.isPending ? (
-        <p className="py-20 text-center text-sm text-muted-foreground">
-          Loading lessons…
-        </p>
-      ) : view === "week" ? (
-        <>
-          <div className="hidden overflow-x-auto lg:block">
-            <WeekGrid
-              days={range.days}
-              lessons={visibleLessons}
-              classroomNameById={classroomNameById}
-              onSelect={setSelectedLesson}
-              onSlotSelect={openExtraLesson}
-            />
-          </div>
-          <div className="lg:hidden">
-            <MobileAgenda
-              days={range.days}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              lessons={visibleLessons}
-              classroomNameById={classroomNameById}
-              onSelect={setSelectedLesson}
-            />
-          </div>
-        </>
-      ) : view === "month" ? (
-        <MonthGrid
-          days={range.days}
-          month={anchorDate}
-          lessons={visibleLessons}
-          classroomNameById={classroomNameById}
-          onSelect={setSelectedLesson}
-          onSlotSelect={openExtraLesson}
-        />
-      ) : (
-        <ScheduleList
-          lessons={visibleLessons}
-          classroomNameById={classroomNameById}
-          onSelect={setSelectedLesson}
-        />
-      )}
-
-      <Dialog
-        open={isClassroomPickerOpen}
-        onOpenChange={setIsClassroomPickerOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add extra lesson</DialogTitle>
-            <DialogDescription>
-              Choose the classroom for this one-off lesson.
-            </DialogDescription>
-          </DialogHeader>
-          <Select
-            value={selectedExtraClassroomId || undefined}
-            onValueChange={(value) => setSelectedExtraClassroomId(value ?? "")}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a classroom" />
-            </SelectTrigger>
-            <SelectContent>
-              {(classrooms.data ?? []).map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DialogFooter showCloseButton>
-            <Button
-              disabled={!selectedExtraClassroomId}
-              onClick={selectExtraClassroom}
-            >
-              Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <ScheduleLessonDialog
-        open={Boolean(scheduleClassroom)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setScheduleClassroom(null);
-            setLessonDraft(null);
-          }
-        }}
-        isSubmitting={scheduleLesson.isPending}
-        initialLesson={lessonDraft}
-        onSubmit={(input) =>
-          scheduleLesson.mutate(input, {
-            onSuccess: () => {
-              setScheduleClassroom(null);
-              setLessonDraft(null);
-            },
-          })
-        }
-      />
-
-      <Sheet
-        open={Boolean(selectedLesson)}
-        onOpenChange={(open) => !open && setSelectedLesson(null)}
-      >
-        <SheetContent>
-          {selectedLesson ? (
-            <>
-              <SheetHeader>
-                <SheetTitle>
-                  {classroomNameById.get(selectedLesson.classroomId) ??
-                    "Classroom lesson"}
-                </SheetTitle>
-                <SheetDescription>
-                  {formatLessonDate(selectedLesson.scheduledAt)} ·{" "}
-                  {formatLessonTime(selectedLesson.scheduledAt)}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="space-y-6 p-4">
-                <div className="flex items-center justify-between border-y border-border py-4">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  <LessonStatus status={selectedLesson.status} />
-                </div>
-                <DetailRow
-                  label="Duration"
-                  value={`${selectedLesson.durationMins} minutes`}
-                />
-                <DetailRow
-                  label="Lesson type"
-                  value={
-                    selectedLesson.origin === "ONE_OFF"
-                      ? "Extra lesson"
-                      : "Recurring lesson"
+    <>
+      {headerSlot
+        ? createPortal(
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+              <Separator orientation="vertical" className="h-5 shrink-0" />
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      className="relative shrink-0"
+                      aria-label="Filter calendar"
+                      title="Filter calendar"
+                    >
+                      <Funnel />
+                      {activeFilterCount ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                          {activeFilterCount}
+                        </span>
+                      ) : null}
+                    </Button>
                   }
                 />
+                <PopoverContent align="start" className="w-80">
+                  <PopoverHeader>
+                    <PopoverTitle>Filter calendar</PopoverTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Refine the visible lesson schedule.
+                    </p>
+                  </PopoverHeader>
+                  <div className="grid gap-4">
+                    <label className="grid gap-2 text-sm font-medium">
+                      Classroom
+                      <Select
+                        value={classroomId}
+                        onValueChange={(value) =>
+                          setClassroomId(value ?? "all")
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All classrooms</SelectItem>
+                          {(classrooms.data ?? []).map((item) => (
+                            <SelectItem key={item.id} value={item.id}>
+                              {item.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <label className="grid gap-2 text-sm font-medium">
+                      Lesson status
+                      <Select
+                        value={status}
+                        onValueChange={(value) => setStatus(value ?? "all")}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All statuses</SelectItem>
+                          <SelectItem value="scheduled">Scheduled</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <label className="grid gap-2 text-sm font-medium">
+                      Teaching scope
+                      <Select
+                        value={scope}
+                        onValueChange={(value) =>
+                          setScope((value ?? "all") as "all" | "mine")
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            Organization lessons
+                          </SelectItem>
+                          <SelectItem value="mine">My lessons</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start"
+                      disabled={!activeFilterCount}
+                      onClick={() => {
+                        setClassroomId("all");
+                        setStatus("all");
+                        setScope("all");
+                      }}
+                    >
+                      Clear all filters
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <div className="flex shrink-0 items-center rounded-md border border-border p-0.5">
                 <Button
-                  className="w-full"
-                  variant="outline"
-                  disabled={!canManage}
-                  title={
-                    canManage
-                      ? "Reschedule lesson"
-                      : "You need lesson management permission to reschedule a lesson."
-                  }
-                  onClick={() => {
-                    setSelectedLesson(null);
-                    setReschedulingLesson(selectedLesson);
-                  }}
+                  size="sm"
+                  variant={view === "week" ? "secondary" : "ghost"}
+                  onClick={() => setView("week")}
                 >
-                  <RotateCcw /> Reschedule lesson
+                  Week
+                </Button>
+                <Button
+                  size="sm"
+                  variant={view === "month" ? "secondary" : "ghost"}
+                  onClick={() => setView("month")}
+                >
+                  Month
+                </Button>
+                <Button
+                  size="sm"
+                  variant={view === "schedule" ? "secondary" : "ghost"}
+                  onClick={() => setView("schedule")}
+                >
+                  Schedule
                 </Button>
               </div>
-            </>
-          ) : null}
-        </SheetContent>
-      </Sheet>
+              <Separator orientation="vertical" className="h-5 shrink-0" />
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => movePeriod(-1)}
+                  aria-label="Previous period"
+                >
+                  <ChevronLeft />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={goToToday}>
+                  Today
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => movePeriod(1)}
+                  aria-label="Next period"
+                >
+                  <ChevronRight />
+                </Button>
+                <p className="ml-1 hidden whitespace-nowrap text-sm font-medium lg:block">
+                  {range.label}
+                </p>
+              </div>
+            </div>,
+            headerSlot,
+          )
+        : null}
+      <section className="flex min-h-0 flex-1 flex-col">
+        {lessons.isPending ? (
+          <p className="py-20 text-center text-sm text-muted-foreground">
+            Loading lessons…
+          </p>
+        ) : view === "week" ? (
+          <>
+            <div className="hidden overflow-x-auto lg:block">
+              <WeekGrid
+                days={range.days}
+                lessons={visibleLessons}
+                classroomNameById={classroomNameById}
+                onSelect={setSelectedLesson}
+                onSlotSelect={openExtraLesson}
+              />
+            </div>
+            <div className="lg:hidden">
+              <MobileAgenda
+                days={range.days}
+                selectedDay={selectedDay}
+                onSelectDay={setSelectedDay}
+                lessons={visibleLessons}
+                classroomNameById={classroomNameById}
+                onSelect={setSelectedLesson}
+              />
+            </div>
+          </>
+        ) : view === "month" ? (
+          <MonthGrid
+            days={range.days}
+            month={anchorDate}
+            lessons={visibleLessons}
+            classroomNameById={classroomNameById}
+            onSelect={setSelectedLesson}
+            onSlotSelect={openExtraLesson}
+          />
+        ) : (
+          <ScheduleList
+            lessons={visibleLessons}
+            classroomNameById={classroomNameById}
+            onSelect={setSelectedLesson}
+          />
+        )}
 
-      <ScheduleLessonDialog
-        open={Boolean(reschedulingLesson)}
-        onOpenChange={(open) => !open && setReschedulingLesson(null)}
-        mode="reschedule"
-        initialLesson={reschedulingLesson}
-        isSubmitting={rescheduleLesson.isPending}
-        onSubmit={(input) => {
-          if (!reschedulingLesson) return;
-          rescheduleLesson.mutate(
-            { lessonId: reschedulingLesson.id, ...input },
-            { onSuccess: () => setReschedulingLesson(null) },
-          );
-        }}
-      />
-    </section>
+        <Dialog
+          open={isClassroomPickerOpen}
+          onOpenChange={setIsClassroomPickerOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add extra lesson</DialogTitle>
+              <DialogDescription>
+                Choose the classroom for this one-off lesson.
+              </DialogDescription>
+            </DialogHeader>
+            <Select
+              value={selectedExtraClassroomId || undefined}
+              onValueChange={(value) =>
+                setSelectedExtraClassroomId(value ?? "")
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a classroom" />
+              </SelectTrigger>
+              <SelectContent>
+                {(classrooms.data ?? []).map((item) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <DialogFooter showCloseButton>
+              <Button
+                disabled={!selectedExtraClassroomId}
+                onClick={selectExtraClassroom}
+              >
+                Continue
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <ScheduleLessonDialog
+          open={Boolean(scheduleClassroom)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setScheduleClassroom(null);
+              setLessonDraft(null);
+            }
+          }}
+          isSubmitting={scheduleLesson.isPending}
+          initialLesson={lessonDraft}
+          onSubmit={(input) =>
+            scheduleLesson.mutate(input, {
+              onSuccess: () => {
+                setScheduleClassroom(null);
+                setLessonDraft(null);
+              },
+            })
+          }
+        />
+
+        <Sheet
+          open={Boolean(selectedLesson)}
+          onOpenChange={(open) => !open && setSelectedLesson(null)}
+        >
+          <SheetContent>
+            {selectedLesson ? (
+              <>
+                <SheetHeader>
+                  <SheetTitle>
+                    {classroomNameById.get(selectedLesson.classroomId) ??
+                      "Classroom lesson"}
+                  </SheetTitle>
+                  <SheetDescription>
+                    {formatLessonDate(selectedLesson.scheduledAt)} ·{" "}
+                    {formatLessonTime(selectedLesson.scheduledAt)}
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="space-y-6 p-4">
+                  <div className="flex items-center justify-between border-y border-border py-4">
+                    <span className="text-sm text-muted-foreground">
+                      Status
+                    </span>
+                    <LessonStatus status={selectedLesson.status} />
+                  </div>
+                  <DetailRow
+                    label="Duration"
+                    value={`${selectedLesson.durationMins} minutes`}
+                  />
+                  <DetailRow
+                    label="Lesson type"
+                    value={
+                      selectedLesson.origin === "ONE_OFF"
+                        ? "Extra lesson"
+                        : "Recurring lesson"
+                    }
+                  />
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    disabled={!canManage}
+                    title={
+                      canManage
+                        ? "Reschedule lesson"
+                        : "You need lesson management permission to reschedule a lesson."
+                    }
+                    onClick={() => {
+                      setSelectedLesson(null);
+                      setReschedulingLesson(selectedLesson);
+                    }}
+                  >
+                    <RotateCcw /> Reschedule lesson
+                  </Button>
+                </div>
+              </>
+            ) : null}
+          </SheetContent>
+        </Sheet>
+
+        <ScheduleLessonDialog
+          open={Boolean(reschedulingLesson)}
+          onOpenChange={(open) => !open && setReschedulingLesson(null)}
+          mode="reschedule"
+          initialLesson={reschedulingLesson}
+          isSubmitting={rescheduleLesson.isPending}
+          onSubmit={(input) => {
+            if (!reschedulingLesson) return;
+            rescheduleLesson.mutate(
+              { lessonId: reschedulingLesson.id, ...input },
+              { onSuccess: () => setReschedulingLesson(null) },
+            );
+          }}
+        />
+      </section>
+    </>
   );
 }
 
@@ -518,7 +517,7 @@ function WeekGrid({
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
 }) {
   return (
-    <div className="max-h-[calc(100dvh-15rem)] overflow-auto rounded-3xl border border-border bg-card/30 shadow-sm">
+    <div className="max-h-[calc(100dvh-7.5rem)] overflow-auto rounded-3xl border border-border bg-card/30 shadow-sm">
       <div className="min-w-[78rem]">
         <div className="sticky top-0 z-20 grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border bg-card/95 backdrop-blur">
           <div className="flex items-center px-3 text-[10px] font-semibold text-muted-foreground">
