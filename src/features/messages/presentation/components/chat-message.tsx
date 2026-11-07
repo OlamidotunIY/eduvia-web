@@ -12,13 +12,12 @@ export function ChatMessage({ message, onReact }: ChatMessageProps) {
     <div className="space-y-3">
       {/* 1. Optional Unread Messages Divider */}
       {message.isUnreadDividerBefore && (
-        <div className="relative my-4 flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-emerald-500/40" />
-          </div>
-          <span className="relative z-10 rounded-full border border-emerald-500/40 bg-[#0c2419] px-3.5 py-0.5 text-xs font-semibold text-emerald-400 shadow-xs">
+        <div className="my-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-emerald-500/40" />
+          <span className="shrink-0 rounded-full border border-emerald-500/40 bg-[#0c2419] px-3.5 py-0.5 text-xs font-semibold text-emerald-400 shadow-xs">
             3 new messages
           </span>
+          <div className="h-px flex-1 bg-emerald-500/40" />
         </div>
       )}
 

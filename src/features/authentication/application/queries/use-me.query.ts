@@ -9,5 +9,7 @@ export function useMeQuery(enabled: boolean) {
     queryFn: () => authRepository.getMe(),
     enabled,
     staleTime: 60_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   })
 }

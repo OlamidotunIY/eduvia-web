@@ -16,9 +16,11 @@ export function useConversationsQuery(
   return useQuery({
     queryKey: [MESSAGES_CONVERSATIONS_QUERY_KEY, orgId],
     queryFn: async () => {
+      if (!orgId) return [];
       return messagesRepository.listConversations(orgId, currentUserId, membersMap);
     },
-    enabled: true,
-    refetchInterval: 5000,
+    enabled: Boolean(orgId),
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }

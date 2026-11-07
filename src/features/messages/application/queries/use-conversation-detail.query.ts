@@ -24,6 +24,7 @@ export function useConversationDetailQuery(
       );
     },
     enabled: Boolean(conversationId),
-    refetchInterval: 3000,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }
