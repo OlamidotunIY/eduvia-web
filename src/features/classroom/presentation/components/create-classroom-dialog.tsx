@@ -54,6 +54,7 @@ interface CreateClassroomDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   subjects: OrganizationSubject[];
+  initialSchedule?: { scheduledAt: string; durationMins: number } | null;
   isSubmitting: boolean;
   error?: Error | null;
   onSubmit: (input: FormValues) => void;
@@ -70,6 +71,7 @@ export function CreateClassroomDialog({
   open,
   onOpenChange,
   subjects,
+  initialSchedule,
   isSubmitting,
   error,
   onSubmit,
@@ -91,6 +93,20 @@ export function CreateClassroomDialog({
   useEffect(() => {
     if (!open) form.reset();
   }, [form, open]);
+  useEffect(() => {
+    if (!open || !initialSchedule) return;
+    const scheduledAt = new Date(initialSchedule.scheduledAt);
+    form.reset({
+      name: "",
+      subjectId: "",
+      lessonDurationMins: initialSchedule.durationMins,
+      maxStudents: 1,
+      recurrenceDaysOfWeek: [scheduledAt.getDay()],
+      recurrenceStartTime: `${String(scheduledAt.getHours()).padStart(2, "0")}:${String(scheduledAt.getMinutes()).padStart(2, "0")}`,
+      recurrenceEffectiveFrom: scheduledAt.toISOString().slice(0, 10),
+      recurrenceEffectiveUntil: "",
+    });
+  }, [form, initialSchedule, open]);
   const selectedDays = form.watch("recurrenceDaysOfWeek");
   const selectedSubject = subjects.find(
     (subject) => subject.id === form.watch("subjectId"),
