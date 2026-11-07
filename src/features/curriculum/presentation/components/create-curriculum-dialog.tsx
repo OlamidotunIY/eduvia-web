@@ -11,12 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import type { CreateCurriculumInput } from "@/shared/domain";
+import type { CreateCurriculumProfileDto } from "@/shared/api/generated";
 
 interface CreateCurriculumDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CreateCurriculumInput) => Promise<void>;
+  onSubmit: (data: CreateCurriculumProfileDto) => Promise<void>;
   isSubmitting?: boolean;
 }
 

@@ -1,56 +1,12 @@
-import type {
+import {
   CurriculumProfileSummary,
-  CurriculumSearchResult,
+  type CurriculumSearchResult,
   CurriculumTreeNode,
-  CurriculumTreeResponse,
-  ICurriculumRepository,
-  OrganizationCurriculumOverview,
+  type CurriculumTreeResponse,
+  type ICurriculumRepository,
+  type OrganizationCurriculumOverview,
 } from "@/shared/domain";
 import { curriculumApi } from "../rest/curriculum.api";
-
-function toTreeNode(raw: any): CurriculumTreeNode {
-  return {
-    id: String(raw.id),
-    curriculumId: String(raw.curriculumId),
-    parentNodeId: raw.parentNodeId ? String(raw.parentNodeId) : null,
-    nodeType: String(raw.nodeType),
-    name: String(raw.name),
-    code: raw.code ? String(raw.code) : null,
-    description: raw.description ? String(raw.description) : null,
-    gradeLevel: raw.gradeLevel ? String(raw.gradeLevel) : null,
-    depth: Number(raw.depth ?? 0),
-    path: String(raw.path ?? ""),
-    isLeaf: Boolean(raw.isLeaf),
-    isActive: raw.isActive !== false,
-    children: Array.isArray(raw.children) ? raw.children.map(toTreeNode) : [],
-  };
-}
-
-function countTreeNodes(nodes: CurriculumTreeNode[]): number {
-  let count = nodes.length;
-  for (const node of nodes) {
-    if (node.children && node.children.length > 0) {
-      count += countTreeNodes(node.children);
-    }
-  }
-  return count;
-}
-
-function toCurriculumProfile(c: any): CurriculumProfileSummary {
-  return {
-    id: String(c.id),
-    name: String(c.name),
-    shortCode: String(c.shortCode),
-    countryCode: String(c.countryCode),
-    jurisdictionCode: String(c.jurisdictionCode ?? c.countryCode),
-    authority: String(c.authority),
-    description: c.description ? String(c.description) : null,
-    version: c.version ? String(c.version) : null,
-    sourceUrl: c.sourceUrl ? String(c.sourceUrl) : null,
-    isActive: Boolean(c.isActive),
-    mappedOfferedSubjectCount: Number(c.mappedOfferedSubjectCount ?? 0),
-  };
-}
 
 export class CurriculumRepository implements ICurriculumRepository {
   async getOverview(
@@ -58,29 +14,35 @@ export class CurriculumRepository implements ICurriculumRepository {
   ): Promise<OrganizationCurriculumOverview> {
     const raw = (await curriculumApi.getOverview(organizationId)) as any;
     if (!raw) {
-      throw new Error("Invalid response from curriculum overview API.");
+      return {
+        organizationId,
+        organizationCountry: "NG",
+        coveredCountries: [],
+        coveredJurisdictions: [],
+        learnerGrades: [],
+        enrolledStudentCount: 0,
+        offeredSubjects: [],
+        unmappedSubjects: [],
+        curricula: [],
+      };
     }
 
     return {
       organizationId: String(raw.organizationId ?? organizationId),
       organizationCountry: String(raw.organizationCountry ?? "NG"),
       coveredCountries: Array.isArray(raw.coveredCountries)
-        ? raw.coveredCountries.map(String)
+        ? raw.coveredCountries
         : [],
       coveredJurisdictions: Array.isArray(raw.coveredJurisdictions)
-        ? raw.coveredJurisdictions.map(String)
+        ? raw.coveredJurisdictions
         : [],
-      learnerGrades: Array.isArray(raw.learnerGrades)
-        ? raw.learnerGrades.map(String)
-        : [],
+      learnerGrades: Array.isArray(raw.learnerGrades) ? raw.learnerGrades : [],
       enrolledStudentCount: Number(raw.enrolledStudentCount ?? 0),
       offeredSubjects: Array.isArray(raw.offeredSubjects)
         ? raw.offeredSubjects.map((s: any) => ({
             id: String(s.id),
             name: String(s.name),
-            platformSubjectId: s.platformSubjectId
-              ? String(s.platformSubjectId)
-              : null,
+            platformSubjectId: s.platformSubjectId ? String(s.platformSubjectId) : null,
             isMapped: Boolean(s.isMapped),
           }))
         : [],
@@ -91,7 +53,7 @@ export class CurriculumRepository implements ICurriculumRepository {
           }))
         : [],
       curricula: Array.isArray(raw.curricula)
-        ? raw.curricula.map(toCurriculumProfile)
+        ? raw.curricula.map((c: any) => this.toCurriculumProfile(c))
         : [],
     };
   }
@@ -104,32 +66,30 @@ export class CurriculumRepository implements ICurriculumRepository {
       organizationId,
       curriculumId,
     )) as any;
-    if (!raw) {
-      throw new Error("Invalid response from curriculum tree API.");
-    }
-
-    const nodesArray = Array.isArray(raw)
-      ? raw
-      : Array.isArray(raw.tree)
-        ? raw.tree
-        : [];
-    const tree = nodesArray.map(toTreeNode);
-    const rawCurriculum = !Array.isArray(raw) && raw.curriculum ? raw.curriculum : {};
+    const tree: CurriculumTreeNode[] = Array.isArray(raw?.tree)
+      ? raw.tree.map((n: any) => this.toTreeNode(n))
+      : [];
 
     return {
       curriculum: {
-        id: String(rawCurriculum.id ?? curriculumId),
-        name: String(rawCurriculum.name ?? ""),
-        shortCode: String(rawCurriculum.shortCode ?? ""),
-        countryCode: String(rawCurriculum.countryCode ?? ""),
-        jurisdictionCode: String(rawCurriculum.jurisdictionCode ?? rawCurriculum.countryCode ?? ""),
-        authority: String(rawCurriculum.authority ?? ""),
-        description: rawCurriculum.description
-          ? String(rawCurriculum.description)
+        id: String(raw?.curriculum?.id ?? curriculumId),
+        name: String(raw?.curriculum?.name ?? "Curriculum"),
+        shortCode: String(raw?.curriculum?.shortCode ?? ""),
+        countryCode: String(raw?.curriculum?.countryCode ?? ""),
+        jurisdictionCode: String(
+          raw?.curriculum?.jurisdictionCode ??
+            raw?.curriculum?.countryCode ??
+            "",
+        ),
+        authority: String(raw?.curriculum?.authority ?? ""),
+        description: raw?.curriculum?.description
+          ? String(raw.curriculum.description)
           : null,
-        sourceUrl: rawCurriculum.sourceUrl ? String(rawCurriculum.sourceUrl) : null,
+        sourceUrl: raw?.curriculum?.sourceUrl
+          ? String(raw.curriculum.sourceUrl)
+          : null,
       },
-      totalNodes: Number(rawCurriculum.totalNodes ?? raw.totalNodes ?? countTreeNodes(tree)),
+      totalNodes: raw?.totalNodes ?? this.countTreeNodes(tree),
       tree,
     };
   }
@@ -139,11 +99,8 @@ export class CurriculumRepository implements ICurriculumRepository {
     query: string,
     curriculumId?: string,
   ): Promise<CurriculumSearchResult[]> {
-    const raw = await curriculumApi.search(organizationId, query, curriculumId);
-    if (!Array.isArray(raw)) {
-      return [];
-    }
-
+    const raw = (await curriculumApi.search(organizationId, query, curriculumId)) as any;
+    if (!Array.isArray(raw)) return [];
     return raw.map((item: any) => ({
       id: String(item.id),
       curriculumId: String(item.curriculumId),
@@ -158,6 +115,52 @@ export class CurriculumRepository implements ICurriculumRepository {
       isLeaf: Boolean(item.isLeaf),
       isActive: item.isActive !== false,
     }));
+  }
+
+  private toTreeNode(raw: any): CurriculumTreeNode {
+    return new CurriculumTreeNode({
+      id: String(raw.id),
+      curriculumId: String(raw.curriculumId),
+      parentNodeId: raw.parentNodeId ? String(raw.parentNodeId) : null,
+      nodeType: String(raw.nodeType),
+      name: String(raw.name),
+      code: raw.code ? String(raw.code) : null,
+      description: raw.description ? String(raw.description) : null,
+      gradeLevel: raw.gradeLevel ? String(raw.gradeLevel) : null,
+      depth: Number(raw.depth ?? 0),
+      path: String(raw.path ?? ""),
+      isLeaf: Boolean(raw.isLeaf),
+      isActive: raw.isActive !== false,
+      children: Array.isArray(raw.children)
+        ? raw.children.map((child: any) => this.toTreeNode(child))
+        : [],
+    });
+  }
+
+  private countTreeNodes(nodes: CurriculumTreeNode[]): number {
+    let count = nodes.length;
+    for (const node of nodes) {
+      if (node.children && node.children.length > 0) {
+        count += this.countTreeNodes(node.children);
+      }
+    }
+    return count;
+  }
+
+  private toCurriculumProfile(c: any): CurriculumProfileSummary {
+    return new CurriculumProfileSummary({
+      id: String(c.id),
+      name: String(c.name),
+      shortCode: String(c.shortCode),
+      countryCode: String(c.countryCode),
+      jurisdictionCode: String(c.jurisdictionCode ?? c.countryCode),
+      authority: String(c.authority),
+      description: c.description ? String(c.description) : null,
+      version: c.version ? String(c.version) : null,
+      sourceUrl: c.sourceUrl ? String(c.sourceUrl) : null,
+      isActive: Boolean(c.isActive),
+      mappedOfferedSubjectCount: Number(c.mappedOfferedSubjectCount ?? 0),
+    });
   }
 }
 

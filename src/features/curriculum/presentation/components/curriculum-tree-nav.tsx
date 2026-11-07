@@ -14,7 +14,7 @@ import { cn } from "cn";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import type { CurriculumTreeNode } from "@/shared/domain";
+import { CurriculumTreeNode } from "@/shared/domain";
 
 interface CurriculumTreeNavProps {
   nodes: CurriculumTreeNode[];
@@ -83,10 +83,12 @@ function filterTree(
       const filteredChildren = recurse(node.children ?? []);
 
       if (matchesSelf || filteredChildren.length > 0) {
-        result.push({
-          ...node,
-          children: filteredChildren,
-        });
+        result.push(
+          new CurriculumTreeNode({
+            ...node,
+            children: filteredChildren,
+          }),
+        );
       }
     }
     return result;

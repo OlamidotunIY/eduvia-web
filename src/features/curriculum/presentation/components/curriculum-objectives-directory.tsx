@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table";
-import type { CurriculumTreeNode } from "@/shared/domain";
+import { CurriculumTreeNode } from "@/shared/domain";
 
 interface CurriculumObjectivesDirectoryProps {
   nodes: CurriculumTreeNode[];
@@ -35,10 +35,11 @@ function extractAllLeaves(
       : node.name;
 
     if (node.isLeaf) {
-      result.push({
-        ...node,
-        breadcrumb: parentBreadcrumb || node.name,
-      });
+      result.push(
+        Object.assign(new CurriculumTreeNode(node), {
+          breadcrumb: parentBreadcrumb || node.name,
+        }),
+      );
     } else if (node.children?.length) {
       result.push(...extractAllLeaves(node.children, currentBreadcrumb));
     }
