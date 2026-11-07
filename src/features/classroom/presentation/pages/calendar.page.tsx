@@ -349,14 +349,14 @@ export function CalendarPage() {
             headerSlot,
           )
         : null}
-      <section className="flex min-h-0 flex-1 flex-col">
+      <section className="-m-4 flex flex-col md:-m-6">
         {lessons.isPending ? (
           <p className="py-20 text-center text-sm text-muted-foreground">
             Loading lessons…
           </p>
         ) : view === "week" ? (
           <>
-            <div className="hidden overflow-x-auto lg:block">
+            <div className="hidden lg:block">
               <WeekGrid
                 days={range.days}
                 lessons={visibleLessons}
@@ -615,7 +615,7 @@ function WeekGrid({
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
 }) {
   return (
-    <div className="max-h-[calc(100dvh-7.5rem)] overflow-auto rounded-3xl border border-border bg-card/30 shadow-sm">
+    <div className="overflow-x-auto">
       <div className="min-w-[78rem]">
         <div className="sticky top-0 z-20 grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border bg-card/95 backdrop-blur">
           <div className="flex items-center px-3 text-[10px] font-semibold text-muted-foreground">
@@ -744,7 +744,7 @@ function MonthGrid({
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
 }) {
   return (
-    <div className="overflow-x-auto rounded-3xl border border-border bg-card/30 shadow-sm">
+    <div className="overflow-x-auto">
       <div className="grid min-w-[48rem] grid-cols-7 border-b border-border bg-card/95">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <p
@@ -822,14 +822,14 @@ function ScheduleList({
 
   if (!orderedLessons.length) {
     return (
-      <div className="rounded-3xl border border-border bg-card/30 py-20 text-center text-sm text-muted-foreground">
+      <div className="py-20 text-center text-sm text-muted-foreground">
         No lessons in this period.
       </div>
     );
   }
 
   return (
-    <ol className="overflow-hidden rounded-3xl border border-border bg-card/30 shadow-sm">
+    <ol>
       {orderedLessons.map((lesson) => {
         const lessonDate = new Date(lesson.scheduledAt);
         return (
