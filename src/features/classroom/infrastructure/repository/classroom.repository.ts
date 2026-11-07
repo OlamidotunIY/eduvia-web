@@ -50,6 +50,22 @@ export class ClassroomRepository implements IClassroomRepository {
     return value.map(toClassroomLesson);
   }
 
+  async listOrganizationLessons(
+    organizationId: string,
+    range: { fromDate: string; toDate: string },
+  ): Promise<ClassroomLesson[]> {
+    const value = await classroomApi.listOrganizationLessons(
+      organizationId,
+      range,
+    );
+    if (!Array.isArray(value)) {
+      throw new Error(
+        "The API returned an invalid organization lesson response.",
+      );
+    }
+    return value.map(toClassroomLesson);
+  }
+
   async listSubjects(organizationId: string): Promise<OrganizationSubject[]> {
     const value = await classroomApi.listSubjects(organizationId);
     if (!Array.isArray(value))

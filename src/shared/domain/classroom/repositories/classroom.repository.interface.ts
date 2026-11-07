@@ -18,6 +18,10 @@ export interface IClassroomRepository {
     classroomId: string,
     range?: { fromDate?: string; toDate?: string },
   ): Promise<ClassroomLesson[]>;
+  listOrganizationLessons(
+    organizationId: string,
+    range: { fromDate: string; toDate: string },
+  ): Promise<ClassroomLesson[]>;
   listSubjects(organizationId: string): Promise<OrganizationSubject[]>;
   create(organizationId: string, input: CreateClassroomInput): Promise<void>;
   scheduleLesson(

@@ -42,8 +42,8 @@ export function useScheduleLessonMutation(
       teacherId?: string;
     }) =>
       classroomRepository.scheduleLesson(organizationId!, classroomId!, input),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: [
           "organizations",
           organizationId ?? "",
@@ -51,7 +51,11 @@ export function useScheduleLessonMutation(
           classroomId ?? "",
           "lessons",
         ],
-      }),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["organizations", organizationId ?? "", "calendar-lessons"],
+      });
+    },
   });
 }
 
@@ -70,8 +74,8 @@ export function useRescheduleLessonMutation(
         scheduledAt: input.scheduledAt,
         durationMins: input.durationMins,
       }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: [
           "organizations",
           organizationId ?? "",
@@ -79,7 +83,11 @@ export function useRescheduleLessonMutation(
           classroomId ?? "",
           "lessons",
         ],
-      }),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["organizations", organizationId ?? "", "calendar-lessons"],
+      });
+    },
   });
 }
 

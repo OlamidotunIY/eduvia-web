@@ -35,6 +35,16 @@ export const classroomApi = {
       )
       .then((response) => response.data),
 
+  listOrganizationLessons: (
+    organizationId: string,
+    range: { fromDate: string; toDate: string },
+  ) =>
+    apiClient
+      .get<unknown>(`/organizations/${organizationId}/lessons`, {
+        params: range,
+      })
+      .then((response) => response.data),
+
   listSubjects: (organizationId: string) =>
     apiClient
       .get<unknown>(`/organizations/${organizationId}/subjects`, {

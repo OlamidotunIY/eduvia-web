@@ -28,6 +28,17 @@ export const classroomLessonsQueryKey = (
     range?.fromDate ?? "current-week",
     range?.toDate ?? "current-week",
   ] as const;
+export const organizationCalendarLessonsQueryKey = (
+  organizationId: string,
+  range: { fromDate: string; toDate: string },
+) =>
+  [
+    "organizations",
+    organizationId,
+    "calendar-lessons",
+    range.fromDate,
+    range.toDate,
+  ] as const;
 
 export function useClassroomsQuery(organizationId: string | undefined) {
   return useQuery({
@@ -87,6 +98,18 @@ export function useClassroomLessonsQuery(
     queryFn: () =>
       classroomRepository.listLessons(organizationId!, classroomId!, range),
     enabled: Boolean(organizationId && classroomId),
+  });
+}
+
+export function useOrganizationCalendarLessonsQuery(
+  organizationId: string | undefined,
+  range: { fromDate: string; toDate: string },
+) {
+  return useQuery({
+    queryKey: organizationCalendarLessonsQueryKey(organizationId ?? "", range),
+    queryFn: () =>
+      classroomRepository.listOrganizationLessons(organizationId!, range),
+    enabled: Boolean(organizationId),
   });
 }
 
