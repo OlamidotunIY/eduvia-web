@@ -17,10 +17,7 @@ import {
   Layers,
   Maximize2,
   Minimize2,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Power,
+  ExternalLink,
   Search,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
@@ -32,13 +29,6 @@ import { Input } from "@/shared/ui/input";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { CountryFlag, getCountryName } from "@/shared/ui/country-flag";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -46,18 +36,9 @@ import {
 } from "@/shared/ui/select";
 import type { CurriculumProfileSummary, CurriculumTreeNode } from "@/shared/domain";
 import {
-  useAllCurriculaQuery,
-  useCreateCurriculumNodeMutation,
-  useCurriculumDetailQuery,
   useCurriculumOverviewQuery,
   useCurriculumTreeQuery,
-  useDeactivateCurriculumNodeMutation,
-  useToggleCurriculumActiveMutation,
-  useUpdateCurriculumMutation,
-  useUpdateCurriculumNodeMutation,
 } from "../../application";
-import { CreateCurriculumDialog } from "../components/create-curriculum-dialog";
-import { CreateNodeDialog } from "../components/create-node-dialog";
 
 function findNodeById(
   nodes: CurriculumTreeNode[],
@@ -197,35 +178,18 @@ export function CurriculumDetailPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [copiedCode, setCopiedCode] = useState(false);
-  const [editCurriculumOpen, setEditCurriculumOpen] = useState(false);
-  const [addNodeOpen, setAddNodeOpen] = useState(false);
-  const [addNodeParent, setAddNodeParent] = useState<CurriculumTreeNode | null>(null);
-  const [nodeToEdit, setNodeToEdit] = useState<CurriculumTreeNode | null>(null);
-
-  // Queries & Mutations
-  const detailQuery = useCurriculumDetailQuery(curriculumId);
-  const allCurriculaQuery = useAllCurriculaQuery();
+  // Organization-scoped, read-only curriculum queries.
   const overviewQuery = useCurriculumOverviewQuery(organizationId);
-  const treeQuery = useCurriculumTreeQuery(organizationId, curriculumId, true);
-  const toggleActiveMutation = useToggleCurriculumActiveMutation();
-  const updateCurriculumMutation = useUpdateCurriculumMutation();
-  const createNodeMutation = useCreateCurriculumNodeMutation();
-  const updateNodeMutation = useUpdateCurriculumNodeMutation();
-  const deactivateNodeMutation = useDeactivateCurriculumNodeMutation();
+  const treeQuery = useCurriculumTreeQuery(organizationId, curriculumId);
 
   // Resolve curriculum metadata
   const curriculum: CurriculumProfileSummary | null = useMemo(() => {
-    if (detailQuery.data) return detailQuery.data;
-    if (allCurriculaQuery.data) {
-      const found = allCurriculaQuery.data.find((c) => c.id === curriculumId);
-      if (found) return found;
-    }
     if (overviewQuery.data?.curricula) {
       const found = overviewQuery.data.curricula.find((c) => c.id === curriculumId);
       if (found) return found;
     }
     return null;
-  }, [detailQuery.data, allCurriculaQuery.data, overviewQuery.data, curriculumId]);
+  }, [overviewQuery.data, curriculumId]);
 
   const treeNodes = treeQuery.data?.tree ?? [];
 
@@ -331,40 +295,7 @@ export function CurriculumDetailPage() {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const handleToggleCurriculumActive = () => {
-    if (!curriculum) return;
-    toggleActiveMutation.mutate({
-      id: curriculum.id,
-      isActive: curriculum.isActive,
-    });
-  };
-
-  const handleSaveNodeSubmit = async (data: any) => {
-    if (!curriculum) return;
-    if (nodeToEdit) {
-      await updateNodeMutation.mutateAsync({
-        nodeId: nodeToEdit.id,
-        curriculumId: curriculum.id,
-        data,
-      });
-      setNodeToEdit(null);
-    } else {
-      await createNodeMutation.mutateAsync({
-        curriculumId: curriculum.id,
-        data,
-      });
-    }
-  };
-
-  const handleDeactivateNode = async () => {
-    if (!curriculum || !selectedNode) return;
-    await deactivateNodeMutation.mutateAsync({
-      nodeId: selectedNode.id,
-      curriculumId: curriculum.id,
-    });
-  };
-
-  if (!curriculum && (detailQuery.isLoading || overviewQuery.isLoading)) {
+  if (!curriculum && overviewQuery.isLoading) {
     return (
       <div className="space-y-6 pb-12">
         <Skeleton className="h-6 w-32" />
@@ -439,64 +370,17 @@ export function CurriculumDetailPage() {
           </p>
         </div>
 
-        {/* Action Buttons matching design */}
-        <div className="flex items-center gap-2.5">
+        {curriculum.sourceUrl && (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setEditCurriculumOpen(true)}
-            className="h-9 gap-1.5 border-border/70 bg-card/60 text-xs font-medium text-foreground hover:bg-muted"
+            render={<a href={curriculum.sourceUrl} target="_blank" rel="noreferrer" />}
+            className="h-9 gap-1.5 border-border/70 bg-card/60 text-xs font-medium"
           >
-            <Pencil className="size-3.5" />
-            <span>Edit curriculum</span>
+            <ExternalLink className="size-3.5" />
+            <span>Official source</span>
           </Button>
-
-          <Button
-            size="sm"
-            onClick={() => {
-              setNodeToEdit(null);
-              setAddNodeParent(null);
-              setAddNodeOpen(true);
-            }}
-            className="h-9 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium"
-          >
-            <Plus className="size-3.5" />
-            <span>Add node</span>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  className="size-9 border-border/70 bg-card/60 text-muted-foreground hover:text-foreground"
-                />
-              }
-            >
-              <MoreHorizontal className="size-4" />
-              <span className="sr-only">More options</span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem
-                render={<Link to={APP_ROUTES.SUBJECTS} />}
-              >
-                <span>Map Organization Subjects</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleToggleCurriculumActive}
-                className={cn(
-                  curriculum.isActive && "text-destructive focus:text-destructive",
-                )}
-              >
-                {curriculum.isActive
-                  ? "Deactivate Curriculum"
-                  : "Activate Curriculum"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        )}
       </div>
 
       {/* 3. Four Info Metric Cards matching design */}
@@ -595,8 +479,9 @@ export function CurriculumDetailPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All types</SelectItem>
-              <SelectItem value="subject">Subject</SelectItem>
-              <SelectItem value="keystage">Grade / Key Stage</SelectItem>
+              <SelectItem value="keystage">Key stage</SelectItem>
+              <SelectItem value="discipline">Discipline</SelectItem>
+              <SelectItem value="course">Course</SelectItem>
               <SelectItem value="strand">Strand</SelectItem>
               <SelectItem value="topic">Topic</SelectItem>
               <SelectItem value="learning_objective">Learning Objective</SelectItem>
@@ -781,52 +666,8 @@ export function CurriculumDetailPage() {
                 </div>
               </div>
 
-              {/* Bottom Action buttons matching design */}
-              <div className="mt-8 flex items-center gap-2.5 border-t border-border/70 pt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setNodeToEdit(selectedNode);
-                    setAddNodeParent(null);
-                    setAddNodeOpen(true);
-                  }}
-                  className="h-9 gap-1.5 border-border/70 bg-card/60 text-xs font-medium text-foreground hover:bg-muted"
-                >
-                  <Pencil className="size-3.5" />
-                  <span>Edit node</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setNodeToEdit(null);
-                    setAddNodeParent(selectedNode);
-                    setAddNodeOpen(true);
-                  }}
-                  className="h-9 gap-1.5 border-primary/50 text-xs font-medium text-primary hover:bg-primary/10"
-                >
-                  <Plus className="size-3.5" />
-                  <span>Add child</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDeactivateNode}
-                  disabled={deactivateNodeMutation.isPending}
-                  className="h-9 gap-1.5 border-destructive/40 text-xs font-medium text-destructive hover:bg-destructive/10 ml-auto"
-                >
-                  <Power className="size-3.5" />
-                  <span>
-                    {deactivateNodeMutation.isPending
-                      ? "Deactivating..."
-                      : selectedNode.isActive
-                        ? "Deactivate"
-                        : "Activate"}
-                  </span>
-                </Button>
+              <div className="mt-8 border-t border-border/70 pt-4 text-xs text-muted-foreground">
+                This is a platform-managed standard. Organization members can explore it, but only platform curriculum editors can change it.
               </div>
             </div>
           ) : (
@@ -843,33 +684,6 @@ export function CurriculumDetailPage() {
         </div>
       </div>
 
-      {/* Edit Curriculum Dialog */}
-      <CreateCurriculumDialog
-        open={editCurriculumOpen}
-        onOpenChange={setEditCurriculumOpen}
-        onSubmit={async (data) => {
-          if (!curriculum) return;
-          await updateCurriculumMutation.mutateAsync({
-            id: curriculum.id,
-            data,
-          });
-          setEditCurriculumOpen(false);
-        }}
-      />
-
-      {/* Add / Child / Edit Node Dialog */}
-      <CreateNodeDialog
-        open={addNodeOpen}
-        onOpenChange={(isOpen) => {
-          setAddNodeOpen(isOpen);
-          if (!isOpen) setNodeToEdit(null);
-        }}
-        curriculumId={curriculum.id}
-        parentNode={addNodeParent}
-        nodeToEdit={nodeToEdit}
-        onSubmit={handleSaveNodeSubmit}
-        isSubmitting={createNodeMutation.isPending || updateNodeMutation.isPending}
-      />
     </div>
   );
 }

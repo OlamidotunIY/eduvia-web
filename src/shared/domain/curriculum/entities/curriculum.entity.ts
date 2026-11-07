@@ -1,5 +1,7 @@
 export type CurriculumNodeType =
   | "keystage"
+  | "discipline"
+  | "course"
   | "subject"
   | "strand"
   | "topic"
@@ -11,9 +13,11 @@ export interface CurriculumProfileSummary {
   name: string;
   shortCode: string;
   countryCode: string;
+  jurisdictionCode: string;
   authority: string;
   description: string | null;
   version: string | null;
+  sourceUrl: string | null;
   isActive: boolean;
   mappedOfferedSubjectCount: number;
 }
@@ -34,6 +38,8 @@ export interface OrganizationCurriculumOverview {
   organizationId: string;
   organizationCountry: string;
   coveredCountries: string[];
+  coveredJurisdictions: string[];
+  learnerGrades: string[];
   enrolledStudentCount: number;
   offeredSubjects: OfferedSubjectSummary[];
   unmappedSubjects: UnmappedSubjectSummary[];
@@ -62,8 +68,10 @@ export interface CurriculumTreeResponse {
     name: string;
     shortCode: string;
     countryCode: string;
+    jurisdictionCode: string;
     authority: string;
     description: string | null;
+    sourceUrl: string | null;
   };
   totalNodes: number;
   tree: CurriculumTreeNode[];
@@ -88,9 +96,11 @@ export interface CreateCurriculumInput {
   name: string;
   shortCode: string;
   countryCode: string;
+  jurisdictionCode: string;
   authority: string;
   description?: string;
   version?: string;
+  sourceUrl?: string;
   isActive?: boolean;
 }
 

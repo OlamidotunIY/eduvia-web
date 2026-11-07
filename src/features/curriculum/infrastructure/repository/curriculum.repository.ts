@@ -1,6 +1,4 @@
 import type {
-  CreateCurriculumInput,
-  CurriculumListFilter,
   CurriculumProfileSummary,
   CurriculumSearchResult,
   CurriculumTreeNode,
@@ -44,9 +42,11 @@ function toCurriculumProfile(c: any): CurriculumProfileSummary {
     name: String(c.name),
     shortCode: String(c.shortCode),
     countryCode: String(c.countryCode),
+    jurisdictionCode: String(c.jurisdictionCode ?? c.countryCode),
     authority: String(c.authority),
     description: c.description ? String(c.description) : null,
     version: c.version ? String(c.version) : null,
+    sourceUrl: c.sourceUrl ? String(c.sourceUrl) : null,
     isActive: Boolean(c.isActive),
     mappedOfferedSubjectCount: Number(c.mappedOfferedSubjectCount ?? 0),
   };
@@ -66,6 +66,12 @@ export class CurriculumRepository implements ICurriculumRepository {
       organizationCountry: String(raw.organizationCountry ?? "NG"),
       coveredCountries: Array.isArray(raw.coveredCountries)
         ? raw.coveredCountries.map(String)
+        : [],
+      coveredJurisdictions: Array.isArray(raw.coveredJurisdictions)
+        ? raw.coveredJurisdictions.map(String)
+        : [],
+      learnerGrades: Array.isArray(raw.learnerGrades)
+        ? raw.learnerGrades.map(String)
         : [],
       enrolledStudentCount: Number(raw.enrolledStudentCount ?? 0),
       offeredSubjects: Array.isArray(raw.offeredSubjects)
@@ -90,91 +96,13 @@ export class CurriculumRepository implements ICurriculumRepository {
     };
   }
 
-  async listAll(
-    filter?: CurriculumListFilter,
-  ): Promise<CurriculumProfileSummary[]> {
-    const raw = (await curriculumApi.listAll(filter)) as any;
-    if (!Array.isArray(raw)) {
-      return [];
-    }
-    return raw.map(toCurriculumProfile);
-  }
-
-  async create(
-    data: CreateCurriculumInput,
-  ): Promise<CurriculumProfileSummary> {
-    const raw = (await curriculumApi.create(data)) as any;
-    return toCurriculumProfile(raw);
-  }
-
-  async getById(id: string): Promise<CurriculumProfileSummary> {
-    const raw = (await curriculumApi.getById(id)) as any;
-    return toCurriculumProfile(raw);
-  }
-
-  async update(
-    id: string,
-    data: Partial<CreateCurriculumInput>,
-  ): Promise<CurriculumProfileSummary> {
-    const raw = (await curriculumApi.update(id, data)) as any;
-    return toCurriculumProfile(raw);
-  }
-
-  async activate(id: string): Promise<void> {
-    await curriculumApi.activate(id);
-  }
-
-  async deactivate(id: string): Promise<void> {
-    await curriculumApi.deactivate(id);
-  }
-
-  async createNode(curriculumId: string, data: any): Promise<any> {
-    return curriculumApi.createNode(curriculumId, data);
-  }
-
-  async updateNode(nodeId: string, data: any): Promise<any> {
-    return curriculumApi.updateNode(nodeId, data);
-  }
-
-  async deactivateNode(nodeId: string): Promise<any> {
-    return curriculumApi.deactivateNode(nodeId);
-  }
-
-  async getTreeDirect(curriculumId: string): Promise<CurriculumTreeResponse> {
-    const raw = (await curriculumApi.getTreeDirect(curriculumId)) as any;
-    if (!raw) {
-      throw new Error("Invalid response from curriculum tree API.");
-    }
-    const nodesArray = Array.isArray(raw)
-      ? raw
-      : Array.isArray(raw.tree)
-        ? raw.tree
-        : [];
-    const tree = nodesArray.map(toTreeNode);
-    const rawCurriculum = !Array.isArray(raw) && raw.curriculum ? raw.curriculum : {};
-    return {
-      curriculum: {
-        id: String(rawCurriculum.id ?? curriculumId),
-        name: String(rawCurriculum.name ?? ""),
-        shortCode: String(rawCurriculum.shortCode ?? ""),
-        countryCode: String(rawCurriculum.countryCode ?? ""),
-        authority: String(rawCurriculum.authority ?? ""),
-        description: rawCurriculum.description ? String(rawCurriculum.description) : null,
-      },
-      totalNodes: Number(rawCurriculum.totalNodes ?? raw.totalNodes ?? countTreeNodes(tree)),
-      tree,
-    };
-  }
-
   async getTree(
     organizationId: string,
     curriculumId: string,
-    preview?: boolean,
   ): Promise<CurriculumTreeResponse> {
     const raw = (await curriculumApi.getTree(
       organizationId,
       curriculumId,
-      preview,
     )) as any;
     if (!raw) {
       throw new Error("Invalid response from curriculum tree API.");
@@ -194,10 +122,12 @@ export class CurriculumRepository implements ICurriculumRepository {
         name: String(rawCurriculum.name ?? ""),
         shortCode: String(rawCurriculum.shortCode ?? ""),
         countryCode: String(rawCurriculum.countryCode ?? ""),
+        jurisdictionCode: String(rawCurriculum.jurisdictionCode ?? rawCurriculum.countryCode ?? ""),
         authority: String(rawCurriculum.authority ?? ""),
         description: rawCurriculum.description
           ? String(rawCurriculum.description)
           : null,
+        sourceUrl: rawCurriculum.sourceUrl ? String(rawCurriculum.sourceUrl) : null,
       },
       totalNodes: Number(rawCurriculum.totalNodes ?? raw.totalNodes ?? countTreeNodes(tree)),
       tree,

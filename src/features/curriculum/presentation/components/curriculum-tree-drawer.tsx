@@ -29,7 +29,6 @@ import { CurriculumTreeNav } from "./curriculum-tree-nav";
 import { CurriculumNodeInspector } from "./curriculum-node-inspector";
 import { CurriculumObjectivesDirectory } from "./curriculum-objectives-directory";
 import { CurriculumMatrixView } from "./curriculum-matrix-view";
-import { CurriculumPreviewCallout } from "./curriculum-preview-callout";
 import { CountryFlag, getCountryName } from "@/shared/ui/country-flag";
 
 interface CurriculumTreeDrawerProps {
@@ -67,14 +66,9 @@ export function CurriculumTreeDrawer({
   );
   const [tab, setTab] = useState<"tree" | "objectives" | "matrix">("tree");
 
-  const isPreviewMode = Boolean(
-    !overview || overview.offeredSubjects.filter((s) => s.isMapped).length === 0,
-  );
-
   const treeQuery = useCurriculumTreeQuery(
     organizationId,
     curriculum?.id,
-    isPreviewMode,
   );
   const treeData = treeQuery.data?.tree ?? [];
 
@@ -156,16 +150,6 @@ export function CurriculumTreeDrawer({
             </Button>
           </div>
         </SheetHeader>
-
-        {/* Informative Preview Callout */}
-        {isPreviewMode && (
-          <CurriculumPreviewCallout
-            frameworkName={curriculum.name}
-            hasOfferedSubjects={Boolean(
-              overview && overview.offeredSubjects.length > 0,
-            )}
-          />
-        )}
 
         {/* Tab switch */}
         <Tabs

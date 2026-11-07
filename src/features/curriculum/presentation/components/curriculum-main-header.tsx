@@ -1,19 +1,17 @@
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { Layers, Plus, Search } from "lucide-react";
+import { Layers, Search } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 
 interface CurriculumMainHeaderProps {
   headerSlot: HTMLDivElement | null;
   onOpenSearch: () => void;
-  onAddCurriculum: () => void;
 }
 
 export function CurriculumMainHeader({
   headerSlot,
   onOpenSearch,
-  onAddCurriculum,
 }: CurriculumMainHeaderProps) {
   if (!headerSlot) return null;
 
@@ -42,14 +40,6 @@ export function CurriculumMainHeader({
         <span>Subjects</span>
       </Button>
 
-      <Button
-        size="sm"
-        onClick={onAddCurriculum}
-        className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium"
-      >
-        <Plus className="size-3.5" />
-        <span>Add curriculum</span>
-      </Button>
     </div>,
     headerSlot,
   );

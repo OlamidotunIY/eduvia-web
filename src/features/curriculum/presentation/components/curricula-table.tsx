@@ -1,21 +1,15 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table";
-import { BookOpen, Eye, MoreHorizontal, SlidersHorizontal } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { BookOpen, Eye } from "lucide-react";
 import {
   DataTable,
   type DataTableFeatures,
 } from "@/shared/composites/data-table";
 import { Button } from "@/shared/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
   Select,
@@ -24,7 +18,6 @@ import {
   SelectTrigger,
 } from "@/shared/ui/select";
 import { CountryFlag, getCountryName } from "@/shared/ui/country-flag";
-import { APP_ROUTES } from "@/shared/constant/routes.constants";
 import type { CurriculumProfileSummary } from "@/shared/domain";
 
 const columnHelper = createColumnHelper<
@@ -46,7 +39,6 @@ interface CurriculaTableProps {
   isRefreshing?: boolean;
   onRefresh?: () => void;
   onViewCurriculum: (curriculum: CurriculumProfileSummary) => void;
-  onToggleActive?: (curriculum: CurriculumProfileSummary) => void;
 }
 
 export function CurriculaTable({
@@ -55,7 +47,6 @@ export function CurriculaTable({
   isRefreshing = false,
   onRefresh,
   onViewCurriculum,
-  onToggleActive,
 }: CurriculaTableProps) {
   const [selectedCountry, setSelectedCountry] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
@@ -169,51 +160,11 @@ export function CurriculaTable({
               <span className="sr-only">View</span>
             </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="size-8 text-muted-foreground hover:text-foreground"
-                  />
-                }
-              >
-                <MoreHorizontal className="size-4" />
-                <span className="sr-only">More options</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem onClick={() => onViewCurriculum(row.original)}>
-                  <Eye className="mr-2 size-4 text-muted-foreground" />
-                  <span>Explore Standards</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem render={<Link to={APP_ROUTES.SUBJECTS} />}>
-                  <SlidersHorizontal className="mr-2 size-4 text-muted-foreground" />
-                  <span>Map Organization Subjects</span>
-                </DropdownMenuItem>
-                {onToggleActive && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onToggleActive(row.original)}
-                      className={cn(
-                        row.original.isActive &&
-                          "text-destructive focus:text-destructive",
-                      )}
-                    >
-                      {row.original.isActive
-                        ? "Deactivate Curriculum"
-                        : "Activate Curriculum"}
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         ),
       }),
     ],
-    [onToggleActive, onViewCurriculum],
+    [onViewCurriculum],
   );
 
   // Filter content for the Filter popover
