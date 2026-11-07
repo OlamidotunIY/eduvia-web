@@ -356,14 +356,15 @@ export function CalendarPage() {
             headerSlot,
           )
         : null}
-      <section className="-m-4 flex flex-col md:-m-6">
-        {lessons.isPending ? (
-          <p className="py-20 text-center text-sm text-muted-foreground">
-            Loading lessons…
-          </p>
-        ) : view === "week" ? (
-          <>
-            <div className="hidden lg:block">
+      <section className="-m-4 flex min-h-0 flex-1 flex-col overflow-hidden md:-m-6">
+        <div className="min-h-0 flex-1">
+          {lessons.isPending ? (
+            <p className="py-20 text-center text-sm text-muted-foreground">
+              Loading lessons…
+            </p>
+          ) : view === "week" ? (
+            <>
+              <div className="hidden h-full min-h-0 lg:block">
               <WeekGrid
                 days={range.days}
                 lessons={visibleLessons}
@@ -371,34 +372,39 @@ export function CalendarPage() {
                 onSelect={setSelectedLesson}
                 onSlotSelect={openScheduleChoice}
               />
-            </div>
-            <div className="lg:hidden">
-              <MobileAgenda
+              </div>
+              <div className="h-full min-h-0 overflow-y-auto lg:hidden">
+                <MobileAgenda
+                  days={range.days}
+                  selectedDay={selectedDay}
+                  onSelectDay={setSelectedDay}
+                  lessons={visibleLessons}
+                  classroomNameById={classroomNameById}
+                  onSelect={setSelectedLesson}
+                />
+              </div>
+            </>
+          ) : view === "month" ? (
+            <div className="h-full overflow-y-auto">
+              <MonthGrid
                 days={range.days}
-                selectedDay={selectedDay}
-                onSelectDay={setSelectedDay}
+                month={anchorDate}
+                lessons={visibleLessons}
+                classroomNameById={classroomNameById}
+                onSelect={setSelectedLesson}
+                onSlotSelect={openScheduleChoice}
+              />
+            </div>
+          ) : (
+            <div className="h-full overflow-y-auto">
+              <ScheduleList
                 lessons={visibleLessons}
                 classroomNameById={classroomNameById}
                 onSelect={setSelectedLesson}
               />
             </div>
-          </>
-        ) : view === "month" ? (
-          <MonthGrid
-            days={range.days}
-            month={anchorDate}
-            lessons={visibleLessons}
-            classroomNameById={classroomNameById}
-            onSelect={setSelectedLesson}
-            onSlotSelect={openScheduleChoice}
-          />
-        ) : (
-          <ScheduleList
-            lessons={visibleLessons}
-            classroomNameById={classroomNameById}
-            onSelect={setSelectedLesson}
-          />
-        )}
+          )}
+        </div>
 
         <Dialog
           open={Boolean(scheduleChoiceDraft)}
@@ -622,9 +628,9 @@ function WeekGrid({
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
 }) {
   return (
-    <div>
-      <div className="min-w-[78rem]">
-        <div className="grid grid-cols-[5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border">
+    <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden">
+      <div className="min-w-0">
+        <div className="grid grid-cols-[5rem_repeat(7,minmax(0,1fr))] border-b border-border">
           <div className="flex h-[4.5rem] items-end justify-end px-3 pb-2 text-[10px] font-medium text-muted-foreground">
             {Intl.DateTimeFormat().resolvedOptions().timeZone}
           </div>
@@ -645,7 +651,7 @@ function WeekGrid({
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-[5rem_repeat(7,minmax(10.5rem,1fr))]">
+        <div className="grid grid-cols-[5rem_repeat(7,minmax(0,1fr))]">
           <div
             className="relative border-r border-border"
             style={{ height: `${WEEK_GRID_HEIGHT}px` }}
@@ -757,7 +763,7 @@ function MonthGrid({
 }) {
   return (
     <div>
-      <div className="grid min-w-[48rem] grid-cols-7 border-b border-border bg-transparent">
+      <div className="grid min-w-0 grid-cols-7 border-b border-border bg-transparent">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <p
             key={day}
@@ -767,7 +773,7 @@ function MonthGrid({
           </p>
         ))}
       </div>
-      <div className="grid min-w-[48rem] grid-cols-7">
+      <div className="grid min-w-0 grid-cols-7">
         {days.map((day) => {
           const dayLessons = lessons.filter((lesson) =>
             isSameDay(new Date(lesson.scheduledAt), day),
