@@ -18,7 +18,7 @@ export function MainSidebar() {
   if (!role || role === "pending") return null;
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar variant="inset" collapsible="icon" className="overflow-hidden">
       <SidebarHeader>
         <OrganizationSwitcher />
       </SidebarHeader>
