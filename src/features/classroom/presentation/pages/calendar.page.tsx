@@ -56,11 +56,14 @@ import {
 } from "@/shared/ui/sheet";
 import {
   useClassroomsQuery,
+  useCreateClassroomMutation,
   useOrganizationCalendarLessonsQuery,
+  useOrganizationSubjectsQuery,
   useRescheduleLessonMutation,
   useScheduleLessonMutation,
 } from "../../application";
 import { ScheduleLessonDialog } from "../components/classroom-action-dialogs";
+import { CreateClassroomDialog } from "../components/create-classroom-dialog";
 
 type CalendarView = "week" | "month" | "schedule";
 const HOURS = Array.from({ length: 24 }, (_, index) => index);
@@ -84,6 +87,14 @@ export function CalendarPage() {
     scheduledAt: string;
     durationMins: number;
   } | null>(null);
+  const [scheduleChoiceDraft, setScheduleChoiceDraft] = useState<{
+    scheduledAt: string;
+    durationMins: number;
+  } | null>(null);
+  const [recurringScheduleDraft, setRecurringScheduleDraft] = useState<{
+    scheduledAt: string;
+    durationMins: number;
+  } | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<ClassroomLesson | null>(
     null,
   );
@@ -93,7 +104,9 @@ export function CalendarPage() {
 
   const range = useMemo(() => getRange(anchorDate, view), [anchorDate, view]);
   const classrooms = useClassroomsQuery(organizationId);
+  const subjects = useOrganizationSubjectsQuery(organizationId);
   const lessons = useOrganizationCalendarLessonsQuery(organizationId, range);
+  const createClassroom = useCreateClassroomMutation(organizationId);
   const scheduleLesson = useScheduleLessonMutation(
     organizationId,
     scheduleClassroom?.id,
@@ -103,6 +116,7 @@ export function CalendarPage() {
     "calendar",
   );
   const canSchedule = permissions.includes("lessons:schedule");
+  const canCreateClassroom = permissions.includes("classrooms:create");
   const canManage = permissions.includes("lessons:manage");
   const activeFilterCount =
     classroomIds.length + lessonStatuses.length + Number(mineOnly);
@@ -157,6 +171,10 @@ export function CalendarPage() {
     setLessonDraft(draft);
     setIsClassroomPickerOpen(true);
   };
+  const openScheduleChoice = (draft: {
+    scheduledAt: string;
+    durationMins: number;
+  }) => setScheduleChoiceDraft(draft);
   const movePeriod = (direction: -1 | 1) => {
     const shift = (date: Date) =>
       view === "week" ? addWeeks(date, direction) : addMonths(date, direction);
@@ -232,7 +250,10 @@ export function CalendarPage() {
                       </Button>
                     }
                   />
-                  <PopoverContent align="start" className="w-80">
+                  <PopoverContent
+                    align="end"
+                    className="w-[min(34rem,calc(100vw-2rem))]"
+                  >
                     <PopoverHeader>
                       <PopoverTitle>Filter calendar</PopoverTitle>
                       <p className="text-xs text-muted-foreground">
@@ -341,7 +362,7 @@ export function CalendarPage() {
                 lessons={visibleLessons}
                 classroomNameById={classroomNameById}
                 onSelect={setSelectedLesson}
-                onSlotSelect={openExtraLesson}
+                onSlotSelect={openScheduleChoice}
               />
             </div>
             <div className="lg:hidden">
@@ -362,7 +383,7 @@ export function CalendarPage() {
             lessons={visibleLessons}
             classroomNameById={classroomNameById}
             onSelect={setSelectedLesson}
-            onSlotSelect={openExtraLesson}
+            onSlotSelect={openScheduleChoice}
           />
         ) : (
           <ScheduleList
@@ -371,6 +392,57 @@ export function CalendarPage() {
             onSelect={setSelectedLesson}
           />
         )}
+
+        <Dialog
+          open={Boolean(scheduleChoiceDraft)}
+          onOpenChange={(open) => !open && setScheduleChoiceDraft(null)}
+        >
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Add to calendar</DialogTitle>
+              <DialogDescription>
+                {scheduleChoiceDraft
+                  ? `${formatLessonDate(scheduleChoiceDraft.scheduledAt)} at ${formatLessonTime(scheduleChoiceDraft.scheduledAt)}`
+                  : "Choose how this time should be used."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button
+                variant="outline"
+                className="h-auto items-start justify-start px-4 py-4 text-left whitespace-normal"
+                disabled={!canSchedule}
+                onClick={() => {
+                  const draft = scheduleChoiceDraft;
+                  setScheduleChoiceDraft(null);
+                  openExtraLesson(draft);
+                }}
+              >
+                <span>
+                  <span className="block font-semibold">One-time lesson</span>
+                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                    Add a single extra lesson to an existing classroom.
+                  </span>
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto items-start justify-start px-4 py-4 text-left whitespace-normal"
+                disabled={!canCreateClassroom}
+                onClick={() => {
+                  setRecurringScheduleDraft(scheduleChoiceDraft);
+                  setScheduleChoiceDraft(null);
+                }}
+              >
+                <span>
+                  <span className="block font-semibold">Weekly schedule</span>
+                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                    Create a classroom that repeats weekly from this slot.
+                  </span>
+                </span>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog
           open={isClassroomPickerOpen}
@@ -437,6 +509,20 @@ export function CalendarPage() {
                 setScheduleClassroom(null);
                 setLessonDraft(null);
               },
+            })
+          }
+        />
+
+        <CreateClassroomDialog
+          open={Boolean(recurringScheduleDraft)}
+          onOpenChange={(open) => !open && setRecurringScheduleDraft(null)}
+          subjects={subjects.data ?? []}
+          initialSchedule={recurringScheduleDraft}
+          isSubmitting={createClassroom.isPending}
+          error={createClassroom.error}
+          onSubmit={(input) =>
+            createClassroom.mutate(input, {
+              onSuccess: () => setRecurringScheduleDraft(null),
             })
           }
         />
@@ -577,7 +663,8 @@ function WeekGrid({
                 <button
                   type="button"
                   key={hour}
-                  className="absolute inset-x-0 h-16 border-b border-transparent text-left outline-none hover:border-primary/20 hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring"
+                  disabled={isPastSlot(day, hour)}
+                  className="absolute inset-x-0 h-16 border-b border-transparent text-left outline-none hover:border-primary/20 hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-muted/20 disabled:hover:border-transparent disabled:hover:bg-muted/20"
                   style={{ top: `${hour * 64}px` }}
                   aria-label={`Add a lesson on ${format(day, "EEEE, MMMM d")} at ${formatHour(hour)}`}
                   onClick={() => onSlotSelect(createSlotDraft(day, hour))}
@@ -610,6 +697,7 @@ function MobileAgenda({
   lessons,
   classroomNameById,
   onSelect,
+  onSlotSelect,
 }: CalendarGridProps & {
   days: Date[];
   selectedDay: Date;
@@ -649,6 +737,7 @@ function MonthGrid({
   lessons,
   classroomNameById,
   onSelect,
+  onSlotSelect,
 }: CalendarGridProps & {
   days: Date[];
   month: Date;
@@ -674,14 +763,11 @@ function MonthGrid({
           return (
             <div
               key={day.toISOString()}
-              className="min-h-36 border-r border-b border-border p-3 last:border-r-0 hover:bg-muted/20"
+              data-disabled={isPastDay(day) || undefined}
+              className="min-h-36 border-r border-b border-border p-3 last:border-r-0 hover:bg-muted/20 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-muted/10 data-[disabled=true]:opacity-45 data-[disabled=true]:hover:bg-muted/10"
               onClick={() => {
-                const scheduledAt = new Date(day);
-                scheduledAt.setHours(9, 0, 0, 0);
-                onSlotSelect({
-                  scheduledAt: scheduledAt.toISOString(),
-                  durationMins: 60,
-                });
+                const draft = createMonthlySlotDraft(day);
+                if (draft) onSlotSelect(draft);
               }}
             >
               <p
@@ -913,6 +999,27 @@ function createSlotDraft(day: Date, hour: number) {
   const scheduledAt = new Date(day);
   scheduledAt.setHours(hour, 0, 0, 0);
   return { scheduledAt: scheduledAt.toISOString(), durationMins: 60 };
+}
+
+function createMonthlySlotDraft(day: Date) {
+  if (isPastDay(day)) return null;
+  const now = new Date();
+  const hour = isSameDay(day, now) ? now.getHours() + 1 : 9;
+  if (hour > 23) return null;
+  const draft = createSlotDraft(day, hour);
+  return new Date(draft.scheduledAt).getTime() > now.getTime() ? draft : null;
+}
+
+function isPastSlot(day: Date, hour: number) {
+  return (
+    new Date(createSlotDraft(day, hour).scheduledAt).getTime() <= Date.now()
+  );
+}
+
+function isPastDay(day: Date) {
+  const endOfDay = new Date(day);
+  endOfDay.setHours(23, 59, 59, 999);
+  return endOfDay.getTime() <= Date.now();
 }
 
 function toggleFilterValue(values: string[], value: string) {
