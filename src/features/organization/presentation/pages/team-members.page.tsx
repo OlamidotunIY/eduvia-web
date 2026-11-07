@@ -94,7 +94,7 @@ export function TeamMembersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 w-full">
       {/* Portal breadcrumbs into Main Application Header */}
       <MainHeaderPortal>
         <div className="flex items-center gap-2 text-xs font-medium">
