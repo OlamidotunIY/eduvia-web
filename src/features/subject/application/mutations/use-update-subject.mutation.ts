@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { OrganizationSubjectUpdateInput } from "@/shared/domain";
+import type { UpdateSubjectDto } from "@/shared/api/generated";
 import { subjectRepository } from "../../infrastructure";
 import { organizationSubjectsKey } from "../queries/use-subjects.query";
 
@@ -11,7 +11,7 @@ export function useUpdateSubjectMutation(organizationId: string | undefined) {
       input,
     }: {
       subjectId: string;
-      input: OrganizationSubjectUpdateInput;
+      input: UpdateSubjectDto;
     }) => subjectRepository.update(organizationId!, subjectId, input),
     onSuccess: () =>
       queryClient.invalidateQueries({

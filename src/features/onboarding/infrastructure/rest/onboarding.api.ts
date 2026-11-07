@@ -1,7 +1,7 @@
-import { apiClient } from '@/shared/api'
-import type { EduviaRole } from '@/shared/domain'
+import { apiClient } from '@/shared/api';
+import type { CompleteUserOnboardingDto } from '@/shared/api/generated';
 
 export const onboardingApi = {
-  complete: (body: { userType: Extract<EduviaRole, 'teacher' | 'parent'>; firstName: string; lastName: string; timezone: string }) =>
+  complete: (body: CompleteUserOnboardingDto) =>
     apiClient.post<unknown>('/users/me/onboarding', body).then((response) => response.data),
-}
+};

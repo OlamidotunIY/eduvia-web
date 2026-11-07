@@ -1,8 +1,5 @@
 import { apiClient } from "@/shared/api";
-import type {
-  OrganizationSubjectInput,
-  OrganizationSubjectUpdateInput,
-} from "@/shared/domain";
+import type { CreateSubjectDto, UpdateSubjectDto } from "@/shared/api/generated";
 
 export const subjectApi = {
   listOrganizationSubjects: (organizationId: string) =>
@@ -15,7 +12,7 @@ export const subjectApi = {
       .get<unknown>("/platform-subjects", { params: { activeOnly: "true" } })
       .then((response) => response.data),
 
-  create: (organizationId: string, input: OrganizationSubjectInput) =>
+  create: (organizationId: string, input: CreateSubjectDto) =>
     apiClient
       .post(`/organizations/${organizationId}/subjects`, input)
       .then(() => undefined),
@@ -23,7 +20,7 @@ export const subjectApi = {
   update: (
     organizationId: string,
     subjectId: string,
-    input: OrganizationSubjectUpdateInput,
+    input: UpdateSubjectDto,
   ) =>
     apiClient
       .patch(`/organizations/${organizationId}/subjects/${subjectId}`, input)
