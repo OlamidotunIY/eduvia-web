@@ -1,5 +1,9 @@
 import { apiClient } from "@/shared/api";
-import type { CreateClassroomInput } from "@/shared/domain";
+import type {
+  CreateClassroomDto,
+  ScheduleLessonDto,
+  RescheduleLessonDto,
+} from "@/shared/api/generated";
 
 export const classroomApi = {
   list: (organizationId: string) =>
@@ -52,7 +56,7 @@ export const classroomApi = {
       })
       .then((response) => response.data),
 
-  create: (organizationId: string, input: CreateClassroomInput) =>
+  create: (organizationId: string, input: CreateClassroomDto) =>
     apiClient
       .post(`/organizations/${organizationId}/classrooms`, input)
       .then(() => undefined),
@@ -70,11 +74,7 @@ export const classroomApi = {
   scheduleLesson: (
     organizationId: string,
     classroomId: string,
-    input: {
-      scheduledAt: string;
-      durationMins: number;
-      teacherId?: string;
-    },
+    input: ScheduleLessonDto,
   ) =>
     apiClient
       .post(
@@ -86,7 +86,7 @@ export const classroomApi = {
   rescheduleLesson: (
     organizationId: string,
     lessonId: string,
-    input: { scheduledAt: string; durationMins?: number },
+    input: RescheduleLessonDto,
   ) =>
     apiClient
       .patch(
