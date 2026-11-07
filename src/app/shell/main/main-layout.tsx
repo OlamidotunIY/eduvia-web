@@ -8,10 +8,10 @@ export function MainLayout() {
   const isCalendarPage = pathname.endsWith("/calendar");
 
   return (
-    <SidebarProvider className="h-svh min-h-0 overflow-hidden">
+    <SidebarProvider className="fixed inset-0 h-svh min-h-0! w-full overflow-hidden">
       <MainHeaderSlotProvider>
         <MainSidebar />
-        <SidebarInset className="h-svh min-h-0 w-0 min-w-0 overflow-hidden">
+        <SidebarInset className="h-svh min-h-0 w-0 min-w-0 overflow-hidden md:h-[calc(100svh-1rem)]">
           <MainHeader />
           <main
             className={`flex min-h-0 min-w-0 flex-1 flex-col p-4 md:p-6 ${
