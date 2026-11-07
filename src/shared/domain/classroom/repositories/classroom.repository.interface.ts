@@ -2,9 +2,13 @@ import type {
   Classroom,
   ClassroomLesson,
   ClassroomStudent,
-  CreateClassroomInput,
   OrganizationSubject,
 } from "../entities/classroom.entity";
+import type {
+  CreateClassroomDto,
+  ScheduleLessonDto,
+  RescheduleLessonDto,
+} from "@/shared/api/generated";
 
 export interface IClassroomRepository {
   list(organizationId: string): Promise<Classroom[]>;
@@ -23,16 +27,16 @@ export interface IClassroomRepository {
     range: { fromDate: string; toDate: string },
   ): Promise<ClassroomLesson[]>;
   listSubjects(organizationId: string): Promise<OrganizationSubject[]>;
-  create(organizationId: string, input: CreateClassroomInput): Promise<void>;
+  create(organizationId: string, input: CreateClassroomDto): Promise<void>;
   scheduleLesson(
     organizationId: string,
     classroomId: string,
-    input: { scheduledAt: string; durationMins: number; teacherId?: string },
+    input: ScheduleLessonDto,
   ): Promise<void>;
   rescheduleLesson(
     organizationId: string,
     lessonId: string,
-    input: { scheduledAt: string; durationMins?: number },
+    input: RescheduleLessonDto,
   ): Promise<void>;
   pause(organizationId: string, classroomId: string): Promise<void>;
   close(organizationId: string, classroomId: string): Promise<void>;

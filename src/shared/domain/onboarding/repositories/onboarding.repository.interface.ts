@@ -1,5 +1,5 @@
-import type { CompleteOnboardingInput } from '../entities/onboarding.entity';
+import type { CompleteUserOnboardingDto } from "@/shared/api/generated";
 
 export interface IOnboardingRepository {
-  complete(input: CompleteOnboardingInput): Promise<unknown>;
+  complete(input: CompleteUserOnboardingDto): Promise<unknown>;
 }

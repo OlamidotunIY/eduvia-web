@@ -1,9 +1,5 @@
-import type {
-  Conversation,
-  CreateConversationInput,
-  Message,
-  SendMessageInput,
-} from "../entities/message.entity";
+import type { Conversation, Message } from "../entities/message.entity";
+import type { CreateConversationDto, SendMessageDto } from "@/shared/api/generated";
 import type { OrganizationMemberRecord } from "../../organization";
 
 export interface IMessagesRepository {
@@ -21,10 +17,10 @@ export interface IMessagesRepository {
 
   sendMessage(
     conversationId: string,
-    payload: SendMessageInput,
+    payload: SendMessageDto,
   ): Promise<unknown>;
 
   createConversation(
-    payload: CreateConversationInput,
+    payload: CreateConversationDto,
   ): Promise<{ id: string; conversationId?: string }>;
 }

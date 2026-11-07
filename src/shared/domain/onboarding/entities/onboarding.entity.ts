@@ -1,8 +1,3 @@
-import type { EduviaRole } from '../../auth';
+import type { CompleteUserOnboardingDto } from "@/shared/api/generated";
 
-export interface CompleteOnboardingInput {
-  userType: Extract<EduviaRole, 'teacher' | 'parent'>;
-  firstName: string;
-  lastName: string;
-  timezone: string;
-}
+export type { CompleteUserOnboardingDto };

@@ -1,21 +1,25 @@
-import type { MarketplaceOrganization } from '../entities/marketplace-organization.entity'
-import type { OrganizationRoleDefinition, OrganizationRoleInput } from '../entities/organization-role.entity'
-
-export interface OrganizationCreation {
-  name: string
-  slug: string
-  contactEmail: string
-  country: string
-  timezone: string
-}
+import type { MarketplaceOrganization } from '../entities/marketplace-organization.entity';
+import type { OrganizationRoleDefinition } from '../entities/organization-role.entity';
+import type {
+  CreateOrganizationDto,
+  CreateOrganizationRoleDto,
+  UpdateOrganizationRoleDto,
+  SendInvitationDto,
+  ChangeMemberRoleDto,
+} from '@/shared/api/generated';
+import type { OrganizationMemberRecord } from '../entities/organization-member.entity';
 
 export abstract class IOrganizationRepository {
-  abstract create(input: OrganizationCreation): Promise<void>
-  abstract listMarketplace(): Promise<MarketplaceOrganization[]>
-  abstract apply(organizationId: string): Promise<void>
-  abstract selectActive(organizationId: string): Promise<void>
-  abstract listRoles(organizationId: string): Promise<OrganizationRoleDefinition[]>
-  abstract provisionRoles(organizationId: string): Promise<void>
-  abstract createRole(organizationId: string, input: OrganizationRoleInput): Promise<void>
-  abstract updateRole(organizationId: string, roleId: string, input: OrganizationRoleInput): Promise<void>
+  abstract create(input: CreateOrganizationDto): Promise<void>;
+  abstract listMarketplace(): Promise<MarketplaceOrganization[]>;
+  abstract apply(organizationId: string): Promise<void>;
+  abstract selectActive(organizationId: string): Promise<void>;
+  abstract listRoles(organizationId: string): Promise<OrganizationRoleDefinition[]>;
+  abstract provisionRoles(organizationId: string): Promise<void>;
+  abstract createRole(organizationId: string, input: CreateOrganizationRoleDto): Promise<void>;
+  abstract updateRole(organizationId: string, roleId: string, input: UpdateOrganizationRoleDto): Promise<void>;
+  abstract listMembers(organizationId: string): Promise<OrganizationMemberRecord[]>;
+  abstract inviteMember(organizationId: string, input: SendInvitationDto): Promise<unknown>;
+  abstract changeMemberRole(organizationId: string, userId: string, input: ChangeMemberRoleDto): Promise<unknown>;
+  abstract suspendMember(organizationId: string, userId: string): Promise<unknown>;
 }
