@@ -1,67 +1,29 @@
 import { apiClient } from "@/shared/api";
-
-export interface MessageBackendDto {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  attachmentUrl: string | null;
-  status: string;
-  sentAt: string;
-  deliveredAt: string | null;
-  readAt: string | null;
-}
-
-export interface ConversationSummaryBackendDto {
-  id: string;
-  orgId: string;
-  type: string;
-  participants: string[];
-  studentId: string | null;
-  parentId: string | null;
-  subject: string | null;
-  status: string;
-  lastMessageAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ConversationDetailBackendDto extends ConversationSummaryBackendDto {
-  messages: MessageBackendDto[];
-}
-
-export interface CreateConversationPayload {
-  orgId: string;
-  type: "student_teacher" | "parent_admin" | string;
-  participants: string[];
-  studentId?: string | null;
-  parentId?: string | null;
-  subject?: string | null;
-}
-
-export interface SendMessagePayload {
-  content: string;
-  attachmentUrl?: string | null;
-}
+import type {
+  ConversationDetailDto,
+  ConversationSummaryDto,
+  CreateConversationDto,
+  SendMessageDto,
+} from "@/shared/api/generated";
 
 export const messagesApi = {
-  listConversations: async (orgId?: string): Promise<ConversationSummaryBackendDto[]> => {
-    const response = await apiClient.get<ConversationSummaryBackendDto[]>("/conversations", {
+  listConversations: async (orgId?: string): Promise<ConversationSummaryDto[]> => {
+    const response = await apiClient.get<ConversationSummaryDto[]>("/conversations", {
       params: orgId ? { orgId } : undefined,
     });
-    return response.data ?? [];
+    return response.data;
   },
 
-  getConversationDetail: async (id: string): Promise<ConversationDetailBackendDto> => {
-    const response = await apiClient.get<ConversationDetailBackendDto>(`/conversations/${id}`);
+  getConversationDetail: async (id: string): Promise<ConversationDetailDto> => {
+    const response = await apiClient.get<ConversationDetailDto>(`/conversations/${id}`);
     return response.data;
   },
 
   sendMessage: async (
     conversationId: string,
-    payload: SendMessagePayload,
-  ): Promise<{ messageId: string }> => {
-    const response = await apiClient.post<{ messageId: string }>(
+    payload: SendMessageDto,
+  ): Promise<unknown> => {
+    const response = await apiClient.post(
       `/conversations/${conversationId}/messages`,
       payload,
     );
@@ -69,14 +31,12 @@ export const messagesApi = {
   },
 
   createConversation: async (
-    payload: CreateConversationPayload,
+    payload: CreateConversationDto,
   ): Promise<{ id: string; conversationId?: string }> => {
-    const response = await apiClient.post<{ id?: string; conversationId?: string }>(
+    const response = await apiClient.post<{ id: string; conversationId?: string }>(
       "/conversations",
       payload,
     );
-    const data = response.data;
-    const id = data?.id ?? data?.conversationId ?? "";
-    return { id, conversationId: id };
+    return response.data;
   },
 };

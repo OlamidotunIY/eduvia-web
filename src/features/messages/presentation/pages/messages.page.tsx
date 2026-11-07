@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Conversation, ConversationFilter } from "@/shared/domain";
+import { Conversation, type ConversationFilter } from "@/shared/domain";
 import { ChatRoom } from "../components/chat-room";
 import { ConversationList } from "../components/conversation-list";
 import { MessagesHeader } from "../components/messages-header";
@@ -58,10 +58,10 @@ export function MessagesPage() {
     if (!base) return null;
 
     if (detailQuery.data) {
-      return {
+      return new Conversation({
         ...base,
         messages: detailQuery.data.messages,
-      };
+      });
     }
 
     return base;

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { messagesRepository } from "../../infrastructure";
-import type { SendMessageInput } from "@/shared/domain";
+import type { SendMessageDto } from "@/shared/api/generated";
 import { MESSAGES_CONVERSATIONS_QUERY_KEY } from "../queries/use-conversations.query";
 import { MESSAGES_DETAIL_QUERY_KEY } from "../queries/use-conversation-detail.query";
 
@@ -8,7 +8,7 @@ export function useSendMessageMutation(conversationId: string | null, orgId?: st
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: SendMessageInput) => {
+    mutationFn: async (payload: SendMessageDto) => {
       if (!conversationId) throw new Error("No conversation selected");
       return messagesRepository.sendMessage(conversationId, payload);
     },
