@@ -14,6 +14,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -67,6 +68,8 @@ import { CreateClassroomDialog } from "../components/create-classroom-dialog";
 
 type CalendarView = "week" | "month" | "schedule";
 const HOURS = Array.from({ length: 24 }, (_, index) => index);
+const SLOT_HEIGHT = 56;
+const WEEK_GRID_HEIGHT = HOURS.length * SLOT_HEIGHT;
 
 export function CalendarPage() {
   const currentUser = sessionStore((state) => state.currentUser);
@@ -207,6 +210,10 @@ export function CalendarPage() {
         ? createPortal(
             <div className="flex w-full min-w-0 items-center justify-between gap-3 overflow-x-auto">
               <div className="flex shrink-0 items-center gap-1">
+                <div className="mr-2 hidden items-center gap-2 border-r border-border pr-4 lg:flex">
+                  <CalendarDays className="size-4 text-primary" />
+                  <span className="text-sm font-semibold">Calendar</span>
+                </div>
                 <Button
                   variant="ghost"
                   size="icon-sm"
@@ -617,20 +624,20 @@ function WeekGrid({
   return (
     <div>
       <div className="min-w-[78rem]">
-        <div className="sticky top-0 z-20 grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border bg-transparent">
-          <div className="flex items-center px-3 text-[10px] font-semibold text-muted-foreground">
+        <div className="grid grid-cols-[5rem_repeat(7,minmax(10.5rem,1fr))] border-b border-border">
+          <div className="flex h-[4.5rem] items-end justify-end px-3 pb-2 text-[10px] font-medium text-muted-foreground">
             {Intl.DateTimeFormat().resolvedOptions().timeZone}
           </div>
           {days.map((day) => (
             <div
               key={day.toISOString()}
-              className="border-l border-border px-3 py-3 text-center"
+              className="flex h-[4.5rem] flex-col items-center justify-center border-l border-border px-3 text-center"
             >
-              <p className="text-[10px] font-semibold tracking-wide text-muted-foreground">
+              <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground">
                 {format(day, "EEE").toUpperCase()}
               </p>
               <p
-                className="mx-auto mt-1 grid size-9 place-items-center rounded-full text-lg font-medium data-[today=true]:bg-primary data-[today=true]:text-primary-foreground"
+                className="mt-1 grid size-8 place-items-center rounded-full text-base font-semibold data-[today=true]:bg-primary data-[today=true]:text-primary-foreground"
                 data-today={isSameDay(day, new Date()) || undefined}
               >
                 {format(day, "d")}
@@ -638,13 +645,16 @@ function WeekGrid({
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-[4.5rem_repeat(7,minmax(10.5rem,1fr))]">
-          <div className="relative h-[1536px] border-r border-border bg-card/50">
+        <div className="grid grid-cols-[5rem_repeat(7,minmax(10.5rem,1fr))]">
+          <div
+            className="relative border-r border-border"
+            style={{ height: `${WEEK_GRID_HEIGHT}px` }}
+          >
             {HOURS.map((hour) => (
               <span
                 key={hour}
-                className="absolute -top-2 right-3 text-[10px] font-medium text-muted-foreground"
-                style={{ top: `${hour * 64}px` }}
+                className="absolute right-3 translate-y-1 text-[10px] font-medium text-muted-foreground"
+                style={{ top: `${hour * SLOT_HEIGHT}px` }}
               >
                 {formatHour(hour)}
               </span>
@@ -653,10 +663,10 @@ function WeekGrid({
           {days.map((day) => (
             <div
               key={day.toISOString()}
-              className="relative h-[1536px] border-r border-border last:border-r-0"
+              className="relative border-r border-border last:border-r-0"
               style={{
-                backgroundImage:
-                  "repeating-linear-gradient(to bottom, transparent, transparent 63px, var(--border) 64px)",
+                height: `${WEEK_GRID_HEIGHT}px`,
+                backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent ${SLOT_HEIGHT - 1}px, var(--border) ${SLOT_HEIGHT}px)`,
               }}
             >
               {HOURS.map((hour) => (
@@ -664,8 +674,11 @@ function WeekGrid({
                   type="button"
                   key={hour}
                   disabled={isPastSlot(day, hour)}
-                  className="absolute inset-x-0 h-16 border-b border-transparent text-left outline-none hover:border-primary/20 hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-muted/20 disabled:hover:border-transparent disabled:hover:bg-muted/20"
-                  style={{ top: `${hour * 64}px` }}
+                  className="absolute inset-x-0 border-b border-transparent text-left outline-none hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
+                  style={{
+                    top: `${hour * SLOT_HEIGHT}px`,
+                    height: `${SLOT_HEIGHT}px`,
+                  }}
                   aria-label={`Add a lesson on ${format(day, "EEEE, MMMM d")} at ${formatHour(hour)}`}
                   onClick={() => onSlotSelect(createSlotDraft(day, hour))}
                 />
@@ -697,7 +710,6 @@ function MobileAgenda({
   lessons,
   classroomNameById,
   onSelect,
-  onSlotSelect,
 }: CalendarGridProps & {
   days: Date[];
   selectedDay: Date;
@@ -918,8 +930,8 @@ function LessonBlock({
 }) {
   const date = new Date(lesson.scheduledAt);
   const minutes = date.getHours() * 60 + date.getMinutes();
-  const top = Math.max(0, (minutes / 60) * 64);
-  const height = Math.max(34, (lesson.durationMins / 60) * 64 - 4);
+  const top = Math.max(0, (minutes / 60) * SLOT_HEIGHT);
+  const height = Math.max(34, (lesson.durationMins / 60) * SLOT_HEIGHT - 4);
   return (
     <button
       type="button"
