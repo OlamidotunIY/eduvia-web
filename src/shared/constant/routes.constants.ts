@@ -13,6 +13,7 @@ export const APP_ROUTES = {
   DASHBOARD: "/dashboard",
   CLASSROOMS: "/classrooms",
   CALENDAR: "/calendar",
+  CURRICULUM: "/curriculum",
   SUBJECTS: "/organization/subjects",
   ASSESSMENTS: "/assessments",
   NOTIFICATIONS: "/notifications",
@@ -20,6 +21,10 @@ export const APP_ROUTES = {
 
 export function classroomRoute(classroomId: string): string {
   return `${APP_ROUTES.CLASSROOMS}/${classroomId}`;
+}
+
+export function curriculumDetailRoute(curriculumId: string): string {
+  return `${APP_ROUTES.CURRICULUM}/${curriculumId}`;
 }
 
 export const ADMIN_ROUTES = {

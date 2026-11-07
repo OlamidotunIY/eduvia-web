@@ -7,7 +7,13 @@ import {
   type RowData,
   type SortingState,
 } from "@tanstack/react-table";
-import { Funnel, RefreshCw, Search, Settings2 } from "lucide-react";
+import {
+  ChevronDown,
+  Funnel,
+  RefreshCw,
+  Search,
+  Settings2,
+} from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -53,6 +59,7 @@ export interface DataTableProps<TData extends RowData> {
   filterContent?: React.ReactNode;
   onFilterClick?: () => void;
   isFiltered?: boolean;
+  filterSlot?: React.ReactNode;
   enableColumnVisibility?: boolean;
   columnLabels?: Record<string, string>;
   toolbarActions?: React.ReactNode;
@@ -75,6 +82,7 @@ export function DataTable<TData extends RowData>({
   filterContent,
   onFilterClick,
   isFiltered = false,
+  filterSlot,
   enableColumnVisibility = true,
   columnLabels,
   toolbarActions,
@@ -110,12 +118,13 @@ export function DataTable<TData extends RowData>({
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      "h-8 gap-2 rounded-lg px-2.5 text-xs text-muted-foreground hover:bg-muted/60",
+                      "inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:bg-muted/60",
                       isFiltered && "bg-primary/10 text-primary",
                     )}
                   >
-                    <Funnel />
+                    <Funnel className="size-3 shrink-0" />
                     <span>Filter</span>
+                    <ChevronDown className="size-3 shrink-0 opacity-70" />
                   </Button>
                 }
               />
@@ -128,15 +137,16 @@ export function DataTable<TData extends RowData>({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 gap-2 rounded-lg px-2.5 text-xs text-muted-foreground"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground"
               onClick={onFilterClick}
             >
-              <Funnel />
+              <Funnel className="size-3 shrink-0" />
               <span>Filter</span>
+              <ChevronDown className="size-3 shrink-0 opacity-70" />
             </Button>
           ) : null}
           {searchKey ? (
-            <div className="relative w-full max-w-xs">
+            <div className="relative w-64 max-w-xs">
               <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="h-8 rounded-lg pl-8 text-xs"
@@ -150,6 +160,7 @@ export function DataTable<TData extends RowData>({
               />
             </div>
           ) : null}
+          {filterSlot}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {onReload ? (
@@ -210,11 +221,11 @@ export function DataTable<TData extends RowData>({
           {toolbarActions}
         </div>
       </div>
-      <div className="overflow-y-auto border-y">
+      <div className="border-b border-border/80">
         {isEmpty ? (
-          <div className="flex min-h-[300px] flex-col overflow-hidden rounded-xl">
+          <div className="flex min-h-[300px] flex-col overflow-hidden">
             <Table>
-              <TableHeader className="[&_tr]:bg-muted/70">
+              <TableHeader className="[&_th]:px-4 [&_th:first-child]:rounded-l-lg [&_th:last-child]:rounded-r-lg [&_tr]:border-0 [&_tr]:bg-muted/50 [&_tr]:hover:bg-muted/50">
                 <HeaderRows table={table} />
               </TableHeader>
             </Table>
@@ -223,40 +234,44 @@ export function DataTable<TData extends RowData>({
               heading={emptyHeading}
               description={emptyDescription}
               action={emptyAction}
+              className="bg-transparent hover:bg-transparent"
             />
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl">
-          <Table>
-            <TableHeader className="[&_tr]:bg-muted/70">
-              <HeaderRows table={table} />
-            </TableHeader>
-            <TableBody>
-              {isLoading
-                ? Array.from({ length: 6 }).map((_, rowIndex) => (
-                    <TableRow key={rowIndex}>
-                      {columns.map((_, cellIndex) => (
-                        <TableCell key={cellIndex}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                : table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      onClick={() => onRowClick?.(row.original)}
-                      className={cn(onRowClick && "cursor-pointer")}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          <table.FlexRender cell={cell} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-hidden">
+            <Table>
+              <TableHeader className="[&_th]:px-4 [&_th:first-child]:rounded-l-lg [&_th:last-child]:rounded-r-lg [&_tr]:border-0 [&_tr]:bg-muted/50 [&_tr]:hover:bg-muted/50">
+                <HeaderRows table={table} />
+              </TableHeader>
+              <TableBody className="[&_td]:px-4 [&_td]:py-3 [&_tr]:hover:bg-transparent">
+                {isLoading
+                  ? Array.from({ length: 6 }).map((_, rowIndex) => (
+                      <TableRow key={rowIndex} className="hover:bg-transparent">
+                        {columns.map((_, cellIndex) => (
+                          <TableCell key={cellIndex}>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  : table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        onClick={() => onRowClick?.(row.original)}
+                        className={cn(
+                          "hover:bg-transparent",
+                          onRowClick && "cursor-pointer",
+                        )}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            <table.FlexRender cell={cell} />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>
