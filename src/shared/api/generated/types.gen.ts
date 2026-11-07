@@ -416,9 +416,11 @@ export type CreateCurriculumProfileDto = {
   name: string;
   shortCode: string;
   countryCode: string;
+  jurisdictionCode: string;
   description?: string | null;
   authority: string;
   version?: string | null;
+  sourceUrl?: string | null;
   isActive?: boolean;
 };
 
@@ -427,11 +429,19 @@ export type UpdateCurriculumProfileDto = {
   description?: string | null;
   authority?: string;
   version?: string | null;
+  sourceUrl?: string | null;
 };
 
 export type CreateCurriculumNodeDto = {
   parentNodeId?: string | null;
-  nodeType: "keystage" | "subject" | "strand" | "topic" | "learning_objective";
+  nodeType:
+    | "keystage"
+    | "discipline"
+    | "course"
+    | "subject"
+    | "strand"
+    | "topic"
+    | "learning_objective";
   name: string;
   code?: string | null;
   description?: string | null;
@@ -2208,6 +2218,40 @@ export type QuestionCreateQuestionResponses = {
 export type QuestionCreateQuestionResponse =
   QuestionCreateQuestionResponses[keyof QuestionCreateQuestionResponses];
 
+export type QuestionGetQuestionSummaryData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/questions/summary";
+};
+
+export type QuestionGetQuestionSummaryResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type QuestionGetQuestionSummaryResponse =
+  QuestionGetQuestionSummaryResponses[keyof QuestionGetQuestionSummaryResponses];
+
+export type QuestionDeleteQuestionData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/questions/{id}";
+};
+
+export type QuestionDeleteQuestionResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type QuestionDeleteQuestionResponse =
+  QuestionDeleteQuestionResponses[keyof QuestionDeleteQuestionResponses];
+
 export type QuestionGetQuestionData = {
   body?: never;
   path: {
@@ -2685,6 +2729,64 @@ export type CurriculumNodeDeactivateNodeResponses = {
 
 export type CurriculumNodeDeactivateNodeResponse =
   CurriculumNodeDeactivateNodeResponses[keyof CurriculumNodeDeactivateNodeResponses];
+
+export type OrganizationCurriculumGetOverviewData = {
+  body?: never;
+  path: {
+    organizationId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/curriculum/overview";
+};
+
+export type OrganizationCurriculumGetOverviewResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type OrganizationCurriculumGetOverviewResponse =
+  OrganizationCurriculumGetOverviewResponses[keyof OrganizationCurriculumGetOverviewResponses];
+
+export type OrganizationCurriculumGetTreeData = {
+  body?: never;
+  path: {
+    organizationId: string;
+    curriculumId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/curriculum/{curriculumId}/tree";
+};
+
+export type OrganizationCurriculumGetTreeResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type OrganizationCurriculumGetTreeResponse =
+  OrganizationCurriculumGetTreeResponses[keyof OrganizationCurriculumGetTreeResponses];
+
+export type OrganizationCurriculumSearchNodesData = {
+  body?: never;
+  path: {
+    organizationId: string;
+  };
+  query: {
+    q: string;
+    curriculumId?: string;
+  };
+  url: "/organizations/{organizationId}/curriculum/search";
+};
+
+export type OrganizationCurriculumSearchNodesResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type OrganizationCurriculumSearchNodesResponse =
+  OrganizationCurriculumSearchNodesResponses[keyof OrganizationCurriculumSearchNodesResponses];
 
 export type PlatformSubjectListPlatformSubjectsData = {
   body?: never;

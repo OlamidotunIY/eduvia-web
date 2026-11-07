@@ -225,6 +225,12 @@ import type {
   OrganizationCreateRoleResponses,
   OrganizationCreateSubjectData,
   OrganizationCreateSubjectResponses,
+  OrganizationCurriculumGetOverviewData,
+  OrganizationCurriculumGetOverviewResponses,
+  OrganizationCurriculumGetTreeData,
+  OrganizationCurriculumGetTreeResponses,
+  OrganizationCurriculumSearchNodesData,
+  OrganizationCurriculumSearchNodesResponses,
   OrganizationDelistFromMarketplaceData,
   OrganizationDelistFromMarketplaceResponses,
   OrganizationGetApplicationsData,
@@ -327,8 +333,12 @@ import type {
   ProgressUpdateReportResponses,
   QuestionCreateQuestionData,
   QuestionCreateQuestionResponses,
+  QuestionDeleteQuestionData,
+  QuestionDeleteQuestionResponses,
   QuestionGetQuestionData,
   QuestionGetQuestionResponses,
+  QuestionGetQuestionSummaryData,
+  QuestionGetQuestionSummaryResponses,
   QuestionPublishQuestionData,
   QuestionPublishQuestionResponses,
   QuestionSearchQuestionsData,
@@ -1759,6 +1769,34 @@ export const questionCreateQuestion = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const questionGetQuestionSummary = <
+  ThrowOnError extends boolean = false,
+>(
+  options?: Options<QuestionGetQuestionSummaryData, ThrowOnError>,
+): RequestResult<QuestionGetQuestionSummaryResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    QuestionGetQuestionSummaryResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/questions/summary",
+    ...options,
+  });
+
+export const questionDeleteQuestion = <ThrowOnError extends boolean = false>(
+  options: Options<QuestionDeleteQuestionData, ThrowOnError>,
+): RequestResult<QuestionDeleteQuestionResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).delete<
+    QuestionDeleteQuestionResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/questions/{id}",
+    ...options,
+  });
+
 export const questionGetQuestion = <ThrowOnError extends boolean = false>(
   options: Options<QuestionGetQuestionData, ThrowOnError>,
 ): RequestResult<QuestionGetQuestionResponses, unknown, ThrowOnError> =>
@@ -2155,6 +2193,63 @@ export const curriculumNodeDeactivateNode = <
   >({
     responseType: "json",
     url: "/curriculum-nodes/{nodeId}/deactivate",
+    ...options,
+  });
+
+export const organizationCurriculumGetOverview = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<OrganizationCurriculumGetOverviewData, ThrowOnError>,
+): RequestResult<
+  OrganizationCurriculumGetOverviewResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    OrganizationCurriculumGetOverviewResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/curriculum/overview",
+    ...options,
+  });
+
+export const organizationCurriculumGetTree = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<OrganizationCurriculumGetTreeData, ThrowOnError>,
+): RequestResult<
+  OrganizationCurriculumGetTreeResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    OrganizationCurriculumGetTreeResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/curriculum/{curriculumId}/tree",
+    ...options,
+  });
+
+export const organizationCurriculumSearchNodes = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<OrganizationCurriculumSearchNodesData, ThrowOnError>,
+): RequestResult<
+  OrganizationCurriculumSearchNodesResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    OrganizationCurriculumSearchNodesResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/curriculum/search",
     ...options,
   });
 
