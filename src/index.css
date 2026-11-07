@@ -186,7 +186,7 @@
         var(--muted-foreground) 40%,
         transparent
       )
-      transparent;
+      var(--background);
     scrollbar-width: thin;
   }
   *::-webkit-scrollbar {
@@ -194,10 +194,10 @@
     height: 0.55rem;
   }
   *::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--background);
   }
   *::-webkit-scrollbar-track-piece {
-    background: transparent;
+    background: var(--background);
   }
   *::-webkit-scrollbar-thumb {
     border: 0.16rem solid transparent;
@@ -217,6 +217,16 @@
     cursor: pointer;
   }
   html {
-    @apply font-sans;
+    @apply bg-background font-sans;
+    scrollbar-color: color-mix(
+        in oklch,
+        var(--muted-foreground) 40%,
+        transparent
+      )
+      var(--background);
+  }
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    background: var(--background);
   }
 }
