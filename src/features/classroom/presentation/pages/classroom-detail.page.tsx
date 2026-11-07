@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
+  CalendarDays,
   CalendarClock,
-  ChartNoAxesCombined,
   Clock3,
+  Info,
   MoreHorizontal,
   Pencil,
   RotateCcw,
@@ -22,6 +23,15 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { Skeleton } from "@/shared/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -148,11 +158,12 @@ export function ClassroomDetailPage() {
           </div>
           <div className="flex items-center gap-2">
             <PermissionButton
-              allowed={canScheduleLessons}
-              reason="You need lesson scheduling permission to add an extra lesson."
-              onClick={() => setIsScheduleOpen(true)}
+              allowed={canUpdate}
+              reason="You need classroom update permission to edit this classroom."
+              variant="outline"
+              onClick={() => setTab("settings")}
             >
-              <CalendarClock /> Add extra lesson
+              <Pencil /> Edit classroom
             </PermissionButton>
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -184,15 +195,43 @@ export function ClassroomDetailPage() {
           </div>
         </div>
 
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <DetailMetric
+            icon={Users}
+            label="Teacher"
+            value="Teacher-led"
+            detail="Primary teacher"
+          />
+          <DetailMetric
+            icon={Users}
+            label="Learners"
+            value={`${students.data?.filter((student) => student.status === "active").length ?? 0}${classroom.data.maxStudents ? ` / ${classroom.data.maxStudents}` : ""} enrolled`}
+            detail="Current classroom roster"
+          />
+          <DetailMetric
+            icon={CalendarDays}
+            label="Weekly schedule"
+            value={schedule}
+            detail="Recurring teaching rhythm"
+          />
+          <DetailMetric
+            icon={Clock3}
+            label="Duration"
+            value={`${classroom.data.lessonDurationMins} minutes`}
+            detail="Per scheduled lesson"
+          />
+        </div>
+
         <Tabs value={tab} onValueChange={(value) => setTab(value as DetailTab)}>
           <TabsList
             aria-label="Classroom sections"
-            className="w-full justify-start overflow-x-auto"
+            variant="line"
+            className="w-full justify-start gap-5 overflow-x-auto border-b border-border pb-1"
           >
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="learners">Learners</TabsTrigger>
-            <TabsTrigger value="lessons">Lessons</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="overview"><BookOpen /> Overview</TabsTrigger>
+            <TabsTrigger value="lessons"><CalendarClock /> Lessons</TabsTrigger>
+            <TabsTrigger value="learners"><Users /> Learners</TabsTrigger>
+            <TabsTrigger value="settings"><Settings2 /> Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -202,8 +241,9 @@ export function ClassroomDetailPage() {
                 students.data?.filter((student) => student.status === "active")
                   .length ?? 0
               }
-              lessonCount={lessons.data?.length ?? 0}
               lessons={lessons.data ?? []}
+              students={students.data ?? []}
+              subjectName={subjectName}
             />
           </TabsContent>
 
@@ -373,8 +413,9 @@ function SectionHeader({
 function Overview({
   classroom,
   learnerCount,
-  lessonCount,
   lessons,
+  students,
+  subjectName,
 }: {
   classroom: {
     recurrence: {
@@ -387,170 +428,74 @@ function Overview({
     status: string;
   };
   learnerCount: number;
-  lessonCount: number;
-  lessons: Array<{ scheduledAt: string; status: string }>;
+  lessons: Array<{
+    id: string;
+    scheduledAt: string;
+    durationMins: number;
+    status: string;
+    origin: string;
+  }>;
+  students: Array<{
+    id: string;
+    status: string;
+    learner: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      image: string | null;
+    } | null;
+  }>;
+  subjectName: string;
 }) {
-  const nextLesson = lessons.find(
+  const upcomingLessons = lessons.filter(
     (lesson) => new Date(lesson.scheduledAt).getTime() >= Date.now(),
   );
-  const completed = lessons.filter(
-    (lesson) => lesson.status.toLowerCase() === "completed",
-  ).length;
-  const learnerCapacity = classroom.maxStudents
-    ? Math.min(100, Math.round((learnerCount / classroom.maxStudents) * 100))
-    : 0;
+  const learnerRows = students.filter((student) => student.status === "active");
+
   return (
-    <div className="space-y-10">
-      <section className="border-b border-border pb-8">
-        <div className="flex items-center gap-2 text-primary">
-          <ChartNoAxesCombined className="size-4" />
-          <p className="text-sm font-medium">Teaching pulse</p>
-        </div>
-        <h2 className="mt-2 font-heading text-2xl font-semibold">
-          How this classroom is running
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          A concise view of schedule, learner capacity, and lesson activity.
-        </p>
-        <dl className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Metric
-            label="Enrolled learners"
-            value={`${learnerCount}${classroom.maxStudents ? ` of ${classroom.maxStudents}` : ""}`}
-            signal={
-              classroom.maxStudents
-                ? `${learnerCapacity}% capacity`
-                : "Open capacity"
-            }
-            detail={
-              classroom.maxStudents
-                ? `${learnerCapacity}% of capacity`
-                : "No capacity limit"
-            }
-          />
-          <Metric
-            label="Scheduled lessons"
-            value={`${lessonCount}`}
-            signal="This week"
-            detail={
-              completed ? `${completed} completed` : "No completed lessons yet"
-            }
-          />
-          <Metric
-            label="Next lesson"
-            value={
-              nextLesson
-                ? formatShortDate(nextLesson.scheduledAt)
-                : "Not scheduled"
-            }
-            signal={nextLesson ? "Upcoming" : "Needs attention"}
-            detail={
-              nextLesson
-                ? formatTime(nextLesson.scheduledAt)
-                : "Schedule a lesson to begin"
-            }
-          />
-          <Metric
-            label="Classroom status"
-            value={classroom.status}
-            signal="Teaching lifecycle"
-            detail="Current teaching lifecycle"
-          />
-        </dl>
-      </section>
-      <section className="grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,.7fr)]">
-        <div>
-          <h3 className="font-heading text-xl font-semibold">Weekly rhythm</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            The recurring schedule learners can expect.
-          </p>
-          <div className="mt-6 grid divide-y divide-border border-y border-border">
-            <SettingReadOnly
-              label="Teaching days"
-              value={classroom.recurrence.daysOfWeek
-                .map((day) => dayNames[day])
-                .join(", ")}
-            />
-            <SettingReadOnly
-              label="Start time"
-              value={classroom.recurrence.startTime}
-            />
-            <SettingReadOnly
-              label="Lesson duration"
-              value={`${classroom.lessonDurationMins} minutes`}
-            />
-            <SettingReadOnly
-              label="Schedule ends"
-              value={
-                classroom.recurrence.effectiveUntil
-                  ? formatShortDate(classroom.recurrence.effectiveUntil)
-                  : "No end date"
-              }
-            />
-          </div>
-        </div>
-        <div>
-          <h3 className="font-heading text-xl font-semibold">Capacity</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Current learner utilisation.
-          </p>
-          <div className="mt-8">
-            <div className="flex items-baseline justify-between">
-              <p className="text-4xl font-semibold tracking-tight">
-                {learnerCount}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {classroom.maxStudents
-                  ? `/ ${classroom.maxStudents}`
-                  : "learners"}
-              </p>
-            </div>
-            {classroom.maxStudents ? (
-              <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${learnerCapacity}%` }}
-                />
-              </div>
-            ) : null}
-            <p className="mt-3 text-sm text-muted-foreground">
-              {classroom.maxStudents
-                ? `${classroom.maxStudents - learnerCount} learner spaces remain.`
-                : "This classroom has no learner limit."}
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(20rem,.9fr)]">
+      <div className="space-y-5">
+        <LessonPanel title="Upcoming lessons" description="Next scheduled lesson for this classroom." lessons={upcomingLessons.slice(0, 1)} />
+        <LessonPanel title="Recent lessons" description="Recently held lessons and their status." lessons={lessons.filter((lesson) => new Date(lesson.scheduledAt).getTime() < Date.now()).slice(0, 3)} />
+      </div>
+      <div className="space-y-5">
+        <Card className="py-0 shadow-none">
+          <CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><Info className="size-5 text-primary" />Classroom information</CardTitle><p className="text-sm text-muted-foreground">Key details about this classroom.</p></CardHeader>
+          <CardContent className="divide-y px-5">
+            <InfoRow label="Subject" value={subjectName} />
+            <InfoRow label="Recurrence" value={`Weekly (${classroom.recurrence.daysOfWeek.map((day) => dayNames[day]).join(" & ")})`} />
+            <InfoRow label="Start time" value={classroom.recurrence.startTime} />
+            <InfoRow label="Duration" value={`${classroom.lessonDurationMins} minutes`} />
+            <InfoRow label="Capacity" value={classroom.maxStudents ? `${learnerCount} / ${classroom.maxStudents} learners` : `${learnerCount} learners`} />
+          </CardContent>
+        </Card>
+        <Card className="py-0 shadow-none">
+          <CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><Users className="size-5 text-primary" />Learners</CardTitle><p className="text-sm text-muted-foreground">Enrolled learners in this classroom.</p></CardHeader>
+          <CardContent className="px-5">
+            {learnerRows.length ? learnerRows.slice(0, 3).map((student) => <div key={student.id} className="flex items-center gap-3 border-b py-3 last:border-0"><span className="grid size-9 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{initials(student.learner)}</span><div className="min-w-0"><p className="truncate text-sm font-medium">{student.learner ? `${student.learner.firstName} ${student.learner.lastName}` : "Learner profile"}</p><p className="text-xs text-muted-foreground">Learner</p></div></div>) : <p className="py-4 text-sm text-muted-foreground">No learners have been added yet.</p>}
+          </CardContent>
+        </Card>
+      </div>
+      <Card className="py-0 shadow-none xl:col-span-2">
+        <CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />Lesson schedule</CardTitle><p className="text-sm text-muted-foreground">All scheduled sessions for this classroom.</p></CardHeader>
+        <CardContent className="px-4 pb-4"><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Type</TableHead><TableHead>Duration</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>{lessons.slice(0, 8).map((lesson) => <TableRow key={lesson.id}><TableCell className="font-medium">{formatShortDate(lesson.scheduledAt)} · {formatTime(lesson.scheduledAt)}</TableCell><TableCell>{lesson.origin === "ONE_OFF" ? "Extra lesson" : "Lesson"}</TableCell><TableCell>{lesson.durationMins} min</TableCell><TableCell><Badge variant="outline" className="capitalize">{lesson.status}</Badge></TableCell></TableRow>)}</TableBody></Table></CardContent>
+      </Card>
     </div>
   );
 }
 
-function Metric({
-  label,
-  value,
-  signal,
-  detail,
-}: {
-  label: string;
-  value: string;
-  signal: string;
-  detail: string;
-}) {
+function DetailMetric({ icon: Icon, label, value, detail }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card/70 p-5 shadow-sm">
-      <div className="flex items-center justify-between gap-3">
-        <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </dt>
-        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-          {signal}
-        </span>
-      </div>
-      <dd className="mt-3 text-3xl font-semibold tracking-tight capitalize">
-        {value}
-      </dd>
-      <p className="mt-5 text-sm font-medium text-foreground">{detail}</p>
-    </div>
+    <Card className="min-h-24 py-0 shadow-none"><CardContent className="flex h-full items-center gap-4 p-5"><Icon className="size-6 shrink-0 text-primary" /><div className="min-w-0"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 truncate text-sm font-semibold">{value}</p><p className="mt-0.5 truncate text-xs text-muted-foreground">{detail}</p></div></CardContent></Card>
   );
+}
+
+function LessonPanel({ title, description, lessons }: { title: string; description: string; lessons: Array<{ id: string; scheduledAt: string; durationMins: number; status: string }> }) {
+  return <Card className="py-0 shadow-none"><CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />{title}</CardTitle><p className="text-sm text-muted-foreground">{description}</p></CardHeader><CardContent className="px-4">{lessons.length ? lessons.map((lesson) => <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4 last:border-0"><div><p className="text-sm font-semibold">{formatShortDate(lesson.scheduledAt)} · {formatTime(lesson.scheduledAt)}</p><p className="mt-1 text-xs text-muted-foreground">{lesson.durationMins} minute lesson</p></div><Badge variant="outline" className="capitalize">{lesson.status}</Badge></div>) : <p className="py-5 text-sm text-muted-foreground">No lessons to show yet.</p>}</CardContent></Card>;
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return <div className="flex items-center justify-between gap-5 py-2.5 text-sm"><span className="text-muted-foreground">{label}</span><span className="text-right font-medium">{value}</span></div>;
 }
 
 function LearnerGrid({

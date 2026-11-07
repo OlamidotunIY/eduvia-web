@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Layers3, PlayCircle, Plus, UsersRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,7 @@ import {
   useLearnerCandidatesQuery,
   useCloseClassroomMutation,
   usePauseClassroomMutation,
+  useClassroomEnrollmentCounts,
 } from "../../application";
 import { CreateClassroomDialog } from "../components/create-classroom-dialog";
 import { AddLearnerDialog } from "../components/classroom-action-dialogs";
@@ -55,6 +57,18 @@ export function ClassroomsPage() {
     learnerClassroom?.id,
   );
   const canCreate = permissions.includes("classrooms:create");
+  const classroomItems = classrooms.data ?? [];
+  const enrollmentCounts = useClassroomEnrollmentCounts(
+    organizationId,
+    classroomItems,
+  );
+  const totalLearners = [...enrollmentCounts.values()].reduce(
+    (total, count) => total + count,
+    0,
+  );
+  const activeClassrooms = classroomItems.filter(
+    (item) => item.status.toLowerCase() === "active",
+  ).length;
 
   const openClassroom = useCallback(
     (classroom: Classroom) => navigate(classroomRoute(classroom.id)),
@@ -102,16 +116,34 @@ export function ClassroomsPage() {
     <section className="flex min-h-0 flex-1 flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-primary">Teaching workspace</p>
+          <p className="text-sm font-medium tracking-wide text-primary uppercase">
+            Classroom management
+          </p>
           <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight">
             Classrooms
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Organise learner groups, recurring lessons, and the teaching work
-            that happens around them.
+            Manage learning groups, schedules, and enrolled learners.
           </p>
         </div>
         {createAction}
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <ClassroomMetric
+          icon={Layers3}
+          label="Total classrooms"
+          value={classroomItems.length}
+        />
+        <ClassroomMetric
+          icon={PlayCircle}
+          label="Active classrooms"
+          value={activeClassrooms}
+        />
+        <ClassroomMetric
+          icon={UsersRound}
+          label="Enrolled learners"
+          value={totalLearners}
+        />
       </div>
       {classrooms.error ? (
         <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -126,8 +158,16 @@ export function ClassroomsPage() {
           available.
         </p>
       ) : null}
+      <div className="mt-4">
+        <h2 className="font-heading text-2xl font-semibold tracking-tight">
+          All classrooms
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Organize and manage your teaching spaces.
+        </p>
+      </div>
       <ClassroomsTable
-        classrooms={classrooms.data ?? []}
+        classrooms={classroomItems}
         subjects={subjects.data ?? []}
         isLoading={classrooms.isPending}
         isReloading={classrooms.isFetching && !classrooms.isPending}
@@ -217,5 +257,31 @@ export function ClassroomsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </section>
+  );
+}
+
+function ClassroomMetric({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+}) {
+  return (
+    <Card className="min-h-28 bg-card/60 py-0 shadow-none">
+      <CardContent className="flex h-full items-center gap-5 p-5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+          <Icon className="size-5" />
+        </span>
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="mt-1 font-heading text-3xl font-semibold tracking-tight">
+            {value}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import type { Classroom } from "@/shared/domain";
 import { classroomRepository } from "../../infrastructure";
 
 export const classroomsQueryKey = (organizationId: string) =>
@@ -46,6 +47,28 @@ export function useClassroomsQuery(organizationId: string | undefined) {
     queryFn: () => classroomRepository.list(organizationId!),
     enabled: Boolean(organizationId),
   });
+}
+
+export function useClassroomEnrollmentCounts(
+  organizationId: string | undefined,
+  classrooms: Classroom[],
+) {
+  const results = useQueries({
+    queries: classrooms.map((classroom) => ({
+      queryKey: classroomStudentsQueryKey(organizationId ?? "", classroom.id),
+      queryFn: () => classroomRepository.listStudents(organizationId!, classroom.id),
+      enabled: Boolean(organizationId),
+      staleTime: 30_000,
+    })),
+  });
+
+  return new Map(
+    classrooms.map((classroom, index) => [
+      classroom.id,
+      results[index]?.data?.filter((student) => student.status === "active")
+        .length ?? 0,
+    ]),
+  );
 }
 
 export function useOrganizationSubjectsQuery(
