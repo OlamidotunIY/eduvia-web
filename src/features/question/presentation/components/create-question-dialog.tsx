@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
-import type { CreateQuestionInput, QuestionType } from "../../domain";
+import type { CreateQuestionInput, QuestionType } from "@/shared/domain";
 
 interface CreateQuestionDialogProps {
   open: boolean;

@@ -1,11 +1,12 @@
 import {
+  Building2,
   Calculator,
   GraduationCap,
   Leaf,
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
-import type { Conversation } from "../../domain/types";
+import type { Conversation } from "@/shared/domain";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 
 interface ConversationItemProps {
@@ -23,29 +24,29 @@ export function ConversationItem({
     if (conversation.type === "direct" && conversation.avatar) {
       return (
         <div className="relative shrink-0">
-          <Avatar className="size-10 rounded-xl border border-border/40">
+          <Avatar className="size-10 rounded-full border border-border/40">
             <AvatarImage
               src={conversation.avatar}
               alt={conversation.name}
-              className="object-cover"
+              className="object-cover rounded-full"
             />
-            <AvatarFallback className="rounded-xl text-xs font-semibold bg-muted">
+            <AvatarFallback className="rounded-full text-xs font-semibold bg-muted">
               {conversation.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           {conversation.online && (
-            <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
+            <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
           )}
         </div>
       );
     }
 
     const colorClasses = {
-      emerald: "bg-primary/20 text-primary border-primary/30",
-      purple: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-      blue: "bg-sky-500/20 text-sky-400 border-sky-500/30",
-      amber: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-      leaf: "bg-emerald-600/20 text-emerald-400 border-emerald-600/30",
+      emerald: "bg-[#0f3424] text-[#00c978] border-[#1c553a]",
+      purple: "bg-[#1e1933] text-[#a78bfa] border-[#372a5a]",
+      blue: "bg-[#112438] text-[#38bdf8] border-[#1c4164]",
+      amber: "bg-[#2d1f14] text-[#fb923c] border-[#52331d]",
+      leaf: "bg-[#0f3424] text-[#4ade80] border-[#1c553a]",
     }[conversation.iconColor ?? "emerald"];
 
     const IconComponent = {
@@ -54,17 +55,17 @@ export function ConversationItem({
       calculator: Calculator,
       shield: ShieldCheck,
       leaf: Leaf,
-    }[conversation.iconType ?? "users"];
+    }[conversation.iconType ?? "users"] ?? Building2;
 
     return (
       <div className="relative shrink-0">
         <div
           className={`flex size-10 items-center justify-center rounded-xl border ${colorClasses} transition-all`}
         >
-          <IconComponent className="size-5" />
+          <IconComponent className="size-4.5" />
         </div>
         {conversation.online && (
-          <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
+          <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
         )}
       </div>
     );
@@ -74,10 +75,10 @@ export function ConversationItem({
     <button
       type="button"
       onClick={onClick}
-      className={`group flex w-full items-center gap-3 p-2.5 text-left transition-all ${
+      className={`group flex w-full items-center gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer border ${
         isSelected
-          ? "rounded-xl border border-primary/30 bg-primary/10 shadow-xs"
-          : "rounded-xl border border-transparent hover:border-border/40 hover:bg-muted/30"
+          ? "bg-[#0c2419] border-[#17432e]"
+          : "border-transparent hover:bg-muted/20"
       }`}
     >
       {renderIcon()}
@@ -85,14 +86,18 @@ export function ConversationItem({
       <div className="flex min-w-0 flex-1 flex-col justify-center">
         <div className="flex items-center justify-between gap-1">
           <span
-            className={`truncate text-xs font-semibold ${
-              isSelected ? "text-foreground font-bold" : "text-foreground"
+            className={`truncate text-xs font-medium text-foreground ${
+              isSelected ? "font-semibold" : ""
             }`}
           >
             {conversation.name}
           </span>
           {conversation.lastMessageTime && (
-            <span className="shrink-0 text-[11px] text-muted-foreground/70">
+            <span
+              className={`shrink-0 text-[11px] ${
+                isSelected ? "text-emerald-400 font-medium" : "text-muted-foreground/70"
+              }`}
+            >
               {conversation.lastMessageTime}
             </span>
           )}
@@ -104,7 +109,7 @@ export function ConversationItem({
           </span>
 
           {conversation.unreadCount > 0 && (
-            <span className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-xs">
+            <span className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white shadow-xs">
               {conversation.unreadCount}
             </span>
           )}

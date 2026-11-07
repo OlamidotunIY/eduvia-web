@@ -1,4 +1,4 @@
-import { MessageSquare, Plus, Users } from "lucide-react";
+import { MessageSquare, Plus, UsersRound } from "lucide-react";
 import noConversationIllustration from "@/assets/eduvia_no_conversation_selected_transparent.png";
 import { Button } from "@/shared/ui/button";
 
@@ -12,10 +12,10 @@ export function ChatEmptyState({
   onBrowseContacts,
 }: ChatEmptyStateProps) {
   return (
-    <div className="flex h-full flex-1 flex-col rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden">
+    <div className="flex h-full flex-1 min-w-0 flex-col bg-background overflow-hidden">
       {/* 1. Mini Top Breadcrumb/Header */}
-      <div className="flex items-center gap-2 border-b border-border/50 px-5 py-3.5 bg-background/30">
-        <div className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+      <div className="flex h-14 items-center gap-2 border-b border-border/40 px-5 shrink-0 bg-background/50">
+        <div className="flex size-7 items-center justify-center rounded-lg border border-border/40 bg-muted/20 text-muted-foreground">
           <MessageSquare className="size-3.5" />
         </div>
         <span className="font-heading text-xs font-bold text-foreground">
@@ -44,7 +44,7 @@ export function ChatEmptyState({
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Button
             onClick={onCreateNewMessage}
-            className="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all gap-1.5"
+            className="h-9 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-semibold shadow-xs transition-all gap-1.5 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Create new message</span>
@@ -53,9 +53,9 @@ export function ChatEmptyState({
           <Button
             variant="outline"
             onClick={onBrowseContacts}
-            className="h-9 rounded-xl border-border/70 bg-muted/20 px-4 text-xs font-semibold text-foreground hover:bg-muted/40 transition-all gap-1.5"
+            className="h-9 rounded-lg border-border/60 bg-muted/20 px-4 text-xs font-semibold text-foreground hover:bg-muted/40 transition-all gap-1.5 cursor-pointer"
           >
-            <Users className="size-3.5" />
+            <UsersRound className="size-3.5" />
             <span>Browse contacts</span>
           </Button>
         </div>

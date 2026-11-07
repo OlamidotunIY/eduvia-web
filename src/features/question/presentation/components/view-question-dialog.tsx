@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import type { QuestionRecord } from "../../domain";
+import type { QuestionRecord } from "@/shared/domain";
 
 interface ViewQuestionDialogProps {
   question: QuestionRecord | null;

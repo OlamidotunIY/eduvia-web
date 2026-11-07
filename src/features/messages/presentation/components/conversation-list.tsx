@@ -1,5 +1,5 @@
 import { CheckCheck, MoreHorizontal, Search } from "lucide-react";
-import type { Conversation, ConversationFilter } from "../../domain/types";
+import type { Conversation, ConversationFilter } from "@/shared/domain";
 import { ConversationItem } from "./conversation-item";
 import { ConversationListEmpty } from "./conversation-list-empty";
 import {
@@ -40,10 +40,10 @@ export function ConversationList({
   ];
 
   return (
-    <div className="flex h-full w-full lg:w-96 shrink-0 flex-col rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden p-3.5 space-y-3">
+    <div className="flex h-full w-80 md:w-88 lg:w-96 shrink-0 flex-col border-r border-border/40 bg-background/60 overflow-hidden">
       {/* 1. Header with Title and More Options */}
-      <div className="flex items-center justify-between px-1">
-        <h2 className="font-heading text-xl font-bold tracking-tight text-foreground">
+      <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+        <h2 className="font-heading text-lg font-bold tracking-tight text-foreground">
           Messages
         </h2>
 
@@ -52,15 +52,15 @@ export function ConversationList({
             render={
               <button
                 type="button"
-                className="flex size-8 items-center justify-center rounded-lg border border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
+                className="flex size-7 items-center justify-center rounded-md border border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
               />
             }
           >
             <MoreHorizontal className="size-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-44">
             <DropdownMenuItem onClick={onMarkAllAsRead} className="gap-2 text-xs">
-              <CheckCheck className="size-4" />
+              <CheckCheck className="size-3.5" />
               <span>Mark all as read</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -68,7 +68,7 @@ export function ConversationList({
       </div>
 
       {/* 2. Filter Pills */}
-      <div className="flex items-center gap-1.5 px-0.5">
+      <div className="flex items-center gap-2 px-4 pb-3">
         {filterTabs.map((tab) => {
           const isActive = activeFilter === tab.id;
           return (
@@ -76,10 +76,10 @@ export function ConversationList({
               key={tab.id}
               type="button"
               onClick={() => onFilterChange(tab.id)}
-              className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-all ${
+              className={`rounded-full px-3.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
               }`}
             >
               {tab.label}
@@ -89,19 +89,21 @@ export function ConversationList({
       </div>
 
       {/* 3. Search Conversations Input */}
-      <div className="relative flex items-center">
-        <Search className="absolute left-3 size-3.5 text-muted-foreground pointer-events-none" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search conversations..."
-          className="w-full rounded-xl border border-border/50 bg-muted/20 py-1.5 pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground/70 transition-all focus:border-primary/60 focus:bg-background/80 focus:outline-none focus:ring-1 focus:ring-primary/40"
-        />
+      <div className="px-4 pb-3">
+        <div className="relative flex items-center">
+          <Search className="absolute left-3 size-3.5 text-muted-foreground/70 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search conversations..."
+            className="w-full h-8.5 rounded-lg border border-border/40 bg-[#0d1612] pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 transition-colors focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+          />
+        </div>
       </div>
 
       {/* 4. Scrollable Conversations List */}
-      <div className="flex flex-1 flex-col overflow-y-auto pr-1 space-y-1">
+      <div className="flex flex-1 flex-col overflow-y-auto px-2 pb-2 space-y-1">
         {conversations.length === 0 ? (
           <ConversationListEmpty onStartNewChat={onStartNewChat} />
         ) : (

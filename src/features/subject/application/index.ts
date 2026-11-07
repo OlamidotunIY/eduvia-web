@@ -1,2 +1,2 @@
-export * from "./queries/use-subjects.query";
-export * from "./mutations/use-subject.mutations";
+export * from "./queries";
+export * from "./mutations";

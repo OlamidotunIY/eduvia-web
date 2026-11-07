@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import type { OrganizationMemberRecord } from "../../domain";
+import type { OrganizationMemberRecord } from "@/shared/domain";
 
 interface ChangeRoleDialogProps {
   open: boolean;

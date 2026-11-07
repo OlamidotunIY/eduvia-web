@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { useOrganizationMembersQuery } from "@/features/organization/application/queries/use-organization-members.query";
 import { sessionStore } from "@/shared/store";
-import type { OrganizationMemberRecord } from "@/features/organization/domain/member.types";
+import type { OrganizationMemberRecord } from "@/shared/domain";
 
 export interface ContactItem {
   id: string;

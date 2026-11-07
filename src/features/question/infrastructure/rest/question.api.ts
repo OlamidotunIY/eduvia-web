@@ -5,7 +5,7 @@ import type {
   QuestionRecord,
   QuestionSummary,
   UpdateQuestionInput,
-} from "../../domain";
+} from "@/shared/domain";
 
 export const questionApi = {
   search: (organizationId: string, filter?: QuestionFilter) =>
@@ -34,7 +34,7 @@ export const questionApi = {
 
   create: (organizationId: string, input: CreateQuestionInput) =>
     apiClient
-      .post<{ id: string }>("/questions", input, {
+      .post<QuestionRecord>("/questions", input, {
         headers: { "x-organization-id": organizationId },
       })
       .then((res) => res.data),
@@ -45,14 +45,14 @@ export const questionApi = {
     input: UpdateQuestionInput,
   ) =>
     apiClient
-      .patch<{ id: string }>(`/questions/${questionId}`, input, {
+      .patch<QuestionRecord>(`/questions/${questionId}`, input, {
         headers: { "x-organization-id": organizationId },
       })
       .then((res) => res.data),
 
   publish: (organizationId: string, questionId: string) =>
     apiClient
-      .post<{ id: string; isPublished: boolean }>(
+      .post<{ success: boolean }>(
         `/questions/${questionId}/publish`,
         {},
         {
@@ -63,7 +63,7 @@ export const questionApi = {
 
   unpublish: (organizationId: string, questionId: string) =>
     apiClient
-      .post<{ id: string; isPublished: boolean }>(
+      .post<{ success: boolean }>(
         `/questions/${questionId}/unpublish`,
         {},
         {
@@ -74,7 +74,7 @@ export const questionApi = {
 
   delete: (organizationId: string, questionId: string) =>
     apiClient
-      .delete<{ id: string; success: boolean }>(`/questions/${questionId}`, {
+      .delete(`/questions/${questionId}`, {
         headers: { "x-organization-id": organizationId },
       })
       .then((res) => res.data),

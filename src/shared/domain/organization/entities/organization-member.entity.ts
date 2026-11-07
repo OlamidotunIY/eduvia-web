@@ -12,8 +12,10 @@ export interface OrganizationMemberUser {
   id: string;
   firstName?: string;
   lastName?: string;
+  fullName?: string;
   email: string;
   image?: string | null;
+  avatarUrl?: string | null;
   status?: string;
 }
 
@@ -27,6 +29,12 @@ export interface OrganizationMemberRecord {
   status: OrganizationMemberStatus;
   joinedAt: string;
   updatedAt: string;
+  fullName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  image?: string | null;
+  avatarUrl?: string | null;
   user?: OrganizationMemberUser | null;
 }
 

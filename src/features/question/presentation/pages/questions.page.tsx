@@ -71,7 +71,7 @@ import type {
   QuestionFilter,
   QuestionRecord,
   QuestionType,
-} from "../../domain";
+} from "@/shared/domain";
 import { CreateQuestionDialog } from "../components/create-question-dialog";
 import { ViewQuestionDialog } from "../components/view-question-dialog";
 
@@ -135,8 +135,12 @@ export function QuestionsPage() {
     publishedOrgQuestions: 0,
   };
 
-  const items = questionsQuery.data?.items ?? [];
-  const totalItems = questionsQuery.data?.total ?? items.length;
+  const items = Array.isArray(questionsQuery.data)
+    ? questionsQuery.data
+    : (questionsQuery.data as { items?: QuestionRecord[] } | undefined)?.items ?? [];
+  const totalItems = Array.isArray(questionsQuery.data)
+    ? questionsQuery.data.length
+    : (questionsQuery.data as { total?: number } | undefined)?.total ?? items.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const currentPage = Math.min(page, totalPages - 1);
 

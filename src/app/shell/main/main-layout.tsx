@@ -18,12 +18,18 @@ function MainLayoutContent() {
     >
       <MainHeaderSlotProvider>
         <MainSidebar />
-        <SidebarInset className="h-svh min-h-0 w-0 min-w-0 overflow-hidden md:h-[calc(100svh-1rem)]">
+        <SidebarInset
+          className={
+            isMessagesPage
+              ? "h-svh min-h-0 w-0 min-w-0 overflow-hidden m-0! ml-0! rounded-none! md:h-svh md:m-0! md:ml-0! md:rounded-none! shadow-none!"
+              : "h-svh min-h-0 w-0 min-w-0 overflow-hidden md:h-[calc(100svh-1rem)]"
+          }
+        >
           <MainHeader />
           <main
             className={`flex min-h-0 min-w-0 flex-1 flex-col ${
               isMessagesPage
-                ? "overflow-hidden p-4 md:p-6"
+                ? "overflow-hidden p-0 m-0"
                 : isCalendarPage
                   ? "overflow-hidden p-4 md:p-6"
                   : "overflow-auto p-4 md:p-6"

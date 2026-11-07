@@ -7,10 +7,9 @@ import {
   Search,
   ShieldCheck,
   Star,
-  Users,
   UsersRound,
 } from "lucide-react";
-import type { Conversation } from "../../domain/types";
+import type { Conversation } from "@/shared/domain";
 import { ChatEmptyState } from "./chat-empty-state";
 import { ChatMessage } from "./chat-message";
 import { MessageInput } from "./message-input";
@@ -50,13 +49,13 @@ export function ChatRoom({
   const renderHeaderIcon = () => {
     if (conversation.type === "direct" && conversation.avatar) {
       return (
-        <Avatar className="size-9 rounded-xl border border-border/50">
+        <Avatar className="size-9 rounded-full border border-border/40">
           <AvatarImage
             src={conversation.avatar}
             alt={conversation.name}
             className="object-cover"
           />
-          <AvatarFallback className="rounded-xl text-xs font-semibold bg-muted">
+          <AvatarFallback className="rounded-full text-xs font-semibold bg-muted">
             {conversation.name.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -64,11 +63,11 @@ export function ChatRoom({
     }
 
     const colorClasses = {
-      emerald: "bg-primary/20 text-primary border-primary/30",
-      purple: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-      blue: "bg-sky-500/20 text-sky-400 border-sky-500/30",
-      amber: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-      leaf: "bg-emerald-600/20 text-emerald-400 border-emerald-600/30",
+      emerald: "bg-[#0f3424] text-[#00c978] border-[#1c553a]",
+      purple: "bg-[#1e1933] text-[#a78bfa] border-[#372a5a]",
+      blue: "bg-[#112438] text-[#38bdf8] border-[#1c4164]",
+      amber: "bg-[#2d1f14] text-[#fb923c] border-[#52331d]",
+      leaf: "bg-[#0f3424] text-[#4ade80] border-[#1c553a]",
     }[conversation.iconColor ?? "emerald"];
 
     const IconComponent = {
@@ -89,9 +88,9 @@ export function ChatRoom({
   };
 
   return (
-    <div className="flex h-full flex-1 flex-col rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm overflow-hidden">
+    <div className="flex h-full flex-1 min-w-0 flex-col bg-background overflow-hidden">
       {/* 1. Chat Header */}
-      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3 bg-background/30">
+      <div className="flex h-14 items-center justify-between border-b border-border/40 px-5 shrink-0 bg-background/50">
         <div className="flex items-center gap-3 min-w-0">
           {renderHeaderIcon()}
           <div className="min-w-0 flex-1">
@@ -99,7 +98,7 @@ export function ChatRoom({
               {conversation.name}
             </h3>
             {conversation.subtitle && (
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 {conversation.subtitle}
               </p>
             )}
@@ -107,32 +106,32 @@ export function ChatRoom({
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center gap-1 shrink-0 text-muted-foreground">
+        <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
           <button
             type="button"
             title="Search in conversation"
-            className="flex size-8 items-center justify-center rounded-lg hover:bg-muted/40 hover:text-foreground transition-colors"
+            className="flex size-8 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
           >
             <Search className="size-4" />
           </button>
           <button
             type="button"
             title="Star conversation"
-            className="flex size-8 items-center justify-center rounded-lg hover:bg-muted/40 hover:text-foreground transition-colors"
+            className="flex size-8 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
           >
             <Star className="size-4" />
           </button>
           <button
             type="button"
             title="Conversation members"
-            className="flex size-8 items-center justify-center rounded-lg hover:bg-muted/40 hover:text-foreground transition-colors"
+            className="flex size-8 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
           >
-            <Users className="size-4" />
+            <UsersRound className="size-4" />
           </button>
           <button
             type="button"
             title="More options"
-            className="flex size-8 items-center justify-center rounded-lg hover:bg-muted/40 hover:text-foreground transition-colors"
+            className="flex size-8 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
           >
             <MoreHorizontal className="size-4" />
           </button>
@@ -140,10 +139,10 @@ export function ChatRoom({
       </div>
 
       {/* 2. Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {/* Date separator pill */}
-        <div className="flex justify-center">
-          <span className="rounded-full border border-border/50 bg-muted/40 px-3 py-1 text-[11px] font-medium text-muted-foreground/80 shadow-2xs">
+        <div className="flex justify-center my-1">
+          <span className="rounded-full border border-border/40 bg-[#0d1612] px-3.5 py-1 text-[11px] font-medium text-muted-foreground/80 shadow-2xs">
             Today, Jan 27
           </span>
         </div>

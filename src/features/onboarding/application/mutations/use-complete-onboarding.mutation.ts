@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { onboardingApi } from '../../infrastructure/rest/onboarding.api'
+import type { CompleteOnboardingInput } from '@/shared/domain'
+import { onboardingRepository } from '../../infrastructure'
 
 export function useCompleteOnboardingMutation() {
   return useMutation({
-    mutationFn: (input: { userType: 'teacher' | 'parent'; firstName: string; lastName: string; timezone: string }) => onboardingApi.complete(input),
+    mutationFn: (input: CompleteOnboardingInput) => onboardingRepository.complete(input),
   })
 }

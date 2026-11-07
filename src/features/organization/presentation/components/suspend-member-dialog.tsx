@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import type { OrganizationMemberRecord } from "../../domain";
+import type { OrganizationMemberRecord } from "@/shared/domain";
 
 interface SuspendMemberDialogProps {
   open: boolean;

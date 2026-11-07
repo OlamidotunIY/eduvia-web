@@ -24,7 +24,7 @@ export function ConversationListEmpty({
       </p>
       <Button
         onClick={onStartNewChat}
-        className="mt-5 h-8.5 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all gap-1.5"
+        className="mt-5 h-8.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-semibold shadow-xs transition-all gap-1.5 cursor-pointer"
       >
         <Plus className="size-3.5" />
         <span>Start new chat</span>

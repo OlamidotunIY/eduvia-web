@@ -4,7 +4,7 @@ import type {
   OrganizationMemberRecord,
   OrganizationRoleRecord,
   SendInvitationInput,
-} from '../../domain'
+} from '@/shared/domain'
 
 export const organizationApi = {
   create: (body: {

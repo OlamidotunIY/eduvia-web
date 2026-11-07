@@ -1,1 +1,1 @@
-export * from "./queries/use-curriculum.query";
+export * from "./queries";

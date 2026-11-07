@@ -1,2 +1,2 @@
-export { MessagesPage } from "./presentation/pages/messages.page";
-export * from "./domain/types";
+export * from "./application";
+export * from "./presentation";

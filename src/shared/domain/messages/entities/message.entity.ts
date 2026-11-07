@@ -45,3 +45,17 @@ export interface Conversation {
   isPinned?: boolean;
   messages: Message[];
 }
+
+export interface SendMessageInput {
+  content: string;
+  attachmentUrl?: string | null;
+}
+
+export interface CreateConversationInput {
+  orgId: string;
+  type: string;
+  participants: string[];
+  studentId?: string | null;
+  parentId?: string | null;
+  subject?: string | null;
+}

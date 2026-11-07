@@ -1,1 +1,1 @@
-export * from './pages/role-selection.page'
+export * from "./pages";

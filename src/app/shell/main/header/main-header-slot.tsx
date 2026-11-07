@@ -6,6 +6,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
+import { createPortal } from "react-dom";
 
 type MainHeaderSlotContextValue = {
   element: HTMLDivElement | null;
@@ -36,4 +37,10 @@ export function useMainHeaderSlot() {
   }
 
   return context;
+}
+
+export function MainHeaderPortal({ children }: { children: ReactNode }) {
+  const { element } = useMainHeaderSlot();
+  if (!element) return null;
+  return createPortal(children, element);
 }

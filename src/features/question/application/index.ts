@@ -1,1 +1,2 @@
-export * from "./use-questions.query";
+export * from "./queries";
+export * from "./mutations";

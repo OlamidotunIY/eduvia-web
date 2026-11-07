@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Conversation, ConversationFilter } from "../../domain/types";
+import type { Conversation, ConversationFilter } from "@/shared/domain";
 import { ChatRoom } from "../components/chat-room";
 import { ConversationList } from "../components/conversation-list";
 import { MessagesHeader } from "../components/messages-header";
@@ -11,7 +11,7 @@ import {
   useConversationDetailQuery,
   useSendMessageMutation,
   useCreateConversationMutation,
-} from "../../application/queries/use-messages.query";
+} from "../../application";
 import { useOrganizationMembersQuery } from "@/features/organization/application/queries/use-organization-members.query";
 
 export function MessagesPage() {
@@ -132,28 +132,30 @@ export function MessagesPage() {
     }
 
     try {
-      const res = await createConversationMutation.mutateAsync({
+      const res = (await createConversationMutation.mutateAsync({
         orgId: organizationId,
         type: "student_teacher",
         participants: [currentUserId, contact.id],
         studentId: contact.id,
         subject: `Chat with ${contact.name}`,
-      });
-      if (res?.id) {
-        setSelectedId(res.id);
+      })) as { id?: string; conversationId?: string } | undefined;
+      const createdId = res?.id || res?.conversationId;
+      if (createdId) {
+        setSelectedId(createdId);
       }
     } catch {
       // Fallback: create conversation with general params
       try {
-        const res = await createConversationMutation.mutateAsync({
+        const res = (await createConversationMutation.mutateAsync({
           orgId: organizationId,
           type: "parent_admin",
           participants: [currentUserId, contact.id],
           parentId: contact.id,
           subject: `Chat with ${contact.name}`,
-        });
-        if (res?.id) {
-          setSelectedId(res.id);
+        })) as { id?: string; conversationId?: string } | undefined;
+        const createdId = res?.id || res?.conversationId;
+        if (createdId) {
+          setSelectedId(createdId);
         }
       } catch (e) {
         console.error("Failed to start conversation:", e);
@@ -173,9 +175,9 @@ export function MessagesPage() {
         onOpenNewChat={() => setNewChatDialogOpen(true)}
       />
 
-      {/* 2. Main Dual-Card Split Layout (Chat List & Chat Room) */}
-      <div className="flex h-full w-full min-h-0 min-w-0 flex-1 gap-4 lg:gap-5 overflow-hidden">
-        {/* Left Column: Chat List Card */}
+      {/* 2. Main Split Layout (Chat List & Chat Room flush against each other with zero gap) */}
+      <div className="flex h-full w-full min-h-0 min-w-0 flex-1 overflow-hidden">
+        {/* Left Column: Chat List */}
         <ConversationList
           conversations={filteredConversations}
           selectedId={selectedId}

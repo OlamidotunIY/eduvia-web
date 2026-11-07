@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import type { SendInvitationInput } from "../../domain";
+import type { SendInvitationInput } from "@/shared/domain";
 
 interface InviteMemberDialogProps {
   open: boolean;

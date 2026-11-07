@@ -70,18 +70,13 @@ export const messagesApi = {
 
   createConversation: async (
     payload: CreateConversationPayload,
-  ): Promise<{ id: string }> => {
-    const response = await apiClient.post<{ id: string }>("/conversations", payload);
-    return response.data;
-  },
-
-  closeConversation: async (id: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.post<{ success: boolean }>(`/conversations/${id}/close`);
-    return response.data;
-  },
-
-  reopenConversation: async (id: string): Promise<{ success: boolean }> => {
-    const response = await apiClient.post<{ success: boolean }>(`/conversations/${id}/reopen`);
-    return response.data;
+  ): Promise<{ id: string; conversationId?: string }> => {
+    const response = await apiClient.post<{ id?: string; conversationId?: string }>(
+      "/conversations",
+      payload,
+    );
+    const data = response.data;
+    const id = data?.id ?? data?.conversationId ?? "";
+    return { id, conversationId: id };
   },
 };

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { ChangeMemberRoleInput } from '../../domain'
+import type { ChangeMemberRoleInput } from '@/shared/domain'
 import { organizationRepository } from '../../infrastructure/repository/organization.repository'
 import { ORGANIZATION_MEMBERS_QUERY_KEY } from '../queries/use-organization-members.query'
 

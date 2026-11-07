@@ -1,10 +1,17 @@
 import type {
+  Conversation,
+  ConversationType,
+  CreateConversationInput,
+  IMessagesRepository,
+  Message,
+  OrganizationMemberRecord,
+  SendMessageInput,
+} from "@/shared/domain";
+import type {
   ConversationSummaryBackendDto,
   MessageBackendDto,
-} from "./messages.api";
-import { messagesApi } from "./messages.api";
-import type { Conversation, Message, ConversationType } from "../domain/types";
-import type { OrganizationMemberRecord } from "@/features/organization/domain/member.types";
+} from "../rest/messages.api";
+import { messagesApi } from "../rest/messages.api";
 
 function formatTimestamp(isoString?: string | null): string {
   if (!isoString) return "";
@@ -87,11 +94,9 @@ export function mapBackendSummaryToDomain(
   currentUserId?: string,
   membersMap?: Map<string, OrganizationMemberRecord>,
 ): Conversation {
-  // Determine if it's a direct or group conversation
   const isGroup = dto.participants.length > 2 || dto.type === "group";
   const convType: ConversationType = isGroup ? "group" : "direct";
 
-  // Find other participant for direct conversation
   const otherParticipantId = dto.participants.find((p) => p !== currentUserId);
   const otherMember = otherParticipantId ? membersMap?.get(otherParticipantId) : undefined;
 
@@ -123,21 +128,21 @@ export function mapBackendSummaryToDomain(
   };
 }
 
-export const messagesRepository = {
-  listConversations: async (
+export class MessagesRepository implements IMessagesRepository {
+  async listConversations(
     orgId?: string,
     currentUserId?: string,
     membersMap?: Map<string, OrganizationMemberRecord>,
-  ): Promise<Conversation[]> => {
+  ): Promise<Conversation[]> {
     const dtos = await messagesApi.listConversations(orgId);
     return dtos.map((dto) => mapBackendSummaryToDomain(dto, currentUserId, membersMap));
-  },
+  }
 
-  getConversationDetail: async (
+  async getConversationDetail(
     id: string,
     currentUserId?: string,
     membersMap?: Map<string, OrganizationMemberRecord>,
-  ): Promise<{ conversation: Conversation; messages: Message[] }> => {
+  ): Promise<{ conversation: Conversation; messages: Message[] }> {
     const dto = await messagesApi.getConversationDetail(id);
     const conversation = mapBackendSummaryToDomain(dto, currentUserId, membersMap);
     const messages = (dto.messages ?? []).map((m) =>
@@ -150,23 +155,20 @@ export const messagesRepository = {
       conversation.lastMessageTime = last.createdAt;
     }
     return { conversation, messages };
-  },
+  }
 
-  sendMessage: async (
+  async sendMessage(
     conversationId: string,
-    payload: { content: string; attachmentUrl?: string | null },
-  ) => {
+    payload: SendMessageInput,
+  ): Promise<unknown> {
     return messagesApi.sendMessage(conversationId, payload);
-  },
+  }
 
-  createConversation: async (payload: {
-    orgId: string;
-    type: string;
-    participants: string[];
-    studentId?: string | null;
-    parentId?: string | null;
-    subject?: string | null;
-  }) => {
+  async createConversation(
+    payload: CreateConversationInput,
+  ): Promise<{ id: string; conversationId?: string }> {
     return messagesApi.createConversation(payload);
-  },
-};
+  }
+}
+
+export const messagesRepository = new MessagesRepository();

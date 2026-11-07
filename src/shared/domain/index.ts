@@ -4,3 +4,6 @@ export * from "./classroom";
 export * from "./subject";
 export * from "./assessment";
 export * from "./curriculum";
+export * from "./messages";
+export * from "./question";
+export * from "./onboarding";
