@@ -6,7 +6,7 @@ export function MainHeader() {
   const { setElement } = useMainHeaderSlot();
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 md:px-6">
+    <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4 md:px-6">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="self-stretch" />
       <div ref={setElement} className="flex min-w-0 flex-1 items-center" />
