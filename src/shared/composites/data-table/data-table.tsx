@@ -212,9 +212,9 @@ export function DataTable<TData extends RowData>({
       </div>
       <div className="overflow-y-auto border-y">
         {isEmpty ? (
-          <div className="flex min-h-[300px] flex-col">
+          <div className="flex min-h-[300px] flex-col overflow-hidden rounded-xl">
             <Table>
-              <TableHeader>
+              <TableHeader className="[&_tr]:bg-muted/70">
                 <HeaderRows table={table} />
               </TableHeader>
             </Table>
@@ -226,8 +226,9 @@ export function DataTable<TData extends RowData>({
             />
           </div>
         ) : (
+          <div className="overflow-hidden rounded-xl">
           <Table>
-            <TableHeader>
+            <TableHeader className="[&_tr]:bg-muted/70">
               <HeaderRows table={table} />
             </TableHeader>
             <TableBody>
@@ -256,6 +257,7 @@ export function DataTable<TData extends RowData>({
                   ))}
             </TableBody>
           </Table>
+          </div>
         )}
       </div>
       {!isLoading && table.getFilteredRowModel().rows.length > 0 ? (

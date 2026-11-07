@@ -81,6 +81,7 @@ export function ClassroomsPage() {
   const createAction = useMemo(
     () => (
       <Button
+        className="h-13 px-7 text-base"
         disabled={!canCreate}
         title={
           canCreate
@@ -113,13 +114,13 @@ export function ClassroomsPage() {
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-6">
+    <section className="mx-auto flex min-h-0 w-full max-w-[1460px] flex-1 flex-col gap-8 px-2 py-3">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium tracking-wide text-primary uppercase">
             Classroom management
           </p>
-          <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight">
+          <h1 className="mt-1 font-heading text-5xl font-semibold tracking-tight">
             Classrooms
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -159,7 +160,7 @@ export function ClassroomsPage() {
         </p>
       ) : null}
       <div className="mt-4">
-        <h2 className="font-heading text-2xl font-semibold tracking-tight">
+        <h2 className="font-heading text-4xl font-semibold tracking-tight">
           All classrooms
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -270,10 +271,10 @@ function ClassroomMetric({
   value: number;
 }) {
   return (
-    <Card className="min-h-28 bg-card/60 py-0 shadow-none">
-      <CardContent className="flex h-full items-center gap-5 p-5">
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-          <Icon className="size-5" />
+    <Card className="h-[115px] gap-0 bg-card/60 py-0 shadow-none">
+      <CardContent className="flex h-full items-center gap-6 px-10 py-5">
+        <span className="grid size-12 shrink-0 place-items-center text-primary">
+          <Icon className="size-9" />
         </span>
         <div>
           <p className="text-sm text-muted-foreground">{label}</p>

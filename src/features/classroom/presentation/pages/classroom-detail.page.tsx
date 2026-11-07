@@ -10,6 +10,7 @@ import {
   Pencil,
   RotateCcw,
   Settings2,
+  UserRound,
   Users,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -32,6 +33,14 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/shared/ui/empty";
 import {
   Tooltip,
   TooltipContent,
@@ -127,7 +136,7 @@ export function ClassroomDetailPage() {
 
   return (
     <TooltipProvider>
-      <section className="flex min-h-0 flex-1 flex-col gap-6">
+      <section className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col gap-6 py-1">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <Button
@@ -195,9 +204,9 @@ export function ClassroomDetailPage() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <DetailMetric
-            icon={Users}
+            icon={UserRound}
             label="Teacher"
             value="Teacher-led"
             detail="Primary teacher"
@@ -225,13 +234,12 @@ export function ClassroomDetailPage() {
         <Tabs value={tab} onValueChange={(value) => setTab(value as DetailTab)}>
           <TabsList
             aria-label="Classroom sections"
-            variant="line"
-            className="w-full justify-start gap-5 overflow-x-auto border-b border-border pb-1"
+            className="w-full justify-start gap-4 overflow-x-auto border-b border-border bg-transparent p-0 pb-2"
           >
-            <TabsTrigger value="overview"><BookOpen /> Overview</TabsTrigger>
-            <TabsTrigger value="lessons"><CalendarClock /> Lessons</TabsTrigger>
-            <TabsTrigger value="learners"><Users /> Learners</TabsTrigger>
-            <TabsTrigger value="settings"><Settings2 /> Settings</TabsTrigger>
+            <TabsTrigger className="h-9 flex-none rounded-full px-5 data-active:bg-primary data-active:text-primary-foreground" value="overview"><BookOpen /> Overview</TabsTrigger>
+            <TabsTrigger className="h-9 flex-none rounded-full px-5 data-active:bg-primary data-active:text-primary-foreground" value="lessons"><CalendarClock /> Lessons</TabsTrigger>
+            <TabsTrigger className="h-9 flex-none rounded-full px-5 data-active:bg-primary data-active:text-primary-foreground" value="learners"><Users /> Learners</TabsTrigger>
+            <TabsTrigger className="h-9 flex-none rounded-full px-5 data-active:bg-primary data-active:text-primary-foreground" value="settings"><Settings2 /> Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -244,6 +252,10 @@ export function ClassroomDetailPage() {
               lessons={lessons.data ?? []}
               students={students.data ?? []}
               subjectName={subjectName}
+              onSchedule={() => setIsScheduleOpen(true)}
+              onManageLearners={() => setIsLearnerOpen(true)}
+              canSchedule={canScheduleLessons}
+              canManageLearners={canManageLearners}
             />
           </TabsContent>
 
@@ -416,11 +428,16 @@ function Overview({
   lessons,
   students,
   subjectName,
+  onSchedule,
+  onManageLearners,
+  canSchedule,
+  canManageLearners,
 }: {
   classroom: {
     recurrence: {
       daysOfWeek: number[];
       startTime: string;
+      timezone: string;
       effectiveUntil: string | null;
     };
     lessonDurationMins: number;
@@ -446,6 +463,10 @@ function Overview({
     } | null;
   }>;
   subjectName: string;
+  onSchedule: () => void;
+  onManageLearners: () => void;
+  canSchedule: boolean;
+  canManageLearners: boolean;
 }) {
   const upcomingLessons = lessons.filter(
     (lesson) => new Date(lesson.scheduledAt).getTime() >= Date.now(),
@@ -455,30 +476,30 @@ function Overview({
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(20rem,.9fr)]">
       <div className="space-y-5">
-        <LessonPanel title="Upcoming lessons" description="Next scheduled lesson for this classroom." lessons={upcomingLessons.slice(0, 1)} />
+        <LessonPanel title="Upcoming lessons" description="Next scheduled lesson for this classroom." lessons={upcomingLessons.slice(0, 1)} emptyAction={<PermissionButton allowed={canSchedule} reason="You need lesson scheduling permission to schedule a lesson." size="sm" onClick={onSchedule}><CalendarClock /> Schedule lesson</PermissionButton>} />
         <LessonPanel title="Recent lessons" description="Recently held lessons and their status." lessons={lessons.filter((lesson) => new Date(lesson.scheduledAt).getTime() < Date.now()).slice(0, 3)} />
       </div>
       <div className="space-y-5">
-        <Card className="py-0 shadow-none">
+        <Card className="gap-0 py-0 shadow-none">
           <CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><Info className="size-5 text-primary" />Classroom information</CardTitle><p className="text-sm text-muted-foreground">Key details about this classroom.</p></CardHeader>
           <CardContent className="divide-y px-5">
             <InfoRow label="Subject" value={subjectName} />
             <InfoRow label="Recurrence" value={`Weekly (${classroom.recurrence.daysOfWeek.map((day) => dayNames[day]).join(" & ")})`} />
-            <InfoRow label="Start time" value={classroom.recurrence.startTime} />
+            <InfoRow label="Time zone" value={classroom.recurrence.timezone} />
             <InfoRow label="Duration" value={`${classroom.lessonDurationMins} minutes`} />
             <InfoRow label="Capacity" value={classroom.maxStudents ? `${learnerCount} / ${classroom.maxStudents} learners` : `${learnerCount} learners`} />
           </CardContent>
         </Card>
-        <Card className="py-0 shadow-none">
-          <CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><Users className="size-5 text-primary" />Learners</CardTitle><p className="text-sm text-muted-foreground">Enrolled learners in this classroom.</p></CardHeader>
+        <Card className="gap-0 py-0 shadow-none">
+          <CardHeader className="border-b py-5"><div className="flex items-start justify-between gap-3"><div><CardTitle className="flex items-center gap-2"><Users className="size-5 text-primary" />Learners</CardTitle><p className="mt-1 text-sm text-muted-foreground">Enrolled learners in this classroom.</p></div><PermissionButton allowed={canManageLearners} reason="You need learner management permission to add learners." variant="outline" size="sm" onClick={onManageLearners}>Manage learners</PermissionButton></div></CardHeader>
           <CardContent className="px-5">
-            {learnerRows.length ? learnerRows.slice(0, 3).map((student) => <div key={student.id} className="flex items-center gap-3 border-b py-3 last:border-0"><span className="grid size-9 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{initials(student.learner)}</span><div className="min-w-0"><p className="truncate text-sm font-medium">{student.learner ? `${student.learner.firstName} ${student.learner.lastName}` : "Learner profile"}</p><p className="text-xs text-muted-foreground">Learner</p></div></div>) : <p className="py-4 text-sm text-muted-foreground">No learners have been added yet.</p>}
+            {learnerRows.length ? learnerRows.slice(0, 3).map((student) => <div key={student.id} className="flex items-center gap-3 border-b py-3 last:border-0"><span className="grid size-9 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{initials(student.learner)}</span><div className="min-w-0"><p className="truncate text-sm font-medium">{student.learner ? `${student.learner.firstName} ${student.learner.lastName}` : "Learner profile"}</p><p className="text-xs text-muted-foreground">Learner</p></div></div>) : <InlineEmpty icon={Users} title="No learners enrolled" description="Add learners when you are ready to build this classroom roster." action={<PermissionButton allowed={canManageLearners} reason="You need learner management permission to add learners." size="sm" variant="outline" onClick={onManageLearners}>Add learner</PermissionButton>} />}
           </CardContent>
         </Card>
       </div>
-      <Card className="py-0 shadow-none xl:col-span-2">
+      <Card className="gap-0 py-0 shadow-none xl:col-span-2">
         <CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />Lesson schedule</CardTitle><p className="text-sm text-muted-foreground">All scheduled sessions for this classroom.</p></CardHeader>
-        <CardContent className="px-4 pb-4"><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Type</TableHead><TableHead>Duration</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>{lessons.slice(0, 8).map((lesson) => <TableRow key={lesson.id}><TableCell className="font-medium">{formatShortDate(lesson.scheduledAt)} · {formatTime(lesson.scheduledAt)}</TableCell><TableCell>{lesson.origin === "ONE_OFF" ? "Extra lesson" : "Lesson"}</TableCell><TableCell>{lesson.durationMins} min</TableCell><TableCell><Badge variant="outline" className="capitalize">{lesson.status}</Badge></TableCell></TableRow>)}</TableBody></Table></CardContent>
+        <CardContent className="px-4 pb-4"><Table><TableHeader className="[&_tr]:bg-muted/70"><TableRow><TableHead>Date</TableHead><TableHead>Type</TableHead><TableHead>Duration</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>{lessons.slice(0, 8).length ? lessons.slice(0, 8).map((lesson) => <TableRow key={lesson.id}><TableCell className="font-medium">{formatShortDate(lesson.scheduledAt)} · {formatTime(lesson.scheduledAt)}</TableCell><TableCell>{lesson.origin === "ONE_OFF" ? "Extra lesson" : "Lesson"}</TableCell><TableCell>{lesson.durationMins} min</TableCell><TableCell><Badge variant="outline" className="capitalize">{lesson.status}</Badge></TableCell></TableRow>) : <TableRow><TableCell colSpan={4}><InlineEmpty icon={CalendarDays} title="No scheduled lessons" description="The weekly classroom schedule will appear here once lessons are available." action={<PermissionButton allowed={canSchedule} reason="You need lesson scheduling permission to schedule a lesson." size="sm" variant="outline" onClick={onSchedule}>Schedule lesson</PermissionButton>} /></TableCell></TableRow>}</TableBody></Table></CardContent>
       </Card>
     </div>
   );
@@ -486,12 +507,16 @@ function Overview({
 
 function DetailMetric({ icon: Icon, label, value, detail }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; detail: string }) {
   return (
-    <Card className="min-h-24 py-0 shadow-none"><CardContent className="flex h-full items-center gap-4 p-5"><Icon className="size-6 shrink-0 text-primary" /><div className="min-w-0"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 truncate text-sm font-semibold">{value}</p><p className="mt-0.5 truncate text-xs text-muted-foreground">{detail}</p></div></CardContent></Card>
+    <Card className="h-[76px] gap-0 py-0 shadow-none"><CardContent className="flex h-full items-center gap-4 px-7 py-3"><Icon className="size-7 shrink-0 text-primary" /><div className="min-w-0"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-0.5 truncate text-base font-semibold">{value}</p></div></CardContent></Card>
   );
 }
 
-function LessonPanel({ title, description, lessons }: { title: string; description: string; lessons: Array<{ id: string; scheduledAt: string; durationMins: number; status: string }> }) {
-  return <Card className="py-0 shadow-none"><CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />{title}</CardTitle><p className="text-sm text-muted-foreground">{description}</p></CardHeader><CardContent className="px-4">{lessons.length ? lessons.map((lesson) => <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4 last:border-0"><div><p className="text-sm font-semibold">{formatShortDate(lesson.scheduledAt)} · {formatTime(lesson.scheduledAt)}</p><p className="mt-1 text-xs text-muted-foreground">{lesson.durationMins} minute lesson</p></div><Badge variant="outline" className="capitalize">{lesson.status}</Badge></div>) : <p className="py-5 text-sm text-muted-foreground">No lessons to show yet.</p>}</CardContent></Card>;
+function LessonPanel({ title, description, lessons, emptyAction }: { title: string; description: string; lessons: Array<{ id: string; scheduledAt: string; durationMins: number; status: string }>; emptyAction?: React.ReactNode }) {
+  return <Card className="gap-0 py-0 shadow-none"><CardHeader className="border-b py-5"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />{title}</CardTitle><p className="text-sm text-muted-foreground">{description}</p></CardHeader><CardContent className="px-4">{lessons.length ? lessons.map((lesson) => <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4 last:border-0"><div><p className="text-sm font-semibold">{formatShortDate(lesson.scheduledAt)} · {formatTime(lesson.scheduledAt)}</p><p className="mt-1 text-xs text-muted-foreground">{lesson.durationMins} minute lesson</p></div><Badge variant="outline" className="capitalize">{lesson.status}</Badge></div>) : <InlineEmpty icon={CalendarDays} title={`No ${title.toLowerCase()} yet`} description="Scheduled lessons will be shown here as soon as they are available." action={emptyAction} />}</CardContent></Card>;
+}
+
+function InlineEmpty({ icon: Icon, title, description, action }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string; action?: React.ReactNode }) {
+  return <Empty className="min-h-36 flex-none border-0 px-4 py-7"><EmptyHeader className="gap-1"><EmptyMedia variant="icon" className="mb-1 size-9"><Icon className="size-4" /></EmptyMedia><EmptyTitle className="text-base">{title}</EmptyTitle><EmptyDescription className="max-w-xs text-xs">{description}</EmptyDescription></EmptyHeader>{action ? <EmptyContent className="mt-0">{action}</EmptyContent> : null}</Empty>;
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
