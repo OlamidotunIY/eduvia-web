@@ -412,10 +412,15 @@ function Overview({
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           A concise view of schedule, learner capacity, and lesson activity.
         </p>
-        <dl className="mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Metric
             label="Enrolled learners"
             value={`${learnerCount}${classroom.maxStudents ? ` of ${classroom.maxStudents}` : ""}`}
+            signal={
+              classroom.maxStudents
+                ? `${learnerCapacity}% capacity`
+                : "Open capacity"
+            }
             detail={
               classroom.maxStudents
                 ? `${learnerCapacity}% of capacity`
@@ -425,6 +430,7 @@ function Overview({
           <Metric
             label="Scheduled lessons"
             value={`${lessonCount}`}
+            signal="This week"
             detail={
               completed ? `${completed} completed` : "No completed lessons yet"
             }
@@ -436,6 +442,7 @@ function Overview({
                 ? formatShortDate(nextLesson.scheduledAt)
                 : "Not scheduled"
             }
+            signal={nextLesson ? "Upcoming" : "Needs attention"}
             detail={
               nextLesson
                 ? formatTime(nextLesson.scheduledAt)
@@ -445,6 +452,7 @@ function Overview({
           <Metric
             label="Classroom status"
             value={classroom.status}
+            signal="Teaching lifecycle"
             detail="Current teaching lifecycle"
           />
         </dl>
@@ -519,21 +527,28 @@ function Overview({
 function Metric({
   label,
   value,
+  signal,
   detail,
 }: {
   label: string;
   value: string;
+  signal: string;
   detail: string;
 }) {
   return (
-    <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-2 text-2xl font-semibold tracking-tight capitalize">
+    <div className="rounded-xl border border-border bg-card/70 p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </dt>
+        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+          {signal}
+        </span>
+      </div>
+      <dd className="mt-3 text-3xl font-semibold tracking-tight capitalize">
         {value}
       </dd>
-      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+      <p className="mt-5 text-sm font-medium text-foreground">{detail}</p>
     </div>
   );
 }
