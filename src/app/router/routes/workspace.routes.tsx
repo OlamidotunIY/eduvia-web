@@ -8,6 +8,7 @@ import {
   ClassroomsPage,
 } from "@/features/classroom";
 import { SubjectsPage } from "@/features/subject";
+import { AssessmentsPage } from "@/features/assessment";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 
 export const workspaceRoutes: RouteObject[] = [
@@ -28,6 +29,7 @@ export const workspaceRoutes: RouteObject[] = [
       },
       { path: APP_ROUTES.CALENDAR, element: <CalendarPage /> },
       { path: APP_ROUTES.SUBJECTS, element: <SubjectsPage /> },
+      { path: APP_ROUTES.ASSESSMENTS, element: <AssessmentsPage /> },
       { path: "*", element: <PlaceholderPage /> },
     ],
   },

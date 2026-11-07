@@ -53,6 +53,8 @@ import type {
   AssessmentFinalizeAssessmentResponses,
   AssessmentGetAssessmentData,
   AssessmentGetAssessmentResponses,
+  AssessmentGetAssessmentSummaryData,
+  AssessmentGetAssessmentSummaryResponses,
   AssessmentListAssessmentsData,
   AssessmentListAssessmentsResponses,
   AuthBeginGoogleData,
@@ -1843,6 +1845,25 @@ export const assessmentCreateAssessment = <
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+export const assessmentGetAssessmentSummary = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<AssessmentGetAssessmentSummaryData, ThrowOnError>,
+): RequestResult<
+  AssessmentGetAssessmentSummaryResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    AssessmentGetAssessmentSummaryResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/orgs/{orgId}/assessments/summary",
+    ...options,
   });
 
 export const assessmentGetAssessment = <ThrowOnError extends boolean = false>(

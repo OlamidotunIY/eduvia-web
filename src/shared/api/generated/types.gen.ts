@@ -397,21 +397,10 @@ export type UpdateQuestionDto = {
   maxMarks?: number;
 };
 
-export type CreateAssessmentItemDto = {
-  boardQuestionId: string;
-  studentResponseId: string;
-  questionType: "mcq" | "short_answer" | "long_answer" | "image_upload";
-  maxMarks: number;
-  autoMarked?: boolean;
-  marksAwarded?: number | null;
-  feedback?: string | null;
-};
-
 export type CreateAssessmentDto = {
   lessonId: string;
   boardId: string;
   studentId: string;
-  items: Array<CreateAssessmentItemDto>;
 };
 
 export type ApplyTeacherMarkDto = {
@@ -2299,6 +2288,12 @@ export type AssessmentListAssessmentsData = {
   query?: {
     skip?: number;
     take?: number;
+    status?: string;
+    lessonId?: string;
+    boardId?: string;
+    studentId?: string;
+    createdFrom?: string;
+    createdTo?: string;
   };
   url: "/orgs/{orgId}/assessments";
 };
@@ -2330,6 +2325,31 @@ export type AssessmentCreateAssessmentResponses = {
 export type AssessmentCreateAssessmentResponse =
   AssessmentCreateAssessmentResponses[keyof AssessmentCreateAssessmentResponses];
 
+export type AssessmentGetAssessmentSummaryData = {
+  body?: never;
+  path: {
+    orgId: string;
+  };
+  query?: {
+    status?: string;
+    lessonId?: string;
+    boardId?: string;
+    studentId?: string;
+    createdFrom?: string;
+    createdTo?: string;
+  };
+  url: "/orgs/{orgId}/assessments/summary";
+};
+
+export type AssessmentGetAssessmentSummaryResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type AssessmentGetAssessmentSummaryResponse =
+  AssessmentGetAssessmentSummaryResponses[keyof AssessmentGetAssessmentSummaryResponses];
+
 export type AssessmentGetAssessmentData = {
   body?: never;
   path: {
@@ -2352,6 +2372,7 @@ export type AssessmentGetAssessmentResponse =
 export type AssessmentApplyTeacherMarkData = {
   body: ApplyTeacherMarkDto;
   path: {
+    orgId: string;
     id: string;
     itemId: string;
   };
@@ -2371,6 +2392,7 @@ export type AssessmentApplyTeacherMarkResponse =
 export type AssessmentFinalizeAssessmentData = {
   body?: never;
   path: {
+    orgId: string;
     id: string;
   };
   query?: never;
