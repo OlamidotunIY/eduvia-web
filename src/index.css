@@ -7,6 +7,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  color-scheme: light;
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -25,7 +26,6 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -99,6 +99,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.148 0.004 228.8);
   --foreground: oklch(0.987 0.002 197.1);
   --card: oklch(0.218 0.008 223.9);
@@ -193,6 +194,9 @@
     height: 0.55rem;
   }
   *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-track-piece {
     background: transparent;
   }
   *::-webkit-scrollbar-thumb {

@@ -210,7 +210,7 @@ export function DataTable<TData extends RowData>({
           {toolbarActions}
         </div>
       </div>
-      <div className="overflow-y-auto border-y [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]">
+      <div className="overflow-y-auto border-y">
         {isEmpty ? (
           <div className="flex min-h-[300px] flex-col">
             <Table>
