@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  Funnel,
   Plus,
   RotateCcw,
 } from "lucide-react";
@@ -38,6 +39,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/shared/ui/popover";
 import {
   Sheet,
   SheetContent,
@@ -90,6 +98,10 @@ export function CalendarPage() {
   );
   const canSchedule = permissions.includes("lessons:schedule");
   const canManage = permissions.includes("lessons:manage");
+  const activeFilterCount =
+    Number(classroomId !== "all") +
+    Number(status !== "all") +
+    Number(scope !== "all");
 
   const classroomNameById = useMemo(
     () => new Map((classrooms.data ?? []).map((item) => [item.id, item.name])),
@@ -210,51 +222,97 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Select
-          value={classroomId}
-          onValueChange={(value) => setClassroomId(value ?? "all")}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All classrooms</SelectItem>
-            {(classrooms.data ?? []).map((item) => (
-              <SelectItem key={item.id} value={item.id}>
-                {item.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={status}
-          onValueChange={(value) => setStatus(value ?? "all")}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="scheduled">Scheduled</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={scope}
-          onValueChange={(value) =>
-            setScope((value ?? "all") as "all" | "mine")
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Organization lessons</SelectItem>
-            <SelectItem value="mine">My lessons</SelectItem>
-          </SelectContent>
-        </Select>
+      <div>
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button variant="outline">
+                <Funnel /> Filter
+                {activeFilterCount ? (
+                  <span className="rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+                    {activeFilterCount}
+                  </span>
+                ) : null}
+              </Button>
+            }
+          />
+          <PopoverContent align="start" className="w-80">
+            <PopoverHeader>
+              <PopoverTitle>Filter calendar</PopoverTitle>
+              <p className="text-xs text-muted-foreground">
+                Refine the visible lesson schedule.
+              </p>
+            </PopoverHeader>
+            <div className="grid gap-4">
+              <label className="grid gap-2 text-sm font-medium">
+                Classroom
+                <Select
+                  value={classroomId}
+                  onValueChange={(value) => setClassroomId(value ?? "all")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All classrooms</SelectItem>
+                    {(classrooms.data ?? []).map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+              <label className="grid gap-2 text-sm font-medium">
+                Lesson status
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value ?? "all")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </label>
+              <label className="grid gap-2 text-sm font-medium">
+                Teaching scope
+                <Select
+                  value={scope}
+                  onValueChange={(value) =>
+                    setScope((value ?? "all") as "all" | "mine")
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Organization lessons</SelectItem>
+                    <SelectItem value="mine">My lessons</SelectItem>
+                  </SelectContent>
+                </Select>
+              </label>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start"
+                disabled={!activeFilterCount}
+                onClick={() => {
+                  setClassroomId("all");
+                  setStatus("all");
+                  setScope("all");
+                }}
+              >
+                Clear all filters
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {lessons.isPending ? (
