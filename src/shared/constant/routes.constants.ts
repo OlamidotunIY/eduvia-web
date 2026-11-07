@@ -15,6 +15,7 @@ export const APP_ROUTES = {
   CALENDAR: "/calendar",
   CURRICULUM: "/curriculum",
   SUBJECTS: "/organization/subjects",
+  MEMBERS: "/organization/members",
   ASSESSMENTS: "/assessments",
   QUESTIONS: "/questions",
   MESSAGES: "/messages",

@@ -1,2 +1,2 @@
 export * from './mutations'
-export * from './queries/use-marketplace.query'
+export * from './queries'

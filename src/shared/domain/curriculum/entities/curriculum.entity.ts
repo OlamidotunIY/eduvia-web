@@ -96,7 +96,7 @@ export interface CreateCurriculumInput {
   name: string;
   shortCode: string;
   countryCode: string;
-  jurisdictionCode: string;
+  jurisdictionCode?: string;
   authority: string;
   description?: string;
   version?: string;

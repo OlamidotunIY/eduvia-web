@@ -1,4 +1,10 @@
 import { apiClient } from '@/shared/api'
+import type {
+  ChangeMemberRoleInput,
+  OrganizationMemberRecord,
+  OrganizationRoleRecord,
+  SendInvitationInput,
+} from '../../domain'
 
 export const organizationApi = {
   create: (body: {
@@ -22,7 +28,9 @@ export const organizationApi = {
     apiClient.post(`/organizations/active/${organizationId}`).then(() => undefined),
 
   listRoles: (organizationId: string) =>
-    apiClient.get<unknown>(`/organizations/${organizationId}/roles`).then((response) => response.data),
+    apiClient
+      .get<OrganizationRoleRecord[]>(`/organizations/${organizationId}/roles`)
+      .then((response) => response.data),
 
   provisionRoles: (organizationId: string) =>
     apiClient.post(`/organizations/${organizationId}/roles/provision`).then(() => undefined),
@@ -32,4 +40,24 @@ export const organizationApi = {
 
   updateRole: (organizationId: string, roleId: string, body: { name: string; description: string | null; permissions: string[] }) =>
     apiClient.patch(`/organizations/${organizationId}/roles/${roleId}`, body).then(() => undefined),
+
+  listMembers: (organizationId: string) =>
+    apiClient
+      .get<OrganizationMemberRecord[]>(`/organizations/${organizationId}/members`)
+      .then((response) => response.data),
+
+  inviteMember: (organizationId: string, body: SendInvitationInput) =>
+    apiClient
+      .post<{ id: string; rawToken?: string }>(`/organizations/${organizationId}/invitations`, body)
+      .then((response) => response.data),
+
+  changeMemberRole: (organizationId: string, userId: string, body: ChangeMemberRoleInput) =>
+    apiClient
+      .patch(`/organizations/${organizationId}/members/${userId}/role`, body)
+      .then(() => undefined),
+
+  suspendMember: (organizationId: string, userId: string) =>
+    apiClient
+      .delete(`/organizations/${organizationId}/members/${userId}`)
+      .then(() => undefined),
 }

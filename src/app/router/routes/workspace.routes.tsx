@@ -15,6 +15,7 @@ import { SubjectsPage } from "@/features/subject";
 import { AssessmentsPage } from "@/features/assessment";
 import { QuestionDetailPage, QuestionsPage } from "@/features/question";
 import { MessagesPage } from "@/features/messages";
+import { TeamMembersPage } from "@/features/organization";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 
 export const workspaceRoutes: RouteObject[] = [
@@ -40,6 +41,7 @@ export const workspaceRoutes: RouteObject[] = [
         element: <CurriculumDetailPage />,
       },
       { path: APP_ROUTES.SUBJECTS, element: <SubjectsPage /> },
+      { path: APP_ROUTES.MEMBERS, element: <TeamMembersPage /> },
       { path: APP_ROUTES.ASSESSMENTS, element: <AssessmentsPage /> },
       { path: APP_ROUTES.QUESTIONS, element: <QuestionsPage /> },
       {

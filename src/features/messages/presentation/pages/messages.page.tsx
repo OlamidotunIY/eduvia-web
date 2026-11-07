@@ -1,29 +1,71 @@
 import { useMemo, useState } from "react";
-import { INITIAL_CONVERSATIONS } from "../../domain/mock-data";
-import type { Conversation, ConversationFilter, Message } from "../../domain/types";
+import type { Conversation, ConversationFilter } from "../../domain/types";
 import { ChatRoom } from "../components/chat-room";
 import { ConversationList } from "../components/conversation-list";
 import { MessagesHeader } from "../components/messages-header";
-import { NewChatDialog } from "../components/new-chat-dialog";
+import { NewChatDialog, type ContactItem } from "../components/new-chat-dialog";
 import { useMainHeaderSlot } from "@/app/shell/main/header";
 import { sessionStore } from "@/shared/store";
+import {
+  useConversationsQuery,
+  useConversationDetailQuery,
+  useSendMessageMutation,
+  useCreateConversationMutation,
+} from "../../application/queries/use-messages.query";
+import { useOrganizationMembersQuery } from "@/features/organization/application/queries/use-organization-members.query";
 
 export function MessagesPage() {
   const { element: headerSlot } = useMainHeaderSlot();
   const currentUser = sessionStore((state) => state.currentUser);
+  const organizationId = currentUser?.activeOrganization?.id;
+  const currentUserId = currentUser?.user?.id;
 
-  // Conversations state (initialized with rich mock data matching the design)
-  const [conversations, setConversations] =
-    useState<Conversation[]>(INITIAL_CONVERSATIONS);
+  // Real backend query for organization members
+  const { data: members = [] } = useOrganizationMembersQuery(organizationId);
 
-  // Active selected conversation (defaults to 'teaching-staff' to match the reference design)
-  const [selectedId, setSelectedId] = useState<string | null>("teaching-staff");
+  // Real backend query for user conversations
+  const conversationsQuery = useConversationsQuery(
+    organizationId,
+    currentUserId,
+    members,
+  );
+  const conversations: Conversation[] = conversationsQuery.data ?? [];
+
+  // Active selected conversation
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Active conversation detail from backend (real messages)
+  const detailQuery = useConversationDetailQuery(
+    selectedId,
+    currentUserId,
+    members,
+  );
+
+  // Mutations for real messaging
+  const sendMessageMutation = useSendMessageMutation(selectedId, organizationId);
+  const createConversationMutation = useCreateConversationMutation(organizationId);
 
   // Filters and search
   const [activeFilter, setActiveFilter] = useState<ConversationFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
+
+  // Active conversation object (combines summary + detailed messages)
+  const activeConversation = useMemo<Conversation | null>(() => {
+    if (!selectedId) return null;
+    const base = conversations.find((c) => c.id === selectedId);
+    if (!base) return null;
+
+    if (detailQuery.data) {
+      return {
+        ...base,
+        messages: detailQuery.data.messages,
+      };
+    }
+
+    return base;
+  }, [conversations, selectedId, detailQuery.data]);
 
   // Compute filtered conversations list
   const filteredConversations = useMemo(() => {
@@ -59,138 +101,64 @@ export function MessagesPage() {
     });
   }, [conversations, unreadOnly, activeFilter, searchQuery]);
 
-  // Active conversation object
-  const activeConversation = useMemo(() => {
-    if (!selectedId) return null;
-    return conversations.find((c) => c.id === selectedId) ?? null;
-  }, [conversations, selectedId]);
-
   // Handlers
   const handleSelectConversation = (id: string) => {
     setSelectedId(id);
-    // Mark as read when selected
-    setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unreadCount: 0 } : c)),
-    );
   };
 
   const handleSendMessage = (content: string) => {
-    if (!selectedId) return;
-
-    const senderName =
-      currentUser?.user.firstName && currentUser?.user.lastName
-        ? `${currentUser.user.firstName} ${currentUser.user.lastName}`
-        : "Tunde Salami";
-
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: currentUser?.user.id ?? "current-user",
-      senderName,
-      senderAvatar: currentUser?.user.image ?? undefined,
-      createdAt: "Just now",
-      content,
-      isMine: true,
-      reactions: [],
-    };
-
-    setConversations((prev) =>
-      prev.map((c) => {
-        if (c.id !== selectedId) return c;
-        return {
-          ...c,
-          lastMessage: `You: ${content}`,
-          lastMessageTime: "Just now",
-          messages: [...c.messages, newMessage],
-        };
-      }),
-    );
+    if (!selectedId || !content.trim()) return;
+    sendMessageMutation.mutate({
+      content: content.trim(),
+    });
   };
 
-  const handleReact = (messageId: string, emoji: string) => {
-    if (!selectedId) return;
-
-    setConversations((prev) =>
-      prev.map((c) => {
-        if (c.id !== selectedId) return c;
-
-        const updatedMessages = c.messages.map((m) => {
-          if (m.id !== messageId) return m;
-
-          const existingReactions = m.reactions ?? [];
-          const existing = existingReactions.find((r) => r.emoji === emoji);
-
-          if (existing) {
-            if (existing.hasReacted) {
-              // Remove user reaction
-              return {
-                ...m,
-                reactions: existingReactions
-                  .map((r) =>
-                    r.emoji === emoji
-                      ? { ...r, count: r.count - 1, hasReacted: false }
-                      : r,
-                  )
-                  .filter((r) => r.count > 0),
-              };
-            } else {
-              // Add user reaction
-              return {
-                ...m,
-                reactions: existingReactions.map((r) =>
-                  r.emoji === emoji
-                    ? { ...r, count: r.count + 1, hasReacted: true }
-                    : r,
-                ),
-              };
-            }
-          } else {
-            // New reaction
-            return {
-              ...m,
-              reactions: [
-                ...existingReactions,
-                { emoji, count: 1, users: ["You"], hasReacted: true },
-              ],
-            };
-          }
-        });
-
-        return { ...c, messages: updatedMessages };
-      }),
-    );
+  const handleReact = (_messageId: string, _emoji: string) => {
+    // Reaction handling placeholder for future websocket reaction events
   };
 
   const handleMarkAllAsRead = () => {
-    setConversations((prev) => prev.map((c) => ({ ...c, unreadCount: 0 })));
+    // Optional mark read handler
   };
 
-  const handleStartChatFromContact = (contact: {
-    id: string;
-    name: string;
-    type: "direct" | "group";
-    avatar?: string;
-    role?: string;
-  }) => {
+  const handleStartChatFromContact = async (contact: ContactItem) => {
+    if (!organizationId || !currentUserId) return;
+
+    // Check if conversation already exists with this contact
     const existing = conversations.find((c) => c.id === contact.id);
     if (existing) {
       setSelectedId(existing.id);
       return;
     }
 
-    const newConv: Conversation = {
-      id: contact.id,
-      type: contact.type,
-      name: contact.name,
-      subtitle: contact.role ?? "Direct conversation",
-      avatar: contact.avatar,
-      iconColor: contact.type === "group" ? "emerald" : undefined,
-      iconType: contact.type === "group" ? "users" : undefined,
-      unreadCount: 0,
-      messages: [],
-    };
-
-    setConversations((prev) => [newConv, ...prev]);
-    setSelectedId(newConv.id);
+    try {
+      const res = await createConversationMutation.mutateAsync({
+        orgId: organizationId,
+        type: "student_teacher",
+        participants: [currentUserId, contact.id],
+        studentId: contact.id,
+        subject: `Chat with ${contact.name}`,
+      });
+      if (res?.id) {
+        setSelectedId(res.id);
+      }
+    } catch {
+      // Fallback: create conversation with general params
+      try {
+        const res = await createConversationMutation.mutateAsync({
+          orgId: organizationId,
+          type: "parent_admin",
+          participants: [currentUserId, contact.id],
+          parentId: contact.id,
+          subject: `Chat with ${contact.name}`,
+        });
+        if (res?.id) {
+          setSelectedId(res.id);
+        }
+      } catch (e) {
+        console.error("Failed to start conversation:", e);
+      }
+    }
   };
 
   return (

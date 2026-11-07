@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MessageSquare, Search, UsersRound } from "lucide-react";
+import { useMemo, useState } from "react";
+import { MessageSquare, Search, User, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,66 +8,23 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
+import { useOrganizationMembersQuery } from "@/features/organization/application/queries/use-organization-members.query";
+import { sessionStore } from "@/shared/store";
+import type { OrganizationMemberRecord } from "@/features/organization/domain/member.types";
 
-interface Contact {
+export interface ContactItem {
   id: string;
   name: string;
   role: string;
   type: "direct" | "group";
   avatar?: string;
+  userId?: string;
 }
-
-const AVAILABLE_CONTACTS: Contact[] = [
-  {
-    id: "teaching-staff",
-    name: "Teaching Staff",
-    role: "Internal Staff Room • 12 members",
-    type: "group",
-  },
-  {
-    id: "darasimi-grade-10",
-    name: "Darasimi Grade 10",
-    role: "Homeroom Class • 28 students",
-    type: "group",
-  },
-  {
-    id: "adenike-okafor",
-    name: "Adenike Okafor",
-    role: "Head of Academic Planning",
-    type: "direct",
-    avatar:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    id: "kunle-adebayo",
-    name: "Kunle Adebayo",
-    role: "Mathematics Lead Teacher",
-    type: "direct",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    id: "chinwe-umeh",
-    name: "Chinwe Umeh",
-    role: "Senior Biology Teacher",
-    type: "direct",
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    id: "iyanda-dotun",
-    name: "Iyanda Dotun",
-    role: "Academic Coordinator",
-    type: "direct",
-    avatar:
-      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face",
-  },
-];
 
 interface NewChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onStartChat: (contact: Contact) => void;
+  onStartChat: (contact: ContactItem) => void;
 }
 
 export function NewChatDialog({
@@ -75,18 +32,47 @@ export function NewChatDialog({
   onOpenChange,
   onStartChat,
 }: NewChatDialogProps) {
-  const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<"all" | "direct" | "group">(
-    "all",
-  );
+  const currentUser = sessionStore((state) => state.currentUser);
+  const organizationId = currentUser?.activeOrganization?.id;
+  const currentUserId = currentUser?.user?.id;
 
-  const filtered = AVAILABLE_CONTACTS.filter((c) => {
-    if (selectedType !== "all" && c.type !== selectedType) return false;
-    if (search.trim() && !c.name.toLowerCase().includes(search.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
+  const { data: members = [], isLoading } = useOrganizationMembersQuery(organizationId);
+
+  const [search, setSearch] = useState("");
+  const [selectedType, setSelectedType] = useState<"all" | "direct" | "group">("all");
+
+  const contacts = useMemo<ContactItem[]>(() => {
+    // Map members (excluding current user) into contacts
+    return members
+      .filter((m: OrganizationMemberRecord) => m.userId !== currentUserId)
+      .map((m: OrganizationMemberRecord) => {
+        const fullName = `${m.user?.firstName ?? ""} ${m.user?.lastName ?? ""}`.trim();
+        const displayName = fullName || m.user?.email || "Team Member";
+        return {
+          id: m.userId,
+          userId: m.userId,
+          name: displayName,
+          role: m.role || "Member",
+          type: "direct" as const,
+          avatar: m.user?.image ?? undefined,
+        };
+      });
+  }, [members, currentUserId]);
+
+  const filtered = useMemo(() => {
+    return contacts.filter((c) => {
+      if (selectedType !== "all" && c.type !== selectedType) return false;
+      if (search.trim() && !c.name.toLowerCase().includes(search.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }, [contacts, selectedType, search]);
+
+  const handleSelectContact = (contact: ContactItem) => {
+    onStartChat(contact);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,78 +82,104 @@ export function NewChatDialog({
             New Message
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Start a direct message with a colleague or chat with an official group.
+            Start a direct message with a member from your active organization.
           </DialogDescription>
-
-          <div className="mt-3 relative flex items-center">
-            <Search className="absolute left-3 size-3.5 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search people or groups..."
-              className="w-full rounded-xl border border-border/50 bg-muted/20 py-1.5 pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
-            />
-          </div>
-
-          <div className="mt-2.5 flex items-center gap-1.5">
-            {(["all", "direct", "group"] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setSelectedType(type)}
-                className={`rounded-full px-3 py-0.5 text-xs font-semibold capitalize transition-all ${
-                  selectedType === type
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {type === "all" ? "All Contacts" : type === "direct" ? "Staff" : "Groups"}
-              </button>
-            ))}
-          </div>
         </DialogHeader>
 
-        <div className="max-h-72 overflow-y-auto p-2 space-y-1">
-          {filtered.length === 0 ? (
+        {/* Filter buttons & Search */}
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/30 border border-border/40 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setSelectedType("all")}
+              className={`flex-1 py-1.5 px-3 rounded-lg transition-colors text-center ${
+                selectedType === "all"
+                  ? "bg-background text-foreground font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedType("direct")}
+              className={`flex-1 py-1.5 px-3 rounded-lg transition-colors text-center ${
+                selectedType === "direct"
+                  ? "bg-background text-foreground font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Direct
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedType("group")}
+              className={`flex-1 py-1.5 px-3 rounded-lg transition-colors text-center ${
+                selectedType === "group"
+                  ? "bg-background text-foreground font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Groups
+            </button>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search team members..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 rounded-xl bg-muted/40 border border-border/50 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/50"
+            />
+          </div>
+        </div>
+
+        {/* Contacts list */}
+        <div className="px-2 pb-3 max-h-72 overflow-y-auto space-y-1">
+          {isLoading ? (
             <div className="py-8 text-center text-xs text-muted-foreground">
-              No contacts found matching &ldquo;{search}&rdquo;
+              Loading members...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground">
+              {contacts.length === 0
+                ? "No other members found in this organization."
+                : "No matching contacts found."}
             </div>
           ) : (
             filtered.map((contact) => (
               <button
                 key={contact.id}
                 type="button"
-                onClick={() => {
-                  onStartChat(contact);
-                  onOpenChange(false);
-                }}
-                className="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition-all hover:bg-muted/30"
+                onClick={() => handleSelectContact(contact)}
+                className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/40 transition-colors text-left group"
               >
-                {contact.type === "direct" ? (
-                  <Avatar className="size-9 rounded-xl border border-border/50">
-                    <AvatarImage src={contact.avatar} alt={contact.name} />
-                    <AvatarFallback className="rounded-xl text-xs font-semibold bg-muted">
-                      {contact.name.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <div className="flex size-9 items-center justify-center rounded-xl border border-primary/30 bg-primary/20 text-primary">
-                    <UsersRound className="size-4.5" />
-                  </div>
-                )}
+                <Avatar className="size-9 rounded-xl border border-border/40">
+                  {contact.avatar && <AvatarImage src={contact.avatar} alt={contact.name} />}
+                  <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-xs font-semibold">
+                    {contact.type === "group" ? (
+                      <Users className="size-4" />
+                    ) : contact.name.length >= 2 ? (
+                      contact.name.slice(0, 2).toUpperCase()
+                    ) : (
+                      <User className="size-4" />
+                    )}
+                  </AvatarFallback>
+                </Avatar>
 
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-foreground">
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                     {contact.name}
-                  </p>
-                  <p className="truncate text-[11px] text-muted-foreground">
+                  </div>
+                  <div className="text-[11px] text-muted-foreground truncate">
                     {contact.role}
-                  </p>
+                  </div>
                 </div>
 
-                <div className="shrink-0 text-muted-foreground">
-                  <MessageSquare className="size-4" />
+                <div className="size-7 rounded-lg flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+                  <MessageSquare className="size-3.5" />
                 </div>
               </button>
             ))

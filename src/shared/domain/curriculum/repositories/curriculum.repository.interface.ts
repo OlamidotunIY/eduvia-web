@@ -1,7 +1,4 @@
 import type {
-  CreateCurriculumInput,
-  CurriculumListFilter,
-  CurriculumProfileSummary,
   CurriculumSearchResult,
   CurriculumTreeResponse,
   OrganizationCurriculumOverview,

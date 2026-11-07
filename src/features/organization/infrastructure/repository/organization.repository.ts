@@ -43,6 +43,22 @@ export class OrganizationRepository implements IOrganizationRepository {
   async updateRole(organizationId: string, roleId: string, input: OrganizationRoleInput): Promise<void> {
     await organizationApi.updateRole(organizationId, roleId, input)
   }
+
+  async listMembers(organizationId: string) {
+    return organizationApi.listMembers(organizationId)
+  }
+
+  async inviteMember(organizationId: string, input: Parameters<typeof organizationApi.inviteMember>[1]) {
+    return organizationApi.inviteMember(organizationId, input)
+  }
+
+  async changeMemberRole(organizationId: string, userId: string, input: Parameters<typeof organizationApi.changeMemberRole>[2]) {
+    return organizationApi.changeMemberRole(organizationId, userId, input)
+  }
+
+  async suspendMember(organizationId: string, userId: string) {
+    return organizationApi.suspendMember(organizationId, userId)
+  }
 }
 
 export const organizationRepository = new OrganizationRepository()

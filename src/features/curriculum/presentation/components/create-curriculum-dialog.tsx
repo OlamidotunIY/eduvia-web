@@ -68,6 +68,7 @@ export function CreateCurriculumDialog({
         name: name.trim(),
         shortCode: shortCode.trim().toUpperCase(),
         countryCode: countryCode.trim().toUpperCase(),
+        jurisdictionCode: countryCode.trim().toUpperCase(),
         authority: authority.trim(),
         version: version.trim() || undefined,
         description: description.trim() || undefined,
