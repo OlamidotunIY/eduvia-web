@@ -32,6 +32,11 @@ export const organizationApi = {
       .get<OrganizationRoleRecord[]>(`/organizations/${organizationId}/roles`)
       .then((response) => response.data),
 
+  listPermissions: (organizationId: string) =>
+    apiClient
+      .get<unknown[]>(`/organizations/${organizationId}/permissions`)
+      .then((response) => response.data),
+
   provisionRoles: (organizationId: string) =>
     apiClient.post(`/organizations/${organizationId}/roles/provision`).then(() => undefined),
 

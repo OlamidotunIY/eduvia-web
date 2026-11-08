@@ -63,6 +63,7 @@ export interface DataTableProps<TData extends RowData> {
   enableColumnVisibility?: boolean;
   columnLabels?: Record<string, string>;
   toolbarActions?: React.ReactNode;
+  getRowClassName?: (row: TData) => string | undefined;
 }
 
 export function DataTable<TData extends RowData>({
@@ -76,6 +77,7 @@ export function DataTable<TData extends RowData>({
   searchKey,
   searchPlaceholder = "Search...",
   onRowClick,
+  getRowClassName,
   className,
   onReload,
   isReloading = false,
@@ -261,6 +263,7 @@ export function DataTable<TData extends RowData>({
                         className={cn(
                           "hover:bg-transparent",
                           onRowClick && "cursor-pointer",
+                          getRowClassName?.(row.original),
                         )}
                       >
                         {row.getVisibleCells().map((cell) => (

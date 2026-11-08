@@ -2,6 +2,7 @@ import {
   MarketplaceOrganization,
   OrganizationMemberRecord,
   OrganizationRoleDefinition,
+  OrganizationPermissionDefinition,
   IOrganizationRepository,
 } from '@/shared/domain';
 import type {
@@ -36,6 +37,12 @@ export class OrganizationRepository implements IOrganizationRepository {
     const value = await organizationApi.listRoles(organizationId);
     if (!Array.isArray(value)) throw new Error('The API returned an invalid organization role response.');
     return value.map((item) => this.toOrganizationRole(item));
+  }
+
+  async listPermissions(organizationId: string): Promise<OrganizationPermissionDefinition[]> {
+    const raw = await organizationApi.listPermissions(organizationId);
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item) => this.toOrganizationPermission(item));
   }
 
   async provisionRoles(organizationId: string): Promise<void> {
@@ -107,6 +114,22 @@ export class OrganizationRepository implements IOrganizationRepository {
       description: typeof role.description === 'string' ? role.description : null,
       permissions: permissions as any[],
       isSystem: Boolean(role.isSystem),
+      membersCount: typeof role.membersCount === 'number' ? role.membersCount : 0,
+      createdAt: typeof role.createdAt === 'string' ? role.createdAt : '',
+      updatedAt: typeof role.updatedAt === 'string' ? role.updatedAt : '',
+    });
+  }
+
+  private toOrganizationPermission(value: unknown): OrganizationPermissionDefinition {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw new Error('The API returned an invalid organization permission.');
+    }
+    const perm = value as Record<string, unknown>;
+    return new OrganizationPermissionDefinition({
+      id: this.readString(perm, 'id'),
+      name: this.readString(perm, 'name'),
+      category: this.readString(perm, 'category'),
+      description: typeof perm.description === 'string' ? perm.description : undefined,
     });
   }
 

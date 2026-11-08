@@ -1,5 +1,6 @@
 import type { MarketplaceOrganization } from '../entities/marketplace-organization.entity';
 import type { OrganizationRoleDefinition } from '../entities/organization-role.entity';
+import type { OrganizationPermissionDefinition } from '../entities/organization-permission.entity';
 import type {
   CreateOrganizationDto,
   CreateOrganizationRoleDto,
@@ -15,6 +16,7 @@ export abstract class IOrganizationRepository {
   abstract apply(organizationId: string): Promise<void>;
   abstract selectActive(organizationId: string): Promise<void>;
   abstract listRoles(organizationId: string): Promise<OrganizationRoleDefinition[]>;
+  abstract listPermissions(organizationId: string): Promise<OrganizationPermissionDefinition[]>;
   abstract provisionRoles(organizationId: string): Promise<void>;
   abstract createRole(organizationId: string, input: CreateOrganizationRoleDto): Promise<void>;
   abstract updateRole(organizationId: string, roleId: string, input: UpdateOrganizationRoleDto): Promise<void>;

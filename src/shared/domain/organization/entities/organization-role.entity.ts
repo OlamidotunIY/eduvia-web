@@ -9,6 +9,9 @@ export interface OrganizationRoleDefinitionProps {
   description: string | null;
   permissions: OrganizationPermission[];
   isSystem: boolean;
+  membersCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export class OrganizationRoleDefinition {
@@ -19,6 +22,9 @@ export class OrganizationRoleDefinition {
   readonly description: string | null;
   readonly permissions: OrganizationPermission[];
   readonly isSystem: boolean;
+  readonly membersCount: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 
   constructor(props: OrganizationRoleDefinitionProps) {
     this.id = props.id;
@@ -28,6 +34,17 @@ export class OrganizationRoleDefinition {
     this.description = props.description;
     this.permissions = props.permissions;
     this.isSystem = props.isSystem;
+    this.membersCount = props.membersCount ?? 0;
+    this.createdAt = props.createdAt ?? '';
+    this.updatedAt = props.updatedAt ?? '';
+  }
+
+  get displayType(): 'System' | 'Custom' {
+    return this.isSystem ? 'System' : 'Custom';
+  }
+
+  get permissionsCount(): number {
+    return this.permissions.length;
   }
 
   hasPermission(permission: OrganizationPermission): boolean {
