@@ -30,7 +30,7 @@ const sparklineOptions: ChartOptions<'line'> = {
   },
   scales: {
     x: { display: false },
-    y: { display: false },
+    y: { display: false, min: 0 },
   },
   elements: {
     point: { radius: 0 },
@@ -43,18 +43,37 @@ const sparklineOptions: ChartOptions<'line'> = {
 };
 
 function createSparklineData(points: number[]): ChartData<'line'> {
-  const safePoints = points && points.length > 0 ? points : [1, 2, 3, 4, 5];
+  const safePoints = points && points.length > 0 ? points : [0, 0, 0, 0, 0];
+  const hasValues = safePoints.some((p) => p > 0);
   return {
     labels: safePoints.map((_, i) => String(i)),
     datasets: [
       {
         data: safePoints,
-        borderColor: '#10b981',
+        borderColor: hasValues ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1.8,
         tension: 0.45,
       },
     ],
   };
+}
+
+function TrendIndicator({ trend, text }: { trend: number; text?: string }) {
+  if (trend > 0) {
+    return (
+      <span className="font-medium text-emerald-400">
+        ↑ {trend}% {text}
+      </span>
+    );
+  }
+  if (trend < 0) {
+    return (
+      <span className="font-medium text-rose-400">
+        ↓ {Math.abs(trend)}% {text}
+      </span>
+    );
+  }
+  return <span className="font-medium text-muted-foreground">0% {text}</span>;
 }
 
 export function AnalyticsKpiCards({
@@ -95,9 +114,11 @@ export function AnalyticsKpiCards({
       <div className="relative flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 transition-all">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-xs font-medium text-muted-foreground">Active learners</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Active learners
+            </span>
             <div className="text-2xl font-bold text-foreground mt-1.5 font-sans">
-              {totalActiveStudents.toLocaleString()}
+              {(totalActiveStudents ?? 0).toLocaleString()}
             </div>
           </div>
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
@@ -107,8 +128,10 @@ export function AnalyticsKpiCards({
 
         <div className="flex items-end justify-between mt-3 pt-2">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-medium text-emerald-400">↑ {activeLearnersTrend}%</span>
-            <span className="text-muted-foreground text-[11px]">vs. last month</span>
+            <TrendIndicator trend={activeLearnersTrend ?? 0} />
+            <span className="text-muted-foreground text-[11px]">
+              vs. last month
+            </span>
           </div>
           <div className="w-16 h-8 shrink-0">
             <Line options={sparklineOptions} data={learnersSparkline} />
@@ -120,9 +143,11 @@ export function AnalyticsKpiCards({
       <div className="relative flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 transition-all">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-xs font-medium text-muted-foreground">Active teachers</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Active teachers
+            </span>
             <div className="text-2xl font-bold text-foreground mt-1.5 font-sans">
-              {totalActiveTeachers.toLocaleString()}
+              {(totalActiveTeachers ?? 0).toLocaleString()}
             </div>
           </div>
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
@@ -132,8 +157,10 @@ export function AnalyticsKpiCards({
 
         <div className="flex items-end justify-between mt-3 pt-2">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-medium text-emerald-400">↑ {activeTeachersTrend}%</span>
-            <span className="text-muted-foreground text-[11px]">vs. last month</span>
+            <TrendIndicator trend={activeTeachersTrend ?? 0} />
+            <span className="text-muted-foreground text-[11px]">
+              vs. last month
+            </span>
           </div>
           <div className="w-16 h-8 shrink-0">
             <Line options={sparklineOptions} data={teachersSparkline} />
@@ -145,9 +172,11 @@ export function AnalyticsKpiCards({
       <div className="relative flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 transition-all">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-xs font-medium text-muted-foreground">Lessons this month</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Lessons this month
+            </span>
             <div className="text-2xl font-bold text-foreground mt-1.5 font-sans">
-              {totalLessonsThisMonth.toLocaleString()}
+              {(totalLessonsThisMonth ?? 0).toLocaleString()}
             </div>
           </div>
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
@@ -157,8 +186,17 @@ export function AnalyticsKpiCards({
 
         <div className="flex items-end justify-between mt-3 pt-2">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground text-[11px]">vs. last month {totalLessonsLastMonth}</span>
-            <span className="font-medium text-emerald-400">↑ {lessonsTrend}%</span>
+            {totalLessonsLastMonth > 0 && (
+              <span className="text-muted-foreground text-[11px]">
+                vs. last month {totalLessonsLastMonth}
+              </span>
+            )}
+            <TrendIndicator trend={lessonsTrend ?? 0} />
+            {totalLessonsLastMonth === 0 && (
+              <span className="text-muted-foreground text-[11px]">
+                vs. last month
+              </span>
+            )}
           </div>
           <div className="w-16 h-8 shrink-0">
             <Line options={sparklineOptions} data={lessonsChartSparkline} />
@@ -170,9 +208,11 @@ export function AnalyticsKpiCards({
       <div className="relative flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 transition-all">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-xs font-medium text-muted-foreground">Lesson completion</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Lesson completion
+            </span>
             <div className="text-2xl font-bold text-foreground mt-1.5 font-sans">
-              {avgLessonCompletionRate.toFixed(1)}%
+              {(avgLessonCompletionRate ?? 0).toFixed(1)}%
             </div>
           </div>
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
@@ -182,8 +222,10 @@ export function AnalyticsKpiCards({
 
         <div className="flex items-end justify-between mt-3 pt-2">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-medium text-emerald-400">↑ {completionRateTrend}%</span>
-            <span className="text-muted-foreground text-[11px]">vs. last month</span>
+            <TrendIndicator trend={completionRateTrend ?? 0} />
+            <span className="text-muted-foreground text-[11px]">
+              vs. last month
+            </span>
           </div>
           <div className="w-16 h-8 shrink-0">
             <Line options={sparklineOptions} data={completionSparkline} />

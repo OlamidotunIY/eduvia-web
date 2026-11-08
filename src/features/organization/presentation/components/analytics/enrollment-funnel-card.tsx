@@ -5,13 +5,16 @@ interface EnrollmentFunnelCardProps {
   stages?: FunnelStageDto[];
 }
 
+const DEFAULT_STAGES: FunnelStageDto[] = [
+  { stage: 'Invited', count: 0, percentage: 0 },
+  { stage: 'Registered', count: 0, percentage: 0 },
+  { stage: 'Active', count: 0, percentage: 0 },
+  { stage: 'Engaged (last 7 days)', count: 0, percentage: 0 },
+];
+
 export function EnrollmentFunnelCard({ stages }: EnrollmentFunnelCardProps) {
-  const safeStages: FunnelStageDto[] = stages && stages.length > 0 ? stages : [
-    { stage: 'Invited', count: 320, percentage: 100 },
-    { stage: 'Registered', count: 286, percentage: 89.4 },
-    { stage: 'Active', count: 248, percentage: 77.5 },
-    { stage: 'Engaged (last 7 days)', count: 192, percentage: 60.0 },
-  ];
+  const safeStages: FunnelStageDto[] =
+    stages && stages.length > 0 ? stages : DEFAULT_STAGES;
 
   return (
     <div className="flex flex-col justify-between rounded-xl border border-border/80 bg-card p-5 h-full">
@@ -28,6 +31,12 @@ export function EnrollmentFunnelCard({ stages }: EnrollmentFunnelCardProps) {
       {/* Stages List */}
       <div className="flex flex-col gap-4 mt-6">
         {safeStages.map((stage) => {
+          const clampedPercentage = Math.min(
+            100,
+            Math.max(0, stage.percentage ?? 0),
+          );
+          const hasProgress = clampedPercentage > 0;
+
           return (
             <div key={stage.stage} className="flex items-center gap-3">
               {/* Stage label */}
@@ -37,20 +46,22 @@ export function EnrollmentFunnelCard({ stages }: EnrollmentFunnelCardProps) {
 
               {/* Count */}
               <div className="text-xs font-medium text-foreground tabular-nums w-8 shrink-0 text-right">
-                {stage.count}
+                {stage.count ?? 0}
               </div>
 
               {/* Progress bar */}
               <div className="flex-1 h-2 rounded-full bg-muted/60 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, Math.max(0, stage.percentage))}%` }}
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    hasProgress ? 'bg-emerald-500' : 'bg-transparent'
+                  }`}
+                  style={{ width: `${clampedPercentage}%` }}
                 />
               </div>
 
               {/* Percentage */}
               <div className="text-xs font-medium text-foreground tabular-nums w-12 shrink-0 text-right">
-                {stage.percentage.toFixed(1)}%
+                {(stage.percentage ?? 0).toFixed(1)}%
               </div>
             </div>
           );

@@ -41,20 +41,40 @@ export function TeachingOperationsCard({
   completionBreakdown,
 }: TeachingOperationsCardProps) {
   const breakdown = completionBreakdown || {
-    completedPercentage: 92.4,
-    inProgressPercentage: 5.1,
-    notStartedPercentage: 2.5,
+    completedPercentage: 0,
+    inProgressPercentage: 0,
+    notStartedPercentage: 0,
   };
 
-  const doughnutData: ChartData<'doughnut'> = useMemo(
-    () => ({
+  const totalPercentage =
+    (breakdown.completedPercentage ?? 0) +
+    (breakdown.inProgressPercentage ?? 0) +
+    (breakdown.notStartedPercentage ?? 0);
+  const hasLessons = totalPercentage > 0;
+
+  const doughnutData: ChartData<'doughnut'> = useMemo(() => {
+    if (!hasLessons) {
+      return {
+        labels: ['No lessons recorded'],
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: ['#1e293b'],
+            borderColor: '#0b0f14',
+            borderWidth: 2,
+            hoverOffset: 0,
+          },
+        ],
+      };
+    }
+    return {
       labels: ['Completed', 'In progress', 'Not started'],
       datasets: [
         {
           data: [
-            breakdown.completedPercentage,
-            breakdown.inProgressPercentage,
-            breakdown.notStartedPercentage,
+            breakdown.completedPercentage ?? 0,
+            breakdown.inProgressPercentage ?? 0,
+            breakdown.notStartedPercentage ?? 0,
           ],
           backgroundColor: ['#10b981', '#0f766e', '#334155'],
           borderColor: '#0b0f14',
@@ -62,11 +82,11 @@ export function TeachingOperationsCard({
           hoverOffset: 3,
         },
       ],
-    }),
-    [breakdown],
-  );
+    };
+  }, [breakdown, hasLessons]);
 
-  const formattedHours = avgReportSubmissionTimeHours.toFixed(1);
+  const formattedHours = (avgReportSubmissionTimeHours ?? 0).toFixed(1);
+  const hasTrend = avgReportSubmissionTrend !== 0;
   const trendPositive = avgReportSubmissionTrend < 0; // faster submission is positive!
 
   return (
@@ -99,10 +119,24 @@ export function TeachingOperationsCard({
             {formattedHours} hrs
           </div>
           <div className="flex items-center gap-1.5 mt-3 text-xs">
-            <span className={`font-medium ${trendPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
-              ↓ {Math.abs(avgReportSubmissionTrend)}%
-            </span>
-            <span className="text-muted-foreground text-[11px]">vs. last month</span>
+            {hasTrend ? (
+              <>
+                <span
+                  className={`font-medium ${
+                    trendPositive ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {trendPositive ? '↓' : '↑'} {Math.abs(avgReportSubmissionTrend)}%
+                </span>
+                <span className="text-muted-foreground text-[11px]">
+                  vs. last month
+                </span>
+              </>
+            ) : (
+              <span className="text-muted-foreground text-[11px]">
+                0% vs. last month
+              </span>
+            )}
           </div>
         </div>
 
@@ -118,7 +152,7 @@ export function TeachingOperationsCard({
               <Doughnut options={doughnutOptions} data={doughnutData} />
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-xs font-bold text-foreground font-sans leading-none">
-                  {breakdown.completedPercentage.toFixed(1)}%
+                  {(breakdown.completedPercentage ?? 0).toFixed(1)}%
                 </span>
                 <span className="text-[9px] text-muted-foreground mt-0.5 leading-none">
                   Completed
@@ -131,30 +165,36 @@ export function TeachingOperationsCard({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="text-muted-foreground text-[11px] truncate">Completed</span>
+                  <span className="text-muted-foreground text-[11px] truncate">
+                    Completed
+                  </span>
                 </div>
                 <span className="font-medium text-foreground text-[11px] tabular-nums">
-                  {breakdown.completedPercentage.toFixed(1)}%
+                  {(breakdown.completedPercentage ?? 0).toFixed(1)}%
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="size-2 rounded-full bg-[#0f766e] shrink-0" />
-                  <span className="text-muted-foreground text-[11px] truncate">In progress</span>
+                  <span className="text-muted-foreground text-[11px] truncate">
+                    In progress
+                  </span>
                 </div>
                 <span className="font-medium text-foreground text-[11px] tabular-nums">
-                  {breakdown.inProgressPercentage.toFixed(1)}%
+                  {(breakdown.inProgressPercentage ?? 0).toFixed(1)}%
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="size-2 rounded-full bg-slate-600 shrink-0" />
-                  <span className="text-muted-foreground text-[11px] truncate">Not started</span>
+                  <span className="text-muted-foreground text-[11px] truncate">
+                    Not started
+                  </span>
                 </div>
                 <span className="font-medium text-foreground text-[11px] tabular-nums">
-                  {breakdown.notStartedPercentage.toFixed(1)}%
+                  {(breakdown.notStartedPercentage ?? 0).toFixed(1)}%
                 </span>
               </div>
             </div>

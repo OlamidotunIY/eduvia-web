@@ -8,20 +8,25 @@ interface LessonsCompletedChartProps {
   data: WeeklyLessonComparisonDto[];
 }
 
+const DEFAULT_WEEKS: WeeklyLessonComparisonDto[] = [
+  { week: 'Week 1', thisMonth: 0, lastMonth: 0 },
+  { week: 'Week 2', thisMonth: 0, lastMonth: 0 },
+  { week: 'Week 3', thisMonth: 0, lastMonth: 0 },
+  { week: 'Week 4', thisMonth: 0, lastMonth: 0 },
+];
+
 export function LessonsCompletedChart({ data }: LessonsCompletedChartProps) {
   const chartRef = useRef<any>(null);
 
-  const safeData = data && data.length > 0 ? data : [
-    { week: 'Week 1', thisMonth: 42, lastMonth: 32 },
-    { week: 'Week 2', thisMonth: 84, lastMonth: 58 },
-    { week: 'Week 3', thisMonth: 121, lastMonth: 88 },
-    { week: 'Week 4', thisMonth: 106, lastMonth: 94 },
-  ];
+  const safeData = data && data.length > 0 ? data : DEFAULT_WEEKS;
+  const hasCompletedLessons = safeData.some(
+    (d) => (d.thisMonth ?? 0) > 0 || (d.lastMonth ?? 0) > 0,
+  );
 
   const chartData: ChartData<'line'> = useMemo(() => {
     const labels = safeData.map((d) => d.week);
-    const thisMonthValues = safeData.map((d) => d.thisMonth);
-    const lastMonthValues = safeData.map((d) => d.lastMonth);
+    const thisMonthValues = safeData.map((d) => d.thisMonth ?? 0);
+    const lastMonthValues = safeData.map((d) => d.lastMonth ?? 0);
 
     return {
       labels,
@@ -70,7 +75,7 @@ export function LessonsCompletedChart({ data }: LessonsCompletedChartProps) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false, // Custom legend in card header matching design
+          display: false,
         },
         tooltip: {
           backgroundColor: '#090d11',
@@ -102,9 +107,9 @@ export function LessonsCompletedChart({ data }: LessonsCompletedChartProps) {
         },
         y: {
           min: 0,
-          max: 160,
+          suggestedMax: hasCompletedLessons ? undefined : 10,
           ticks: {
-            stepSize: 40,
+            stepSize: hasCompletedLessons ? undefined : 2,
             color: '#94a3b8',
             font: {
               size: 11,
@@ -121,7 +126,7 @@ export function LessonsCompletedChart({ data }: LessonsCompletedChartProps) {
         },
       },
     }),
-    [],
+    [hasCompletedLessons],
   );
 
   return (
@@ -144,8 +149,15 @@ export function LessonsCompletedChart({ data }: LessonsCompletedChartProps) {
       </div>
 
       {/* Chart Canvas */}
-      <div className="w-full h-64 sm:h-72 mt-2">
+      <div className="relative w-full h-64 sm:h-72 mt-2">
         <Line ref={chartRef} options={options} data={chartData} />
+        {!hasCompletedLessons && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="text-xs font-medium text-muted-foreground/70 bg-card/80 border border-border/60 px-3.5 py-1.5 rounded-full backdrop-blur-xs shadow-xs">
+              No completed lessons recorded this period
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -136,9 +136,9 @@ export class OrgAnalyticsEntity {
       avgReportSubmissionTimeHours: dto.avgReportSubmissionTimeHours,
       avgReportSubmissionTrend: dto.avgReportSubmissionTrend,
       completionBreakdown: dto.completionBreakdown ?? {
-        completedPercentage: 92.4,
-        inProgressPercentage: 5.1,
-        notStartedPercentage: 2.5,
+        completedPercentage: 0,
+        inProgressPercentage: 0,
+        notStartedPercentage: 0,
       },
       weeklyCompletedLessons: dto.weeklyCompletedLessons ?? [],
       teacherPerformance: dto.teacherPerformance ?? [],
