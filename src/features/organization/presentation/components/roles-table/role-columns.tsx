@@ -4,7 +4,6 @@ import {
   Eye,
   GraduationCap,
   Layers,
-  MoreHorizontal,
   Pencil,
   ShieldCheck,
   User,
@@ -14,12 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
 import type { OrganizationRoleDefinition } from "@/shared/domain";
 import type { DataTableFeatures } from "@/shared/composites/data-table/data-table-features";
 
@@ -184,28 +177,6 @@ export function createRoleColumns({
                 <Pencil className="size-3.5" />
               </Button>
             )}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="size-7 rounded-md text-muted-foreground hover:text-foreground"
-                  >
-                    <MoreHorizontal className="size-3.5" />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end" className="w-44 bg-popover border-border">
-                <DropdownMenuItem
-                  onClick={() => onOpenEdit(role)}
-                  className="text-xs cursor-pointer"
-                >
-                  Edit permissions
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         );
       },

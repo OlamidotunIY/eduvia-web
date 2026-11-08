@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { RotateCw, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { DataTable } from "@/shared/composites/data-table";
-import { Button } from "@/shared/ui/button";
 import {
   Select,
   SelectContent,
@@ -73,19 +72,6 @@ export function RolesTable({
           <SelectItem value="custom">Custom roles</SelectItem>
         </SelectContent>
       </Select>
-
-      {onReload && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onReload}
-          disabled={isReloading}
-          className="h-8 gap-1.5 rounded-lg text-xs border-border/70 text-muted-foreground hover:text-foreground"
-        >
-          <RotateCw className={`size-3.5 ${isReloading ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
-        </Button>
-      )}
     </div>
   );
 
