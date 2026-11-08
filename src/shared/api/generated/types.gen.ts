@@ -129,9 +129,170 @@ export type SendInvitationDto = {
   subjects?: Array<string>;
 };
 
-export type CreateOrganizationRoleDto = {
+export type OrganizationRoleResponseDto = {
+  /**
+   * Role identifier
+   */
+  id: string;
+  /**
+   * Organization identifier
+   */
+  orgId: string;
+  key?:
+    | "org_owner"
+    | "org_admin"
+    | "lead_teacher"
+    | "teacher"
+    | "teaching_assistant"
+    | "academic_coordinator";
+  /**
+   * Role display name
+   */
   name: string;
+  /**
+   * Role description
+   */
+  description?: string | null;
+  /**
+   * Role permissions
+   */
+  permissions: Array<
+    | "organization:read"
+    | "organization:update"
+    | "organization:policy:update"
+    | "organization:marketplace:manage"
+    | "roles:read"
+    | "roles:manage"
+    | "members:read"
+    | "members:invite"
+    | "members:manage"
+    | "applications:read"
+    | "applications:review"
+    | "subjects:read"
+    | "subjects:create"
+    | "subjects:update"
+    | "classrooms:read"
+    | "classrooms:create"
+    | "classrooms:update"
+    | "classrooms:manage_students"
+    | "lessons:read"
+    | "lessons:schedule"
+    | "lessons:manage"
+    | "curriculum:read"
+    | "curriculum:manage"
+    | "questions:read"
+    | "questions:create"
+    | "questions:update"
+    | "questions:delete"
+    | "questions:publish"
+    | "assessments:read"
+    | "assessments:create"
+    | "assessments:mark"
+    | "assessments:finalize"
+    | "reports:read"
+    | "reports:create"
+    | "reports:update"
+    | "reports:submit"
+    | "reports:approve_ai"
+    | "progress:read"
+    | "analytics:read"
+    | "conversations:read"
+    | "conversations:manage"
+    | "billing:read"
+    | "billing:manage"
+  >;
+  /**
+   * Whether the role is a system-defined role
+   */
+  isSystem: boolean;
+  /**
+   * Number of active members assigned to this role
+   */
+  membersCount: number;
+  /**
+   * Role creation date
+   */
+  createdAt: string;
+  /**
+   * Role last updated date
+   */
+  updatedAt: string;
+};
+
+export type OrganizationPermissionResponseDto = {
+  /**
+   * Permission key
+   */
+  id:
+    | "organization:read"
+    | "organization:update"
+    | "organization:policy:update"
+    | "organization:marketplace:manage"
+    | "roles:read"
+    | "roles:manage"
+    | "members:read"
+    | "members:invite"
+    | "members:manage"
+    | "applications:read"
+    | "applications:review"
+    | "subjects:read"
+    | "subjects:create"
+    | "subjects:update"
+    | "classrooms:read"
+    | "classrooms:create"
+    | "classrooms:update"
+    | "classrooms:manage_students"
+    | "lessons:read"
+    | "lessons:schedule"
+    | "lessons:manage"
+    | "curriculum:read"
+    | "curriculum:manage"
+    | "questions:read"
+    | "questions:create"
+    | "questions:update"
+    | "questions:delete"
+    | "questions:publish"
+    | "assessments:read"
+    | "assessments:create"
+    | "assessments:mark"
+    | "assessments:finalize"
+    | "reports:read"
+    | "reports:create"
+    | "reports:update"
+    | "reports:submit"
+    | "reports:approve_ai"
+    | "progress:read"
+    | "analytics:read"
+    | "conversations:read"
+    | "conversations:manage"
+    | "billing:read"
+    | "billing:manage";
+  /**
+   * Human-readable permission name
+   */
+  name: string;
+  /**
+   * Permission category group
+   */
+  category: string;
+  /**
+   * Detailed permission description
+   */
   description?: string;
+};
+
+export type CreateOrganizationRoleDto = {
+  /**
+   * Role name
+   */
+  name: string;
+  /**
+   * Role description
+   */
+  description?: string;
+  /**
+   * Role permissions
+   */
   permissions: Array<
     | "organization:read"
     | "organization:update"
@@ -180,8 +341,17 @@ export type CreateOrganizationRoleDto = {
 };
 
 export type UpdateOrganizationRoleDto = {
+  /**
+   * Role name
+   */
   name: string;
+  /**
+   * Role description
+   */
   description?: string;
+  /**
+   * Role permissions
+   */
   permissions: Array<
     | "organization:read"
     | "organization:update"
@@ -497,6 +667,89 @@ export type ApproveAiSummaryDto = {
 export type AddReportCommentDto = {
   content: string;
   parentCommentId?: string | null;
+};
+
+export type LessonCompletionBreakdownDto = {
+  completedPercentage: number;
+  inProgressPercentage: number;
+  notStartedPercentage: number;
+};
+
+export type WeeklyLessonComparisonDto = {
+  week: string;
+  thisMonth: number;
+  lastMonth: number;
+};
+
+export type TeacherPerformanceDto = {
+  teacherId: string;
+  teacherName: string;
+  teacherRole?: string;
+  avatarUrl?: string | null;
+  completionRate: number;
+  lessonsDelivered: number;
+  avgReportSubmissionHours: number;
+  avgStudentScorePercent?: number | null;
+  reportCompletionRate: number;
+  studentRetentionRate: number;
+};
+
+export type StudentChurnRiskDto = {
+  studentId: string;
+  studentName: string;
+  avatarUrl?: string | null;
+  gradeSubject: string;
+  riskLevel: "high" | "medium" | "low";
+  reason: string;
+  avgScorePercent: number;
+  riskScore: number;
+  riskFactors: Array<string>;
+  lastLessonAt?: string | null;
+};
+
+export type FunnelStageDto = {
+  stage: string;
+  count: number;
+  percentage: number;
+};
+
+export type FunnelStatsDto = {
+  totalLeads: number;
+  trialLessonsBooked: number;
+  trialLessonsCompleted: number;
+  enrolledStudents: number;
+  conversionRate: number;
+  stages?: Array<FunnelStageDto>;
+};
+
+export type OrgAnalyticsResponseDto = {
+  id: string;
+  orgId: string;
+  snapshotDate: string;
+  totalActiveStudents: number;
+  activeLearnersTrend: number;
+  activeLearnersSparkline: Array<number>;
+  totalActiveTeachers: number;
+  activeTeachersTrend: number;
+  activeTeachersSparkline: Array<number>;
+  totalLessonsThisMonth: number;
+  totalLessonsLastMonth: number;
+  lessonsTrend: number;
+  lessonsSparkline: Array<number>;
+  avgLessonCompletionRate: number;
+  completionRateTrend: number;
+  completionRateSparkline: Array<number>;
+  avgReportSubmissionTimeHours: number;
+  avgReportSubmissionTrend: number;
+  completionBreakdown: LessonCompletionBreakdownDto;
+  weeklyCompletedLessons: Array<WeeklyLessonComparisonDto>;
+  teacherPerformance: Array<TeacherPerformanceDto>;
+  studentChurnRisk: Array<StudentChurnRiskDto>;
+  funnelStages: Array<FunnelStageDto>;
+  funnelStats: FunnelStatsDto;
+  availableSnapshotDates: Array<string>;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type NotificationDto = {
@@ -1330,9 +1583,7 @@ export type OrganizationGetRolesData = {
 };
 
 export type OrganizationGetRolesResponses = {
-  200: Array<{
-    [key: string]: unknown;
-  }>;
+  200: Array<OrganizationRoleResponseDto>;
 };
 
 export type OrganizationGetRolesResponse =
@@ -1350,6 +1601,22 @@ export type OrganizationCreateRoleData = {
 export type OrganizationCreateRoleResponses = {
   201: unknown;
 };
+
+export type OrganizationGetPermissionsData = {
+  body?: never;
+  path: {
+    organizationId: string;
+  };
+  query?: never;
+  url: "/organizations/{organizationId}/permissions";
+};
+
+export type OrganizationGetPermissionsResponses = {
+  200: Array<OrganizationPermissionResponseDto>;
+};
+
+export type OrganizationGetPermissionsResponse =
+  OrganizationGetPermissionsResponses[keyof OrganizationGetPermissionsResponses];
 
 export type OrganizationProvisionRolesData = {
   body?: never;
@@ -3067,9 +3334,7 @@ export type ProgressGetOrgAnalyticsData = {
 };
 
 export type ProgressGetOrgAnalyticsResponses = {
-  200: {
-    [key: string]: unknown;
-  };
+  200: OrgAnalyticsResponseDto;
 };
 
 export type ProgressGetOrgAnalyticsResponse =
@@ -3085,9 +3350,7 @@ export type ProgressGetStudentChurnRiskData = {
 };
 
 export type ProgressGetStudentChurnRiskResponses = {
-  200: {
-    [key: string]: unknown;
-  };
+  200: Array<StudentChurnRiskDto>;
 };
 
 export type ProgressGetStudentChurnRiskResponse =
@@ -3103,9 +3366,7 @@ export type ProgressGetTeacherPerformanceData = {
 };
 
 export type ProgressGetTeacherPerformanceResponses = {
-  200: {
-    [key: string]: unknown;
-  };
+  200: Array<TeacherPerformanceDto>;
 };
 
 export type ProgressGetTeacherPerformanceResponse =

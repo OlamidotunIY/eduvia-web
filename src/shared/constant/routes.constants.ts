@@ -17,6 +17,7 @@ export const APP_ROUTES = {
   SUBJECTS: "/organization/subjects",
   MEMBERS: "/organization/members",
   ROLES: "/organization/roles",
+  ANALYTICS: "/organization/analytics",
   ASSESSMENTS: "/assessments",
   QUESTIONS: "/questions",
   MESSAGES: "/messages",

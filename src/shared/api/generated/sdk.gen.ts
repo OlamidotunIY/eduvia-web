@@ -239,6 +239,8 @@ import type {
   OrganizationGetMembersResponses,
   OrganizationGetOrganizationBySlugData,
   OrganizationGetOrganizationBySlugResponses,
+  OrganizationGetPermissionsData,
+  OrganizationGetPermissionsResponses,
   OrganizationGetRolesData,
   OrganizationGetRolesResponses,
   OrganizationGetSubjectsData,
@@ -993,6 +995,21 @@ export const organizationCreateRole = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+export const organizationGetPermissions = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<OrganizationGetPermissionsData, ThrowOnError>,
+): RequestResult<OrganizationGetPermissionsResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).get<
+    OrganizationGetPermissionsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/organizations/{organizationId}/permissions",
+    ...options,
   });
 
 export const organizationProvisionRoles = <

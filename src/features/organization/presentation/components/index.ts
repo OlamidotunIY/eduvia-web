@@ -5,3 +5,4 @@ export * from './members-table';
 export * from './roles-table';
 export * from './roles-metrics';
 export * from './role-drawer';
+export * from './analytics';

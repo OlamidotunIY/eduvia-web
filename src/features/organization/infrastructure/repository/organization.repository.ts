@@ -3,6 +3,7 @@ import {
   OrganizationMemberRecord,
   OrganizationRoleDefinition,
   OrganizationPermissionDefinition,
+  OrgAnalyticsEntity,
   IOrganizationRepository,
 } from '@/shared/domain';
 import type {
@@ -77,6 +78,11 @@ export class OrganizationRepository implements IOrganizationRepository {
 
   async suspendMember(organizationId: string, userId: string): Promise<unknown> {
     return organizationApi.suspendMember(organizationId, userId);
+  }
+
+  async getAnalytics(organizationId: string, date?: string): Promise<OrgAnalyticsEntity> {
+    const raw = await organizationApi.getAnalytics(organizationId, date);
+    return OrgAnalyticsEntity.fromDto(raw);
   }
 
   private toMarketplaceOrganization(value: unknown): MarketplaceOrganization {

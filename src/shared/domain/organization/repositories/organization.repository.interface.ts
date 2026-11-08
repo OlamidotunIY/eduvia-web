@@ -1,6 +1,7 @@
 import type { MarketplaceOrganization } from '../entities/marketplace-organization.entity';
 import type { OrganizationRoleDefinition } from '../entities/organization-role.entity';
 import type { OrganizationPermissionDefinition } from '../entities/organization-permission.entity';
+import type { OrgAnalyticsEntity } from '../entities/org-analytics.entity';
 import type {
   CreateOrganizationDto,
   CreateOrganizationRoleDto,
@@ -24,4 +25,5 @@ export abstract class IOrganizationRepository {
   abstract inviteMember(organizationId: string, input: SendInvitationDto): Promise<unknown>;
   abstract changeMemberRole(organizationId: string, userId: string, input: ChangeMemberRoleDto): Promise<unknown>;
   abstract suspendMember(organizationId: string, userId: string): Promise<unknown>;
+  abstract getAnalytics(organizationId: string, date?: string): Promise<OrgAnalyticsEntity>;
 }

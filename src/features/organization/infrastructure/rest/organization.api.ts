@@ -5,6 +5,7 @@ import type {
   UpdateOrganizationRoleDto,
   SendInvitationDto,
   ChangeMemberRoleDto,
+  OrgAnalyticsResponseDto,
 } from '@/shared/api/generated';
 import type { OrganizationRoleRecord } from '@/shared/domain';
 
@@ -68,5 +69,12 @@ export const organizationApi = {
   suspendMember: (organizationId: string, userId: string) =>
     apiClient
       .post(`/organizations/${organizationId}/members/${userId}/suspend`, {})
+      .then((response) => response.data),
+
+  getAnalytics: (organizationId: string, date?: string) =>
+    apiClient
+      .get<OrgAnalyticsResponseDto>(`/orgs/${organizationId}/analytics`, {
+        params: date ? { date } : undefined,
+      })
       .then((response) => response.data),
 };
