@@ -226,19 +226,19 @@ export function CurriculaTable({
 
   // Filter slot with shadcn Select components
   const filterSlot = (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
       <Select
         value={selectedCountry}
         onValueChange={(val) => setSelectedCountry(val ?? "ALL")}
       >
-        <SelectTrigger size="sm" className="h-8 min-w-36 text-xs border-border/70">
-          <span className="flex items-center gap-1.5">
+        <SelectTrigger size="sm" className="h-8 min-w-[130px] sm:min-w-36 text-xs border-border/70 flex-1 sm:flex-initial">
+          <span className="flex items-center gap-1.5 truncate">
             {selectedCountry === "ALL" ? (
               "All countries"
             ) : (
               <>
                 <CountryFlag code={selectedCountry} />
-                <span>{getCountryName(selectedCountry)}</span>
+                <span className="truncate">{getCountryName(selectedCountry)}</span>
               </>
             )}
           </span>
@@ -260,8 +260,8 @@ export function CurriculaTable({
         value={selectedStatus}
         onValueChange={(val) => setSelectedStatus(val ?? "ALL")}
       >
-        <SelectTrigger size="sm" className="h-8 min-w-32 text-xs border-border/70">
-          <span>
+        <SelectTrigger size="sm" className="h-8 min-w-[110px] sm:min-w-32 text-xs border-border/70 flex-1 sm:flex-initial">
+          <span className="truncate">
             {selectedStatus === "ALL"
               ? "All statuses"
               : selectedStatus === "ACTIVE"

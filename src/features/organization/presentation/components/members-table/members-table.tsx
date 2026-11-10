@@ -79,12 +79,12 @@ export function MembersTable({
   const isFiltered = status !== "all" || role !== "all";
 
   const filterSlot = (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
       <Select
         value={status}
         onValueChange={(value) => setStatus(value ?? "all")}
       >
-        <SelectTrigger size="sm" className="h-8 min-w-32 rounded-lg text-xs">
+        <SelectTrigger size="sm" className="h-8 flex-1 sm:flex-initial min-w-[120px] sm:min-w-32 rounded-lg text-xs">
           <SelectValue>
             {status === "all"
               ? "All statuses"
@@ -100,7 +100,7 @@ export function MembersTable({
       </Select>
 
       <Select value={role} onValueChange={(value) => setRole(value ?? "all")}>
-        <SelectTrigger size="sm" className="h-8 min-w-32 rounded-lg text-xs">
+        <SelectTrigger size="sm" className="h-8 flex-1 sm:flex-initial min-w-[120px] sm:min-w-32 rounded-lg text-xs">
           <SelectValue>
             {role === "all" ? "All roles" : formatRoleName(role)}
           </SelectValue>

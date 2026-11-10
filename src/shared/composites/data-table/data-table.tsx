@@ -110,8 +110,8 @@ export function DataTable<TData extends RowData>({
     <div
       className={cn("flex min-h-0 w-full flex-1 flex-col space-y-3", className)}
     >
-      <div className="flex shrink-0 items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 w-full shrink-0">
+        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0 w-full sm:w-auto">
           {filterContent ? (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -120,7 +120,7 @@ export function DataTable<TData extends RowData>({
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      "inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:bg-muted/60",
+                      "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:bg-muted/60",
                       isFiltered && "bg-primary/10 text-primary",
                     )}
                   >
@@ -139,7 +139,7 @@ export function DataTable<TData extends RowData>({
             <Button
               variant="ghost"
               size="sm"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground"
+              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground"
               onClick={onFilterClick}
             >
               <Funnel className="size-3 shrink-0" />
@@ -148,10 +148,10 @@ export function DataTable<TData extends RowData>({
             </Button>
           ) : null}
           {searchKey ? (
-            <div className="relative w-64 max-w-xs">
+            <div className="relative min-w-[140px] flex-1 sm:w-64 sm:max-w-xs sm:flex-initial">
               <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="h-8 rounded-lg pl-8 text-xs"
+                className="h-8 rounded-lg pl-8 text-xs w-full"
                 placeholder={searchPlaceholder}
                 value={
                   (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
@@ -164,7 +164,7 @@ export function DataTable<TData extends RowData>({
           ) : null}
           {filterSlot}
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5 ml-auto sm:ml-0">
           {onReload ? (
             <Button
               variant="ghost"
