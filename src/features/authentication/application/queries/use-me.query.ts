@@ -8,8 +8,11 @@ export function useMeQuery(enabled: boolean) {
     queryKey: currentUserQueryKey,
     queryFn: () => authRepository.getMe(),
     enabled,
-    staleTime: 60_000,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: 1,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 }
