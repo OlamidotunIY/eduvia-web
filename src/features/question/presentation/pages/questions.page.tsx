@@ -244,24 +244,24 @@ export function QuestionsPage() {
         <TabsList
           variant="line"
           aria-label="Question Bank Libraries"
-          className="h-auto w-full justify-start gap-2 rounded-none border-b border-border bg-transparent p-0 pb-2"
+          className="h-auto w-full justify-start gap-2 rounded-none border-b border-border bg-transparent p-0 pb-2 overflow-x-auto no-scrollbar flex-nowrap"
         >
           <TabsTrigger
-            className="h-8 flex-none rounded-lg px-3.5 text-xs font-medium after:inset-x-2 after:-bottom-[9px] after:bg-primary data-active:bg-primary/15! data-active:text-primary! dark:data-active:bg-primary/20! dark:data-active:text-primary!"
+            className="h-8 shrink-0 flex-none rounded-lg px-3.5 text-xs font-medium whitespace-nowrap after:inset-x-2 after:-bottom-[9px] after:bg-primary data-active:bg-primary/15! data-active:text-primary! dark:data-active:bg-primary/20! dark:data-active:text-primary!"
             value="all"
           >
             <LayoutGrid className="size-3.5" /> All accessible (
             {summary.totalAccessible})
           </TabsTrigger>
           <TabsTrigger
-            className="h-8 flex-none rounded-lg px-3.5 text-xs font-medium after:inset-x-2 after:-bottom-[9px] after:bg-primary data-active:bg-primary/15! data-active:text-primary! dark:data-active:bg-primary/20! dark:data-active:text-primary!"
+            className="h-8 shrink-0 flex-none rounded-lg px-3.5 text-xs font-medium whitespace-nowrap after:inset-x-2 after:-bottom-[9px] after:bg-primary data-active:bg-primary/15! data-active:text-primary! dark:data-active:bg-primary/20! dark:data-active:text-primary!"
             value="platform"
           >
             <Globe className="size-3.5" /> Platform library (
             {summary.platformQuestions})
           </TabsTrigger>
           <TabsTrigger
-            className="h-8 flex-none rounded-lg px-3.5 text-xs font-medium after:inset-x-2 after:-bottom-[9px] after:bg-primary data-active:bg-primary/15! data-active:text-primary! dark:data-active:bg-primary/20! dark:data-active:text-primary!"
+            className="h-8 shrink-0 flex-none rounded-lg px-3.5 text-xs font-medium whitespace-nowrap after:inset-x-2 after:-bottom-[9px] after:bg-primary data-active:bg-primary/15! data-active:text-primary! dark:data-active:bg-primary/20! dark:data-active:text-primary!"
             value="org"
           >
             <Landmark className="size-3.5" /> Organization library (
@@ -271,22 +271,24 @@ export function QuestionsPage() {
       </Tabs>
 
       {/* Filter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2.5">
+      {(() => {
+        const filterButton = (
           <Button
             variant="outline"
             size="sm"
-            className="h-9 gap-1.5 rounded-lg px-3 text-xs"
+            className="h-9 shrink-0 gap-1.5 rounded-lg px-3 text-xs"
           >
             <Filter className="size-3.5 text-muted-foreground" />
             <span>Filter</span>
             <ChevronDown className="size-3.5 text-muted-foreground" />
           </Button>
+        );
 
-          <div className="relative w-64 max-w-xs">
+        const searchInput = (
+          <div className="relative min-w-[140px] flex-1 sm:w-64 sm:max-w-xs sm:flex-initial">
             <Search className="absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="h-9 rounded-lg pl-8 text-xs"
+              className="h-9 rounded-lg pl-8 text-xs w-full"
               placeholder="Search questions..."
               value={search}
               onChange={(e) => {
@@ -295,152 +297,184 @@ export function QuestionsPage() {
               }}
             />
           </div>
+        );
 
-          <Select
-            value={subjectFilter}
-            onValueChange={(val) => {
-              setSubjectFilter(val ?? "all");
-              setPage(0);
-            }}
-          >
-            <SelectTrigger
-              size="sm"
-              className="h-9 min-w-32 rounded-lg text-xs [&_svg:last-child]:hidden"
+        const filterSelects = (
+          <>
+            <Select
+              value={subjectFilter}
+              onValueChange={(val) => {
+                setSubjectFilter(val ?? "all");
+                setPage(0);
+              }}
             >
-              <span className="flex flex-1 items-center gap-1.5 text-left">
-                <BookOpen className="size-3.5 text-muted-foreground" />
-                <span>
-                  {subjectFilter === "all" ? "Subject" : subjectFilter}
+              <SelectTrigger
+                size="sm"
+                className="h-9 shrink-0 min-w-32 rounded-lg text-xs [&_svg:last-child]:hidden"
+              >
+                <span className="flex flex-1 items-center gap-1.5 text-left">
+                  <BookOpen className="size-3.5 text-muted-foreground" />
+                  <span>
+                    {subjectFilter === "all" ? "Subject" : subjectFilter}
+                  </span>
                 </span>
-              </span>
-              <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Subject</SelectItem>
-              {availableSubjects.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-              <SelectItem value="Mathematics">Mathematics</SelectItem>
-              <SelectItem value="Biology">Biology</SelectItem>
-              <SelectItem value="Science">Science</SelectItem>
-            </SelectContent>
-          </Select>
+                <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Subject</SelectItem>
+                {availableSubjects.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+                <SelectItem value="Mathematics">Mathematics</SelectItem>
+                <SelectItem value="Biology">Biology</SelectItem>
+                <SelectItem value="Science">Science</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select
-            value={typeFilter}
-            onValueChange={(val) => {
-              setTypeFilter(val ?? "all");
-              setPage(0);
-            }}
-          >
-            <SelectTrigger
-              size="sm"
-              className="h-9 min-w-28 rounded-lg text-xs [&_svg:last-child]:hidden"
+            <Select
+              value={typeFilter}
+              onValueChange={(val) => {
+                setTypeFilter(val ?? "all");
+                setPage(0);
+              }}
             >
-              <span className="flex flex-1 items-center gap-1.5 text-left">
-                <Tag className="size-3.5 text-muted-foreground" />
-                <span>
-                  {typeFilter === "all"
-                    ? "Type"
-                    : typeFilter === "mcq"
-                      ? "Multiple choice"
-                      : typeFilter === "short_answer"
-                        ? "Short answer"
-                        : "Long answer"}
+              <SelectTrigger
+                size="sm"
+                className="h-9 shrink-0 min-w-28 rounded-lg text-xs [&_svg:last-child]:hidden"
+              >
+                <span className="flex flex-1 items-center gap-1.5 text-left">
+                  <Tag className="size-3.5 text-muted-foreground" />
+                  <span>
+                    {typeFilter === "all"
+                      ? "Type"
+                      : typeFilter === "mcq"
+                        ? "Multiple choice"
+                        : typeFilter === "short_answer"
+                          ? "Short answer"
+                          : "Long answer"}
+                  </span>
                 </span>
-              </span>
-              <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Type</SelectItem>
-              <SelectItem value="mcq">Multiple choice</SelectItem>
-              <SelectItem value="short_answer">Short answer</SelectItem>
-              <SelectItem value="long_answer">Long answer</SelectItem>
-            </SelectContent>
-          </Select>
+                <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Type</SelectItem>
+                <SelectItem value="mcq">Multiple choice</SelectItem>
+                <SelectItem value="short_answer">Short answer</SelectItem>
+                <SelectItem value="long_answer">Long answer</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select
-            value={difficultyFilter}
-            onValueChange={(val) => {
-              setDifficultyFilter(val ?? "all");
-              setPage(0);
-            }}
-          >
-            <SelectTrigger
-              size="sm"
-              className="h-9 min-w-32 rounded-lg text-xs [&_svg:last-child]:hidden"
+            <Select
+              value={difficultyFilter}
+              onValueChange={(val) => {
+                setDifficultyFilter(val ?? "all");
+                setPage(0);
+              }}
             >
-              <span className="flex flex-1 items-center gap-1.5 text-left">
-                <BarChart3 className="size-3.5 text-muted-foreground" />
-                <span>
-                  {difficultyFilter === "all"
-                    ? "Difficulty"
-                    : `${difficultyFilter} / 5`}
+              <SelectTrigger
+                size="sm"
+                className="h-9 shrink-0 min-w-32 rounded-lg text-xs [&_svg:last-child]:hidden"
+              >
+                <span className="flex flex-1 items-center gap-1.5 text-left">
+                  <BarChart3 className="size-3.5 text-muted-foreground" />
+                  <span>
+                    {difficultyFilter === "all"
+                      ? "Difficulty"
+                      : `${difficultyFilter} / 5`}
+                  </span>
                 </span>
-              </span>
-              <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Difficulty</SelectItem>
-              <SelectItem value="1">1 / 5</SelectItem>
-              <SelectItem value="2">2 / 5</SelectItem>
-              <SelectItem value="3">3 / 5</SelectItem>
-              <SelectItem value="4">4 / 5</SelectItem>
-              <SelectItem value="5">5 / 5</SelectItem>
-            </SelectContent>
-          </Select>
+                <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Difficulty</SelectItem>
+                <SelectItem value="1">1 / 5</SelectItem>
+                <SelectItem value="2">2 / 5</SelectItem>
+                <SelectItem value="3">3 / 5</SelectItem>
+                <SelectItem value="4">4 / 5</SelectItem>
+                <SelectItem value="5">5 / 5</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select
-            value={statusFilter}
-            onValueChange={(val) => {
-              setStatusFilter(val ?? "all");
-              setPage(0);
-            }}
-          >
-            <SelectTrigger
-              size="sm"
-              className="h-9 min-w-28 rounded-lg text-xs [&_svg:last-child]:hidden"
+            <Select
+              value={statusFilter}
+              onValueChange={(val) => {
+                setStatusFilter(val ?? "all");
+                setPage(0);
+              }}
             >
-              <span className="flex flex-1 items-center gap-1.5 text-left">
-                <Settings className="size-3.5 text-muted-foreground" />
-                <span>
-                  {statusFilter === "all"
-                    ? "Status"
-                    : statusFilter === "published"
-                      ? "Published"
-                      : "Draft"}
+              <SelectTrigger
+                size="sm"
+                className="h-9 shrink-0 min-w-28 rounded-lg text-xs [&_svg:last-child]:hidden"
+              >
+                <span className="flex flex-1 items-center gap-1.5 text-left">
+                  <Settings className="size-3.5 text-muted-foreground" />
+                  <span>
+                    {statusFilter === "all"
+                      ? "Status"
+                      : statusFilter === "published"
+                        ? "Published"
+                        : "Draft"}
+                  </span>
                 </span>
-              </span>
-              <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Status</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+                <ChevronDown className="ml-1.5 size-3.5 text-muted-foreground" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        );
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-9 rounded-lg"
-          disabled={questionsQuery.isFetching}
-          onClick={() => {
-            void questionsQuery.refetch();
-            void summaryQuery.refetch();
-          }}
-          title="Refresh question bank"
-        >
-          <RefreshCw
-            className={
-              questionsQuery.isFetching ? "size-4 animate-spin" : "size-4"
-            }
-          />
-        </Button>
-      </div>
+        const refreshButton = (
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-9 shrink-0 rounded-lg"
+            disabled={questionsQuery.isFetching}
+            onClick={() => {
+              void questionsQuery.refetch();
+              void summaryQuery.refetch();
+            }}
+            title="Refresh question bank"
+          >
+            <RefreshCw
+              className={
+                questionsQuery.isFetching ? "size-4 animate-spin" : "size-4"
+              }
+            />
+          </Button>
+        );
+
+        return (
+          <>
+            {/* Desktop Toolbar (sm and up) */}
+            <div className="hidden sm:flex items-center justify-between gap-3 w-full shrink-0">
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                {filterButton}
+                {searchInput}
+                {filterSelects}
+              </div>
+              {refreshButton}
+            </div>
+
+            {/* Mobile Toolbar (below sm) */}
+            <div className="flex sm:hidden flex-col gap-2 w-full shrink-0">
+              <div className="flex items-center gap-2 w-full">
+                {searchInput}
+                {refreshButton}
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth w-full flex-nowrap py-0.5">
+                {filterButton}
+                {filterSelects}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Question Table */}
       <div className="border-b border-border/80">

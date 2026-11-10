@@ -52,12 +52,12 @@ export function RolesTable({
   const isFiltered = typeFilter !== "all";
 
   const filterSlot = (
-    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+    <div className="flex items-center gap-2 shrink-0">
       <Select
         value={typeFilter}
         onValueChange={(val) => setTypeFilter((val as "all" | "system" | "custom") ?? "all")}
       >
-        <SelectTrigger size="sm" className="h-8 flex-1 sm:flex-initial min-w-[130px] sm:min-w-36 rounded-lg text-xs">
+        <SelectTrigger size="sm" className="h-8 shrink-0 min-w-36 rounded-lg text-xs">
           <SelectValue>
             {typeFilter === "all"
               ? "All role types"

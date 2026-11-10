@@ -106,122 +106,147 @@ export function DataTable<TData extends RowData>({
   });
   const isEmpty = !isLoading && table.getRowModel().rows.length === 0;
 
+  const filterButtonElement = filterContent ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:bg-muted/60 border border-border/60 sm:border-0",
+              isFiltered && "bg-primary/10 text-primary border-primary/30",
+            )}
+          >
+            <Funnel className="size-3 shrink-0" />
+            <span>Filter</span>
+            <ChevronDown className="size-3 shrink-0 opacity-70" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="start" className="w-64 p-3">
+        {filterContent}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : onFilterClick ? (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground border border-border/60 sm:border-0"
+      onClick={onFilterClick}
+    >
+      <Funnel className="size-3 shrink-0" />
+      <span>Filter</span>
+      <ChevronDown className="size-3 shrink-0 opacity-70" />
+    </Button>
+  ) : null;
+
+  const searchInputElement = searchKey ? (
+    <div className="relative min-w-[140px] flex-1 sm:w-64 sm:max-w-xs sm:flex-initial">
+      <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        className="h-8 rounded-lg pl-8 text-xs w-full"
+        placeholder={searchPlaceholder}
+        value={
+          (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
+        }
+        onChange={(event) =>
+          table.getColumn(searchKey)?.setFilterValue(event.target.value)
+        }
+      />
+    </div>
+  ) : null;
+
+  const actionsElement = (
+    <div className="flex shrink-0 items-center gap-1.5">
+      {onReload ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="size-8 rounded-lg text-muted-foreground"
+          onClick={onReload}
+          disabled={isLoading || isReloading}
+          aria-label="Reload"
+        >
+          <RefreshCw
+            className={cn(
+              "size-3.5",
+              (isLoading || isReloading) && "animate-spin",
+            )}
+          />
+        </Button>
+      ) : null}
+      {enableColumnVisibility ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 rounded-lg px-2.5 text-xs text-muted-foreground"
+              >
+                <Settings2 />
+                <span>Settings</span>
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {table
+                .getAllLeafColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(checked) =>
+                      column.toggleVisibility(checked)
+                    }
+                  >
+                    {columnLabels?.[column.id] ?? column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
+      {toolbarActions}
+    </div>
+  );
+
   return (
     <div
       className={cn("flex min-h-0 w-full flex-1 flex-col space-y-3", className)}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2.5 w-full shrink-0">
-        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0 w-full sm:w-auto">
-          {filterContent ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:bg-muted/60",
-                      isFiltered && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    <Funnel className="size-3 shrink-0" />
-                    <span>Filter</span>
-                    <ChevronDown className="size-3 shrink-0 opacity-70" />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="start" className="w-64 p-3">
-                {filterContent}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : null}
-          {!filterContent && onFilterClick ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground"
-              onClick={onFilterClick}
-            >
-              <Funnel className="size-3 shrink-0" />
-              <span>Filter</span>
-              <ChevronDown className="size-3 shrink-0 opacity-70" />
-            </Button>
-          ) : null}
-          {searchKey ? (
-            <div className="relative min-w-[140px] flex-1 sm:w-64 sm:max-w-xs sm:flex-initial">
-              <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                className="h-8 rounded-lg pl-8 text-xs w-full"
-                placeholder={searchPlaceholder}
-                value={
-                  (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
-                }
-              />
-            </div>
-          ) : null}
+      {/* Desktop Toolbar (sm and up) */}
+      <div className="hidden sm:flex shrink-0 items-center justify-between gap-3 w-full">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {filterButtonElement}
+          {searchInputElement}
           {filterSlot}
         </div>
-        <div className="flex shrink-0 items-center gap-1.5 ml-auto sm:ml-0">
-          {onReload ? (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-8 rounded-lg text-muted-foreground"
-              onClick={onReload}
-              disabled={isLoading || isReloading}
-              aria-label="Reload"
-            >
-              <RefreshCw
-                className={cn(
-                  "size-3.5",
-                  (isLoading || isReloading) && "animate-spin",
-                )}
-              />
-            </Button>
-          ) : null}
-          {enableColumnVisibility ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 gap-2 rounded-lg px-2.5 text-xs text-muted-foreground"
-                  >
-                    <Settings2 />
-                    <span>Settings</span>
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  {table
-                    .getAllLeafColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(checked) =>
-                          column.toggleVisibility(checked)
-                        }
-                      >
-                        {columnLabels?.[column.id] ?? column.id}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : null}
-          {toolbarActions}
+        {actionsElement}
+      </div>
+
+      {/* Mobile Toolbar (below sm) */}
+      <div className="flex sm:hidden flex-col gap-2 w-full shrink-0">
+        {/* Row 1: Search + Actions */}
+        <div className="flex items-center gap-2 w-full">
+          {searchInputElement}
+          <div className="ml-auto shrink-0">{actionsElement}</div>
         </div>
+
+        {/* Row 2: Scrollable Filter strip */}
+        {(filterButtonElement || filterSlot) ? (
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth w-full flex-nowrap py-0.5">
+            {filterButtonElement}
+            {filterSlot}
+          </div>
+        ) : null}
       </div>
       <div className="border-b border-border/80">
         {isEmpty ? (

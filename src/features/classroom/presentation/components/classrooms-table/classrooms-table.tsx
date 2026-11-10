@@ -113,7 +113,7 @@ export function ClassroomsTable({
       value={status}
       onValueChange={(value) => setStatus(value ?? "all")}
     >
-      <SelectTrigger size="sm" className="h-8 flex-1 sm:flex-initial min-w-[120px] sm:min-w-32 rounded-lg text-xs">
+      <SelectTrigger size="sm" className="h-8 shrink-0 min-w-32 rounded-lg text-xs">
         <SelectValue>
           {status === "all"
             ? "All statuses"
