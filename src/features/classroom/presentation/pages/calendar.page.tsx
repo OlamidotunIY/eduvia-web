@@ -1,5 +1,4 @@
 import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 import {
   addMonths,
   addWeeks,
@@ -21,7 +20,6 @@ import {
   Funnel,
   RotateCcw,
 } from "lucide-react";
-import { useMainHeaderSlot } from "@/app/shell/main/header";
 import { sessionStore } from "@/shared/store";
 import type { Classroom, ClassroomLesson } from "@/shared/domain";
 import { Button } from "@/shared/ui/button";
@@ -103,7 +101,6 @@ export function CalendarPage() {
   );
   const [reschedulingLesson, setReschedulingLesson] =
     useState<ClassroomLesson | null>(null);
-  const { element: headerSlot } = useMainHeaderSlot();
 
   const range = useMemo(() => getRange(anchorDate, view), [anchorDate, view]);
   const classrooms = useClassroomsQuery(organizationId);
@@ -205,190 +202,185 @@ export function CalendarPage() {
   }
 
   return (
-    <>
-      {headerSlot
-        ? createPortal(
-            <div className="flex w-full min-w-0 items-center justify-between gap-1.5 overflow-hidden">
-              <div className="flex shrink-0 items-center gap-1">
-                <div className="mr-2 hidden items-center gap-2 border-r border-border pr-4 lg:flex">
-                  <CalendarDays className="size-4 text-primary" />
-                  <span className="text-sm font-semibold">Calendar</span>
-                </div>
+    <section className="-m-4 flex min-h-0 flex-1 flex-col overflow-hidden md:-m-6">
+      {/* Calendar Dedicated Top Toolbar */}
+      <div className="flex shrink-0 items-center justify-between border-b border-border/80 bg-background/95 px-4 py-2.5 backdrop-blur-xs gap-2 z-10">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="size-8"
+            onClick={() => movePeriod(-1)}
+            aria-label="Previous period"
+          >
+            <ChevronLeft className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="h-8 px-2.5 text-xs font-semibold"
+            onClick={goToToday}
+          >
+            Today
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="size-8"
+            onClick={() => movePeriod(1)}
+            aria-label="Next period"
+          >
+            <ChevronRight className="size-4" />
+          </Button>
+          <p className="ml-2 font-heading text-sm sm:text-base font-semibold text-foreground whitespace-nowrap">
+            {range.label}
+          </p>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Popover>
+            <PopoverTrigger
+              render={
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon-xs"
-                  className="sm:h-8 sm:w-8"
-                  onClick={() => movePeriod(-1)}
-                  aria-label="Previous period"
+                  className="relative shrink-0 size-8"
+                  aria-label="Filter calendar"
+                  title="Filter calendar"
                 >
-                  <ChevronLeft className="size-4" />
+                  <Funnel className="size-3.5" />
+                  {activeFilterCount ? (
+                    <span className="absolute -right-1 -top-1 grid size-3.5 place-items-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
+                      {activeFilterCount}
+                    </span>
+                  ) : null}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="sm:h-8 sm:px-2.5 sm:text-sm"
-                  onClick={goToToday}
-                >
-                  Today
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="sm:h-8 sm:w-8"
-                  onClick={() => movePeriod(1)}
-                  aria-label="Next period"
-                >
-                  <ChevronRight className="size-4" />
-                </Button>
-                <p className="ml-1 hidden whitespace-nowrap text-sm font-medium lg:block">
-                  {range.label}
+              }
+            />
+            <PopoverContent
+              align="end"
+              className="w-[min(34rem,calc(100vw-2rem))]"
+            >
+              <PopoverHeader>
+                <PopoverTitle>Filter calendar</PopoverTitle>
+                <p className="text-xs text-muted-foreground">
+                  Refine the visible lesson schedule.
                 </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <Popover>
-                  <PopoverTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="icon-xs"
-                        className="relative shrink-0 sm:h-8 sm:w-8"
-                        aria-label="Filter calendar"
-                        title="Filter calendar"
-                      >
-                        <Funnel className="size-3.5" />
-                        {activeFilterCount ? (
-                          <span className="absolute -right-1 -top-1 grid size-3.5 place-items-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
-                            {activeFilterCount}
-                          </span>
-                        ) : null}
-                      </Button>
-                    }
-                  />
-                  <PopoverContent
-                    align="end"
-                    className="w-[min(34rem,calc(100vw-2rem))]"
-                  >
-                    <PopoverHeader>
-                      <PopoverTitle>Filter calendar</PopoverTitle>
-                      <p className="text-xs text-muted-foreground">
-                        Refine the visible lesson schedule.
-                      </p>
-                    </PopoverHeader>
-                    <div className="grid gap-5">
-                      <FilterGroup title="Classrooms">
-                        {(classrooms.data ?? []).map((classroom) => (
-                          <FilterOption
-                            key={classroom.id}
-                            checked={classroomIds.includes(classroom.id)}
-                            onCheckedChange={() =>
-                              toggleClassroom(classroom.id)
-                            }
-                          >
-                            {classroom.name}
-                          </FilterOption>
-                        ))}
-                        {!classrooms.data?.length ? (
-                          <p className="text-sm text-muted-foreground">
-                            No classrooms available.
-                          </p>
-                        ) : null}
-                      </FilterGroup>
-                      <FilterGroup
-                        title="Lesson status"
-                        className="sm:grid-cols-3"
-                      >
-                        {[
-                          ["scheduled", "Scheduled"],
-                          ["completed", "Completed"],
-                          ["cancelled", "Cancelled"],
-                        ].map(([value, label]) => (
-                          <FilterOption
-                            key={value}
-                            checked={lessonStatuses.includes(value)}
-                            onCheckedChange={() => toggleLessonStatus(value)}
-                          >
-                            {label}
-                          </FilterOption>
-                        ))}
-                      </FilterGroup>
-                      <FilterGroup title="Teaching scope">
-                        <FilterOption
-                          checked={mineOnly}
-                          onCheckedChange={setMineOnly}
-                        >
-                          My lessons only
-                        </FilterOption>
-                      </FilterGroup>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="justify-start"
-                        disabled={!activeFilterCount}
-                        onClick={() => {
-                          setClassroomIds([]);
-                          setLessonStatuses([]);
-                          setMineOnly(false);
-                        }}
-                      >
-                        Clear all filters
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-
-                {/* Mobile View Switcher (Select Dropdown) */}
-                <div className="sm:hidden">
-                  <Select
-                    value={view}
-                    onValueChange={(val) => {
-                      if (val) setView(val as CalendarView);
-                    }}
-                  >
-                    <SelectTrigger
-                      size="sm"
-                      className="h-7 w-[5.75rem] px-2 text-xs font-medium"
+              </PopoverHeader>
+              <div className="grid gap-5">
+                <FilterGroup title="Classrooms">
+                  {(classrooms.data ?? []).map((classroom) => (
+                    <FilterOption
+                      key={classroom.id}
+                      checked={classroomIds.includes(classroom.id)}
+                      onCheckedChange={() =>
+                        toggleClassroom(classroom.id)
+                      }
                     >
-                      <span className="capitalize">{view}</span>
-                    </SelectTrigger>
-                    <SelectContent align="end">
-                      <SelectItem value="week">Week</SelectItem>
-                      <SelectItem value="month">Month</SelectItem>
-                      <SelectItem value="schedule">Schedule</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Desktop View Switcher (Segmented buttons) */}
-                <div className="hidden sm:flex items-center rounded-md border border-border p-0.5">
-                  <Button
-                    size="sm"
-                    variant={view === "week" ? "secondary" : "ghost"}
-                    onClick={() => setView("week")}
+                      {classroom.name}
+                    </FilterOption>
+                  ))}
+                  {!classrooms.data?.length ? (
+                    <p className="text-sm text-muted-foreground">
+                      No classrooms available.
+                    </p>
+                  ) : null}
+                </FilterGroup>
+                <FilterGroup
+                  title="Lesson status"
+                  className="sm:grid-cols-3"
+                >
+                  {[
+                    ["scheduled", "Scheduled"],
+                    ["completed", "Completed"],
+                    ["cancelled", "Cancelled"],
+                  ].map(([value, label]) => (
+                    <FilterOption
+                      key={value}
+                      checked={lessonStatuses.includes(value)}
+                      onCheckedChange={() => toggleLessonStatus(value)}
+                    >
+                      {label}
+                    </FilterOption>
+                  ))}
+                </FilterGroup>
+                <FilterGroup title="Teaching scope">
+                  <FilterOption
+                    checked={mineOnly}
+                    onCheckedChange={setMineOnly}
                   >
-                    Week
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={view === "month" ? "secondary" : "ghost"}
-                    onClick={() => setView("month")}
-                  >
-                    Month
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={view === "schedule" ? "secondary" : "ghost"}
-                    onClick={() => setView("schedule")}
-                  >
-                    Schedule
-                  </Button>
-                </div>
+                    My lessons only
+                  </FilterOption>
+                </FilterGroup>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="justify-start"
+                  disabled={!activeFilterCount}
+                  onClick={() => {
+                    setClassroomIds([]);
+                    setLessonStatuses([]);
+                    setMineOnly(false);
+                  }}
+                >
+                  Clear all filters
+                </Button>
               </div>
-            </div>,
-            headerSlot,
-          )
-        : null}
-      <section className="-m-4 flex min-h-0 flex-1 flex-col overflow-hidden md:-m-6">
-        <div className="min-h-0 flex-1">
+            </PopoverContent>
+          </Popover>
+
+          {/* Mobile View Switcher (Select Dropdown) */}
+          <div className="sm:hidden">
+            <Select
+              value={view}
+              onValueChange={(val) => {
+                if (val) setView(val as CalendarView);
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                className="h-8 w-24 px-2 text-xs font-medium"
+              >
+                <span className="capitalize">{view}</span>
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="week">Week</SelectItem>
+                <SelectItem value="month">Month</SelectItem>
+                <SelectItem value="schedule">Schedule</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop View Switcher (Segmented buttons) */}
+          <div className="hidden sm:flex items-center rounded-lg border border-border p-0.5">
+            <Button
+              size="sm"
+              variant={view === "week" ? "secondary" : "ghost"}
+              className="h-7 px-3 text-xs"
+              onClick={() => setView("week")}
+            >
+              Week
+            </Button>
+            <Button
+              size="sm"
+              variant={view === "month" ? "secondary" : "ghost"}
+              className="h-7 px-3 text-xs"
+              onClick={() => setView("month")}
+            >
+              Month
+            </Button>
+            <Button
+              size="sm"
+              variant={view === "schedule" ? "secondary" : "ghost"}
+              className="h-7 px-3 text-xs"
+              onClick={() => setView("schedule")}
+            >
+              Schedule
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1">
           {lessons.isPending ? (
             <p className="py-20 text-center text-sm text-muted-foreground">
               Loading lessons…
@@ -655,7 +647,6 @@ export function CalendarPage() {
           }}
         />
       </section>
-    </>
   );
 }
 

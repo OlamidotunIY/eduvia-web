@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "cn";
 import { Conversation, type ConversationFilter } from "@/shared/domain";
 import { ChatRoom } from "../components/chat-room";
@@ -39,6 +39,15 @@ export function MessagesPage() {
 
   // Chat list visibility state (especially for mobile and collapsible view)
   const [isChatListOpen, setIsChatListOpen] = useState(true);
+
+  // When sidebar is minimized on desktop, restore the chat list so both stand side by side
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      if (!isSidebarOpen) {
+        setIsChatListOpen(true);
+      }
+    }
+  }, [isSidebarOpen]);
 
   // Active conversation detail from backend (real messages)
   const detailQuery = useConversationDetailQuery(
@@ -119,7 +128,13 @@ export function MessagesPage() {
   };
 
   const handleToggleChatList = () => {
-    setIsChatListOpen((prev) => !prev);
+    if (isSidebarOpen) {
+      // If sidebar is expanded on desktop, auto-minimize sidebar and show the chat list
+      setSidebarOpen(false);
+      setIsChatListOpen(true);
+    } else {
+      setIsChatListOpen((prev) => !prev);
+    }
   };
 
   const handleHideChatList = () => {
@@ -210,9 +225,10 @@ export function MessagesPage() {
             // Mobile visibility:
             isChatListOpen ? "flex w-full" : "hidden",
             // Desktop visibility:
-            // When sidebar is expanded: conversation list takes full width
+            // When sidebar is expanded: auto-hide chat list
+            // When sidebar is minimized: show chat list if isChatListOpen is true
             isSidebarOpen
-              ? "md:flex md:w-full md:border-r-0"
+              ? "md:hidden"
               : isChatListOpen
                 ? "md:flex md:w-80 md:shrink-0 lg:w-96 md:border-r md:border-border/40"
                 : "md:hidden",
@@ -239,10 +255,8 @@ export function MessagesPage() {
             // Mobile visibility:
             !isChatListOpen ? "flex w-full" : "hidden",
             // Desktop visibility:
-            // When sidebar is expanded on desktop, chat room is hidden automatically
-            isSidebarOpen
-              ? "md:hidden"
-              : "md:flex",
+            // Always visible on desktop
+            "md:flex",
           )}
         >
           <ChatRoom

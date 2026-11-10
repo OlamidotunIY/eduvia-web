@@ -3,7 +3,6 @@ import { Check, PauseCircle, Plus, UsersRound } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { MainHeaderPortal } from "@/app/shell/main/header";
 import { sessionStore } from "@/shared/store";
 import {
   useChangeMemberRoleMutation,
@@ -95,16 +94,6 @@ export function TeamMembersPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 w-full">
-      {/* Portal breadcrumbs into Main Application Header */}
-      <MainHeaderPortal>
-        <div className="flex items-center gap-2 text-xs font-medium">
-          <UsersRound className="size-3.5 text-muted-foreground" />
-          <span className="text-muted-foreground">Organization</span>
-          <span className="text-muted-foreground/60">/</span>
-          <span className="text-foreground font-medium">Team & Members</span>
-        </div>
-      </MainHeaderPortal>
-
       {/* Page Title & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

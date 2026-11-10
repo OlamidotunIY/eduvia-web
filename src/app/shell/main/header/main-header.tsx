@@ -4,6 +4,7 @@ import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Separator } from "@/shared/ui/separator";
 import { Button } from "@/shared/ui/button";
 import { useMainHeaderSlot } from "./main-header-slot";
+import { GlobalBreadcrumbs } from "./global-breadcrumbs";
 
 export function MainHeader() {
   const { setElement } = useMainHeaderSlot();
@@ -11,12 +12,18 @@ export function MainHeader() {
   const isMembersPage = pathname.startsWith("/organization/members");
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center border-b border-border/80 bg-background/95 backdrop-blur-xs pr-4 md:pr-6 pl-0">
-      <div className="flex h-full items-center px-3.5 shrink-0">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+    <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-background/95 backdrop-blur-xs pr-4 md:pr-6 pl-0">
+      <div className="flex h-full items-center min-w-0">
+        <div className="flex h-full items-center px-3.5 shrink-0">
+          <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+        </div>
+        <Separator orientation="vertical" className="h-full" />
+        <div className="flex h-full items-center px-3.5 min-w-0">
+          <GlobalBreadcrumbs />
+        </div>
       </div>
-      <Separator orientation="vertical" className="h-full" />
-      <div ref={setElement} className="flex h-full flex-1 min-w-0 items-center px-3.5" />
+
+      <div ref={setElement} className="flex h-full flex-1 min-w-0 items-center justify-end px-3.5" />
 
       {isMembersPage && (
         <div className="flex items-center gap-2 shrink-0">

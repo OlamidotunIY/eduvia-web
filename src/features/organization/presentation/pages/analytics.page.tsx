@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { BarChart3 } from 'lucide-react';
-import { MainHeaderPortal } from '@/app/shell/main/header';
 import { sessionStore } from '@/shared/store';
 import { useOrganizationAnalyticsQuery } from '../../application';
 import {
@@ -28,16 +26,6 @@ export function AnalyticsPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 w-full">
-      {/* Portal breadcrumbs into Main Application Header */}
-      <MainHeaderPortal>
-        <div className="flex items-center gap-2 text-xs font-medium">
-          <BarChart3 className="size-3.5 text-muted-foreground" />
-          <span className="text-muted-foreground">Organization</span>
-          <span className="text-muted-foreground/60">/</span>
-          <span className="text-foreground font-medium">Analytics</span>
-        </div>
-      </MainHeaderPortal>
-
       {/* Analytics Page Header with Title, Date Selector & Refresh */}
       <AnalyticsHeader
         currentSnapshotDate={analytics?.formattedSnapshotDate || ''}

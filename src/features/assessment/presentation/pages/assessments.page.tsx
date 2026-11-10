@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { ClipboardCheck, CircleCheckBig, Clock3, ListChecks } from "lucide-react";
+import { CircleCheckBig, ClipboardCheck, Clock3, ListChecks } from "lucide-react";
 import { useMainHeaderSlot } from "@/app/shell/main/header";
 import { sessionStore } from "@/shared/store";
 import { useAssessmentsQuery, useAssessmentSummaryQuery } from "../../application";
@@ -19,16 +19,12 @@ export function AssessmentsPage() {
 
   return (
     <>
-      {headerSlot
+      {headerSlot && summary.data?.pendingMarking
         ? createPortal(
-            <div className="flex min-w-0 items-center gap-2">
-              <ClipboardCheck className="size-4 shrink-0 text-primary" />
-              <span className="truncate text-sm font-semibold">Assessments</span>
-              {summary.data?.pendingMarking ? (
-                <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                  {summary.data.pendingMarking} pending
-                </span>
-              ) : null}
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                {summary.data.pendingMarking} pending
+              </span>
             </div>,
             headerSlot,
           )
