@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   addMonths,
@@ -208,7 +208,7 @@ export function CalendarPage() {
     <>
       {headerSlot
         ? createPortal(
-            <div className="flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden">
+            <div className="flex w-full min-w-0 items-center justify-between gap-1.5 overflow-hidden">
               <div className="flex shrink-0 items-center gap-1">
                 <div className="mr-2 hidden items-center gap-2 border-r border-border pr-4 lg:flex">
                   <CalendarDays className="size-4 text-primary" />
@@ -216,41 +216,48 @@ export function CalendarPage() {
                 </div>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon-xs"
+                  className="sm:h-8 sm:w-8"
                   onClick={() => movePeriod(-1)}
                   aria-label="Previous period"
                 >
-                  <ChevronLeft />
+                  <ChevronLeft className="size-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={goToToday}>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className="sm:h-8 sm:px-2.5 sm:text-sm"
+                  onClick={goToToday}
+                >
                   Today
                 </Button>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon-xs"
+                  className="sm:h-8 sm:w-8"
                   onClick={() => movePeriod(1)}
                   aria-label="Next period"
                 >
-                  <ChevronRight />
+                  <ChevronRight className="size-4" />
                 </Button>
                 <p className="ml-1 hidden whitespace-nowrap text-sm font-medium lg:block">
                   {range.label}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <Popover>
                   <PopoverTrigger
                     render={
                       <Button
                         variant="outline"
-                        size="icon-sm"
-                        className="relative shrink-0"
+                        size="icon-xs"
+                        className="relative shrink-0 sm:h-8 sm:w-8"
                         aria-label="Filter calendar"
                         title="Filter calendar"
                       >
-                        <Funnel />
+                        <Funnel className="size-3.5" />
                         {activeFilterCount ? (
-                          <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                          <span className="absolute -right-1 -top-1 grid size-3.5 place-items-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
                             {activeFilterCount}
                           </span>
                         ) : null}
@@ -328,7 +335,31 @@ export function CalendarPage() {
                     </div>
                   </PopoverContent>
                 </Popover>
-                <div className="flex items-center rounded-md border border-border p-0.5">
+
+                {/* Mobile View Switcher (Select Dropdown) */}
+                <div className="sm:hidden">
+                  <Select
+                    value={view}
+                    onValueChange={(val) => {
+                      if (val) setView(val as CalendarView);
+                    }}
+                  >
+                    <SelectTrigger
+                      size="sm"
+                      className="h-7 w-[5.75rem] px-2 text-xs font-medium"
+                    >
+                      <span className="capitalize">{view}</span>
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      <SelectItem value="week">Week</SelectItem>
+                      <SelectItem value="month">Month</SelectItem>
+                      <SelectItem value="schedule">Schedule</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Desktop View Switcher (Segmented buttons) */}
+                <div className="hidden sm:flex items-center rounded-md border border-border p-0.5">
                   <Button
                     size="sm"
                     variant={view === "week" ? "secondary" : "ghost"}
@@ -365,36 +396,39 @@ export function CalendarPage() {
           ) : view === "week" ? (
             <>
               <div className="hidden h-full min-h-0 lg:block">
-              <WeekGrid
-                days={range.days}
-                lessons={visibleLessons}
-                classroomNameById={classroomNameById}
-                onSelect={setSelectedLesson}
-                onSlotSelect={openScheduleChoice}
-              />
+                <WeekGrid
+                  days={range.days}
+                  lessons={visibleLessons}
+                  classroomNameById={classroomNameById}
+                  onSelect={setSelectedLesson}
+                  onSlotSelect={openScheduleChoice}
+                />
               </div>
-              <div className="h-full min-h-0 overflow-y-auto lg:hidden">
-                <MobileAgenda
+              <div className="h-full min-h-0 overflow-hidden lg:hidden">
+                <MobileDayView
                   days={range.days}
                   selectedDay={selectedDay}
                   onSelectDay={setSelectedDay}
                   lessons={visibleLessons}
                   classroomNameById={classroomNameById}
                   onSelect={setSelectedLesson}
+                  onSlotSelect={openScheduleChoice}
+                  canSchedule={canSchedule}
                 />
               </div>
             </>
           ) : view === "month" ? (
-            <div className="h-full overflow-y-auto">
-              <MonthGrid
-                days={range.days}
-                month={anchorDate}
-                lessons={visibleLessons}
-                classroomNameById={classroomNameById}
-                onSelect={setSelectedLesson}
-                onSlotSelect={openScheduleChoice}
-              />
-            </div>
+            <MonthGrid
+              days={range.days}
+              month={anchorDate}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              lessons={visibleLessons}
+              classroomNameById={classroomNameById}
+              onSelect={setSelectedLesson}
+              onSlotSelect={openScheduleChoice}
+              canSchedule={canSchedule}
+            />
           ) : (
             <div className="h-full overflow-y-auto">
               <ScheduleList
@@ -736,42 +770,229 @@ function WeekGrid({
   );
 }
 
-function MobileAgenda({
+function MobileDayView({
   days,
   selectedDay,
   onSelectDay,
   lessons,
   classroomNameById,
   onSelect,
+  onSlotSelect,
+  canSchedule,
 }: CalendarGridProps & {
   days: Date[];
   selectedDay: Date;
   onSelectDay: (day: Date) => void;
+  onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
+  canSchedule: boolean;
 }) {
+  const [mobileMode, setMobileMode] = useState<"timeline" | "agenda">("timeline");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const dayLessons = lessons.filter((lesson) =>
     isSameDay(new Date(lesson.scheduledAt), selectedDay),
   );
+
+  const now = new Date();
+  const isSelectedDayToday = isSameDay(selectedDay, now);
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentTimeTop = (currentMinutes / 60) * SLOT_HEIGHT;
+
+  useEffect(() => {
+    if (scrollRef.current && mobileMode === "timeline") {
+      const earliestHour =
+        dayLessons.length > 0
+          ? Math.min(...dayLessons.map((l) => new Date(l.scheduledAt).getHours()))
+          : isSelectedDayToday
+            ? Math.max(0, now.getHours() - 1)
+            : 8;
+      const targetHour = Math.max(0, Math.min(23, earliestHour - 1));
+      scrollRef.current.scrollTop = targetHour * SLOT_HEIGHT;
+    }
+  }, [selectedDay, mobileMode]);
+
   return (
-    <div>
-      <div className="flex gap-1 overflow-x-auto border-b border-border pb-3">
-        {days.map((day) => (
-          <Button
-            key={day.toISOString()}
-            size="sm"
-            variant={isSameDay(day, selectedDay) ? "secondary" : "ghost"}
-            onClick={() => onSelectDay(day)}
-            className="min-w-14 flex-col h-auto py-2"
-          >
-            <span className="text-[10px]">{format(day, "EEE")}</span>
-            <span>{format(day, "d")}</span>
-          </Button>
-        ))}
+    <div className="flex h-full min-h-0 flex-col">
+      {/* 7-Day Header Strip */}
+      <div className="border-b border-border bg-card/40 px-2 py-2">
+        <div className="mb-2 flex items-center justify-between px-1">
+          <p className="text-xs font-semibold text-foreground">
+            {format(selectedDay, "EEEE, MMMM d")}
+          </p>
+          <div className="flex items-center rounded-md border border-border p-0.5 bg-muted/20">
+            <Button
+              size="icon-xs"
+              variant={mobileMode === "timeline" ? "secondary" : "ghost"}
+              onClick={() => setMobileMode("timeline")}
+              title="Timeline view"
+              aria-label="Timeline view"
+            >
+              <Clock3 className="size-3.5" />
+            </Button>
+            <Button
+              size="icon-xs"
+              variant={mobileMode === "agenda" ? "secondary" : "ghost"}
+              onClick={() => setMobileMode("agenda")}
+              title="List view"
+              aria-label="List view"
+            >
+              <CalendarDays className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((day) => {
+            const isSelected = isSameDay(day, selectedDay);
+            const isToday = isSameDay(day, now);
+            const hasLessons = lessons.some((l) =>
+              isSameDay(new Date(l.scheduledAt), day),
+            );
+
+            return (
+              <button
+                key={day.toISOString()}
+                type="button"
+                onClick={() => onSelectDay(day)}
+                className={`relative flex flex-col items-center justify-center rounded-lg py-1.5 text-xs transition-colors ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : isToday
+                      ? "border border-primary/50 text-foreground font-medium"
+                      : "text-foreground hover:bg-muted/30"
+                }`}
+              >
+                <span
+                  className={`text-[10px] uppercase tracking-wider ${
+                    isSelected
+                      ? "text-primary-foreground/90 font-bold"
+                      : "text-muted-foreground font-medium"
+                  }`}
+                >
+                  {format(day, "EEE")}
+                </span>
+                <span className="mt-0.5 text-sm font-semibold">
+                  {format(day, "d")}
+                </span>
+                <div className="mt-0.5 flex h-1 items-center justify-center">
+                  {hasLessons && (
+                    <span
+                      className={`size-1.5 rounded-full ${
+                        isSelected ? "bg-primary-foreground" : "bg-emerald-400"
+                      }`}
+                    />
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <AgendaList
-        lessons={dayLessons}
-        classroomNameById={classroomNameById}
-        onSelect={onSelect}
-      />
+
+      {/* Main Content Area */}
+      {mobileMode === "timeline" ? (
+        <div ref={scrollRef} className="h-full min-h-0 flex-1 overflow-y-auto">
+          <div className="relative grid grid-cols-[3.5rem_1fr]">
+            {/* Time labels column */}
+            <div
+              className="relative border-r border-border"
+              style={{ height: `${WEEK_GRID_HEIGHT}px` }}
+            >
+              {HOURS.map((hour) => (
+                <span
+                  key={hour}
+                  className="absolute right-2 translate-y-1 text-[10px] font-medium text-muted-foreground"
+                  style={{ top: `${hour * SLOT_HEIGHT}px` }}
+                >
+                  {formatHour(hour)}
+                </span>
+              ))}
+            </div>
+
+            {/* Single day column with hourly slots */}
+            <div
+              className="relative"
+              style={{
+                height: `${WEEK_GRID_HEIGHT}px`,
+                backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent ${SLOT_HEIGHT - 1}px, var(--border) ${SLOT_HEIGHT}px)`,
+              }}
+            >
+              {isSelectedDayToday && (
+                <div
+                  className="absolute inset-x-0 z-20 pointer-events-none flex items-center"
+                  style={{ top: `${currentTimeTop}px` }}
+                >
+                  <span className="size-2 rounded-full bg-rose-500 -ml-1" />
+                  <div className="h-0.5 w-full bg-rose-500/80" />
+                </div>
+              )}
+
+              {HOURS.map((hour) => {
+                const occupiedLesson = dayLessons.find((lesson) =>
+                  doesLessonOccupySlot(lesson, selectedDay, hour),
+                );
+                const past = isPastSlot(selectedDay, hour);
+
+                return (
+                  <button
+                    type="button"
+                    key={hour}
+                    disabled={past}
+                    data-past={past || undefined}
+                    data-occupied={Boolean(occupiedLesson) || undefined}
+                    className="absolute inset-x-0 border-b border-transparent text-left outline-none hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring data-[past=true]:cursor-not-allowed data-[past=true]:bg-muted/15 data-[past=true]:hover:bg-muted/15 data-[occupied=true]:cursor-pointer data-[occupied=true]:bg-primary/[0.04] data-[occupied=true]:hover:bg-primary/[0.08]"
+                    style={{
+                      top: `${hour * SLOT_HEIGHT}px`,
+                      height: `${SLOT_HEIGHT}px`,
+                    }}
+                    aria-label={
+                      occupiedLesson
+                        ? `View lesson at ${formatHour(hour)}`
+                        : `Add a lesson at ${formatHour(hour)}`
+                    }
+                    onClick={() =>
+                      occupiedLesson
+                        ? onSelect(occupiedLesson)
+                        : onSlotSelect(createSlotDraft(selectedDay, hour))
+                    }
+                  />
+                );
+              })}
+
+              {dayLessons.map((lesson) => (
+                <LessonBlock
+                  key={lesson.id}
+                  lesson={lesson}
+                  classroomName={classroomNameById.get(lesson.classroomId)}
+                  onSelect={onSelect}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="h-full min-h-0 flex-1 overflow-y-auto p-4">
+          <AgendaList
+            lessons={dayLessons}
+            classroomNameById={classroomNameById}
+            onSelect={onSelect}
+          />
+          {canSchedule && (
+            <div className="mt-6 flex justify-center pb-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const draft = getSlotDraftForDay(selectedDay);
+                  onSlotSelect(draft);
+                }}
+              >
+                + Schedule lesson on {format(selectedDay, "MMM d")}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -779,76 +1000,179 @@ function MobileAgenda({
 function MonthGrid({
   days,
   month,
+  selectedDay,
+  onSelectDay,
   lessons,
   classroomNameById,
   onSelect,
   onSlotSelect,
+  canSchedule,
 }: CalendarGridProps & {
   days: Date[];
   month: Date;
+  selectedDay: Date;
+  onSelectDay: (day: Date) => void;
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
+  canSchedule?: boolean;
 }) {
+  const selectedDayLessons = lessons.filter((lesson) =>
+    isSameDay(new Date(lesson.scheduledAt), selectedDay),
+  );
+
   return (
-    <div>
-      <div className="grid min-w-0 grid-cols-7 border-b border-border bg-transparent">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <p
-            key={day}
-            className="px-3 py-3 text-center text-[10px] font-semibold tracking-wide text-muted-foreground"
-          >
-            {day}
-          </p>
-        ))}
-      </div>
-      <div className="grid min-w-0 grid-cols-7">
-        {days.map((day) => {
-          const dayLessons = lessons.filter((lesson) =>
-            isSameDay(new Date(lesson.scheduledAt), day),
-          );
-          return (
-            <div
-              key={day.toISOString()}
-              data-disabled={isPastDay(day) || undefined}
-              className="min-h-36 border-r border-b border-border p-3 last:border-r-0 hover:bg-muted/20 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-muted/10 data-[disabled=true]:opacity-45 data-[disabled=true]:hover:bg-muted/10"
-              onClick={() => {
-                const draft = createMonthlySlotDraft(day);
-                if (draft) onSlotSelect(draft);
-              }}
+    <div className="h-full min-h-0 flex flex-col">
+      {/* Desktop view (lg+) */}
+      <div className="hidden lg:block h-full overflow-y-auto">
+        <div className="grid min-w-0 grid-cols-7 border-b border-border bg-transparent">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <p
+              key={day}
+              className="px-3 py-3 text-center text-[10px] font-semibold tracking-wide text-muted-foreground"
             >
-              <p
-                className={
-                  isSameMonth(day, month)
-                    ? "text-sm font-medium"
-                    : "text-sm text-muted-foreground"
-                }
+              {day}
+            </p>
+          ))}
+        </div>
+        <div className="grid min-w-0 grid-cols-7">
+          {days.map((day) => {
+            const dayLessons = lessons.filter((lesson) =>
+              isSameDay(new Date(lesson.scheduledAt), day),
+            );
+            return (
+              <div
+                key={day.toISOString()}
+                data-disabled={isPastDay(day) || undefined}
+                className="min-h-36 border-r border-b border-border p-3 last:border-r-0 hover:bg-muted/20 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-muted/10 data-[disabled=true]:opacity-45 data-[disabled=true]:hover:bg-muted/10 cursor-pointer"
+                onClick={() => {
+                  const draft = createMonthlySlotDraft(day);
+                  if (draft) onSlotSelect(draft);
+                }}
               >
-                {format(day, "d")}
-              </p>
-              <div className="mt-2 space-y-1">
-                {dayLessons.slice(0, 2).map((lesson) => (
-                  <button
-                    type="button"
-                    key={lesson.id}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSelect(lesson);
-                    }}
-                    className="block w-full truncate text-left text-[11px] font-medium text-primary hover:underline"
-                  >
-                    <span className="mr-1 inline-block size-1.5 rounded-full bg-primary" />
-                    {formatLessonTime(lesson.scheduledAt)}{" "}
-                    {classroomNameById.get(lesson.classroomId) ?? "Lesson"}
-                  </button>
-                ))}
-                {dayLessons.length > 2 ? (
-                  <p className="px-1 text-[11px] text-muted-foreground">
-                    +{dayLessons.length - 2} more
-                  </p>
-                ) : null}
+                <p
+                  className={
+                    isSameMonth(day, month)
+                      ? "text-sm font-medium"
+                      : "text-sm text-muted-foreground"
+                  }
+                >
+                  {format(day, "d")}
+                </p>
+                <div className="mt-2 space-y-1">
+                  {dayLessons.slice(0, 2).map((lesson) => (
+                    <button
+                      type="button"
+                      key={lesson.id}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSelect(lesson);
+                      }}
+                      className="block w-full truncate text-left text-[11px] font-medium text-primary hover:underline cursor-pointer"
+                    >
+                      <span className="mr-1 inline-block size-1.5 rounded-full bg-primary" />
+                      {formatLessonTime(lesson.scheduledAt)}{" "}
+                      {classroomNameById.get(lesson.classroomId) ?? "Lesson"}
+                    </button>
+                  ))}
+                  {dayLessons.length > 2 ? (
+                    <p className="px-1 text-[11px] text-muted-foreground">
+                      +{dayLessons.length - 2} more
+                    </p>
+                  ) : null}
+                </div>
               </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile view (< lg) */}
+      <div className="lg:hidden h-full min-h-0 overflow-y-auto flex flex-col divide-y divide-border">
+        {/* Compact 7-column Calendar */}
+        <div className="p-3 bg-card/20">
+          <div className="grid grid-cols-7 text-center pb-2">
+            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+              <span
+                key={i}
+                className="text-[11px] font-semibold text-muted-foreground"
+              >
+                {d}
+              </span>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {days.map((day) => {
+              const dayLessons = lessons.filter((lesson) =>
+                isSameDay(new Date(lesson.scheduledAt), day),
+              );
+              const isSelected = isSameDay(day, selectedDay);
+              const isToday = isSameDay(day, new Date());
+              const inCurrentMonth = isSameMonth(day, month);
+
+              return (
+                <button
+                  key={day.toISOString()}
+                  type="button"
+                  onClick={() => onSelectDay(day)}
+                  className={`flex flex-col items-center justify-center py-2 rounded-lg text-xs relative transition-colors ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                      : isToday
+                        ? "border border-primary/50 text-foreground font-medium"
+                        : inCurrentMonth
+                          ? "text-foreground hover:bg-muted/30"
+                          : "text-muted-foreground/40 hover:bg-muted/10"
+                  }`}
+                >
+                  <span>{format(day, "d")}</span>
+                  <div className="flex gap-0.5 mt-1 h-1 items-center justify-center">
+                    {dayLessons.slice(0, 3).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`size-1 rounded-full ${
+                          isSelected ? "bg-primary-foreground" : "bg-emerald-400"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected Day Agenda Detail */}
+        <div className="flex-1 p-4">
+          <div className="flex items-center justify-between pb-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {format(selectedDay, "EEEE, MMMM d")}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {selectedDayLessons.length === 0
+                  ? "No lessons scheduled"
+                  : `${selectedDayLessons.length} lesson${selectedDayLessons.length > 1 ? "s" : ""}`}
+              </p>
             </div>
-          );
-        })}
+            {canSchedule && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const draft = getSlotDraftForDay(selectedDay);
+                  onSlotSelect(draft);
+                }}
+              >
+                + Add lesson
+              </Button>
+            )}
+          </div>
+
+          <AgendaList
+            lessons={selectedDayLessons}
+            classroomNameById={classroomNameById}
+            onSelect={onSelect}
+          />
+        </div>
       </div>
     </div>
   );
@@ -874,36 +1198,44 @@ function ScheduleList({
   }
 
   return (
-    <ol>
+    <ol className="divide-y divide-border">
       {orderedLessons.map((lesson) => {
         const lessonDate = new Date(lesson.scheduledAt);
         return (
-          <li
-            key={lesson.id}
-            className="border-b border-border last:border-b-0"
-          >
+          <li key={lesson.id}>
             <button
               type="button"
-              className="grid w-full grid-cols-[4rem_minmax(8rem,11rem)_1fr_auto] items-center gap-3 px-4 py-3 text-left hover:bg-muted/30 sm:px-6"
+              className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-muted/30 transition-colors sm:px-6"
               onClick={() => onSelect(lesson)}
             >
-              <div className="text-center">
-                <p className="text-xl font-semibold leading-none">
-                  {format(lessonDate, "d")}
-                </p>
-                <p className="mt-1 text-[10px] font-semibold tracking-wide text-muted-foreground">
-                  {format(lessonDate, "MMM, EEE").toUpperCase()}
-                </p>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="text-center w-10 shrink-0">
+                  <p className="text-lg font-semibold leading-none">
+                    {format(lessonDate, "d")}
+                  </p>
+                  <p className="mt-1 text-[10px] font-semibold tracking-wide text-muted-foreground">
+                    {format(lessonDate, "MMM").toUpperCase()}
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {classroomNameById.get(lesson.classroomId) ??
+                      "Classroom lesson"}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock3 className="size-3" />
+                    <span>
+                      {format(lessonDate, "EEE")} ·{" "}
+                      {formatLessonTime(lesson.scheduledAt)}
+                    </span>
+                    <span>·</span>
+                    <span>{lesson.durationMins} min</span>
+                  </p>
+                </div>
               </div>
-              <p className="flex items-center gap-2 text-sm font-medium">
-                <span className="size-2 rounded-full bg-primary" />
-                {formatLessonTime(lesson.scheduledAt)}
-              </p>
-              <p className="truncate font-medium">
-                {classroomNameById.get(lesson.classroomId) ??
-                  "Classroom lesson"}
-              </p>
-              <LessonStatus status={lesson.status} />
+              <div className="shrink-0">
+                <LessonStatus status={lesson.status} />
+              </div>
             </button>
           </li>
         );
@@ -919,9 +1251,11 @@ function AgendaList({
 }: CalendarGridProps) {
   if (!lessons.length)
     return (
-      <p className="py-16 text-center text-sm text-muted-foreground">
-        No lessons in this period.
-      </p>
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <p className="text-sm font-medium text-muted-foreground">
+          No lessons scheduled
+        </p>
+      </div>
     );
   return (
     <ol className="divide-y divide-border">
@@ -929,22 +1263,24 @@ function AgendaList({
         <li key={lesson.id}>
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-4 py-4 text-left hover:bg-muted/30"
+            className="flex w-full items-center justify-between gap-3 py-3.5 text-left hover:bg-muted/30 transition-colors rounded-lg px-2"
             onClick={() => onSelect(lesson)}
           >
-            <div>
-              <p className="font-medium">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm text-foreground truncate">
                 {classroomNameById.get(lesson.classroomId) ??
                   "Classroom lesson"}
               </p>
-              <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Clock3 className="size-3.5" />
-                {formatLessonDate(lesson.scheduledAt)} ·{" "}
-                {formatLessonTime(lesson.scheduledAt)} · {lesson.durationMins}{" "}
-                min
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock3 className="size-3.5 shrink-0" />
+                <span>{formatLessonTime(lesson.scheduledAt)}</span>
+                <span>·</span>
+                <span>{lesson.durationMins} min</span>
               </p>
             </div>
-            <LessonStatus status={lesson.status} />
+            <div className="shrink-0">
+              <LessonStatus status={lesson.status} />
+            </div>
           </button>
         </li>
       ))}
@@ -1053,6 +1389,12 @@ function createMonthlySlotDraft(day: Date) {
   if (hour > 23) return null;
   const draft = createSlotDraft(day, hour);
   return new Date(draft.scheduledAt).getTime() > now.getTime() ? draft : null;
+}
+
+function getSlotDraftForDay(day: Date) {
+  const draft = createMonthlySlotDraft(day);
+  if (draft) return draft;
+  return createSlotDraft(day, 9);
 }
 
 function isPastSlot(day: Date, hour: number) {
