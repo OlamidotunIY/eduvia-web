@@ -183,10 +183,12 @@ export function DataTable<TData extends RowData>({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 gap-2 rounded-lg px-2.5 text-xs text-muted-foreground"
+                className="size-8 sm:size-auto sm:h-8 gap-2 rounded-lg p-0 sm:px-2.5 text-xs text-muted-foreground"
+                aria-label="Settings"
+                title="Settings"
               >
-                <Settings2 />
-                <span>Settings</span>
+                <Settings2 className="size-3.5" />
+                <span className="hidden sm:inline">Settings</span>
               </Button>
             }
           />
