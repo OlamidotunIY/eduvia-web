@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import {
+  ArrowLeft,
   Calculator,
   GraduationCap,
   Leaf,
   MoreHorizontal,
+  PanelLeft,
   Search,
   ShieldCheck,
   Star,
@@ -21,6 +23,8 @@ interface ChatRoomProps {
   onReact: (messageId: string, emoji: string) => void;
   onCreateNewMessage: () => void;
   onBrowseContacts: () => void;
+  onToggleChatList?: () => void;
+  isChatListOpen?: boolean;
 }
 
 export function ChatRoom({
@@ -29,6 +33,8 @@ export function ChatRoom({
   onReact,
   onCreateNewMessage,
   onBrowseContacts,
+  onToggleChatList,
+  isChatListOpen,
 }: ChatRoomProps) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,6 +48,8 @@ export function ChatRoom({
       <ChatEmptyState
         onCreateNewMessage={onCreateNewMessage}
         onBrowseContacts={onBrowseContacts}
+        onToggleChatList={onToggleChatList}
+        isChatListOpen={isChatListOpen}
       />
     );
   }
@@ -90,8 +98,19 @@ export function ChatRoom({
   return (
     <div className="flex h-full flex-1 min-w-0 flex-col bg-background overflow-hidden">
       {/* 1. Chat Header */}
-      <div className="flex h-14 items-center justify-between border-b border-border/40 px-5 shrink-0 bg-background/50">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex h-14 items-center justify-between border-b border-border/40 px-3.5 md:px-5 shrink-0 bg-background/50">
+        <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
+          {onToggleChatList && (
+            <button
+              type="button"
+              onClick={onToggleChatList}
+              title={isChatListOpen ? "Hide conversation list" : "Show conversation list"}
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
+            >
+              <PanelLeft className="size-4 hidden md:block" />
+              <ArrowLeft className="size-4 md:hidden" />
+            </button>
+          )}
           {renderHeaderIcon()}
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-heading text-sm font-bold text-foreground">

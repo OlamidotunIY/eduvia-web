@@ -1,4 +1,3 @@
-import { useLocation } from "react-router-dom";
 import { sessionStore } from "@/shared/store";
 import {
   Sidebar,
@@ -14,15 +13,13 @@ import {
 import { UserMenu } from "./user-menu";
 
 export function MainSidebar() {
-  const { pathname } = useLocation();
-  const isMessagesPage = pathname.startsWith("/messages");
   const currentUser = sessionStore((state) => state.currentUser);
   const role = currentUser?.user.userType;
   if (!role || role === "pending") return null;
 
   return (
     <Sidebar
-      variant={isMessagesPage ? "sidebar" : "inset"}
+      variant="inset"
       collapsible="icon"
       className="overflow-hidden"
     >

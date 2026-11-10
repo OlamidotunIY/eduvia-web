@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
+import { cn } from "cn";
 import { Conversation, type ConversationFilter } from "@/shared/domain";
 import { ChatRoom } from "../components/chat-room";
 import { ConversationList } from "../components/conversation-list";
 import { MessagesHeader } from "../components/messages-header";
 import { NewChatDialog, type ContactItem } from "../components/new-chat-dialog";
 import { useMainHeaderSlot } from "@/app/shell/main/header";
+import { useLayout } from "@/app/providers/layout-provider";
 import { sessionStore } from "@/shared/store";
 import {
   useConversationsQuery,
@@ -16,6 +18,7 @@ import { useOrganizationMembersQuery } from "@/features/organization/application
 
 export function MessagesPage() {
   const { element: headerSlot } = useMainHeaderSlot();
+  const { isSidebarOpen, setSidebarOpen } = useLayout();
   const currentUser = sessionStore((state) => state.currentUser);
   const organizationId = currentUser?.activeOrganization?.id;
   const currentUserId = currentUser?.user?.id;
@@ -33,6 +36,9 @@ export function MessagesPage() {
 
   // Active selected conversation
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Chat list visibility state (especially for mobile and collapsible view)
+  const [isChatListOpen, setIsChatListOpen] = useState(true);
 
   // Active conversation detail from backend (real messages)
   const detailQuery = useConversationDetailQuery(
@@ -104,6 +110,20 @@ export function MessagesPage() {
   // Handlers
   const handleSelectConversation = (id: string) => {
     setSelectedId(id);
+    // On mobile, hide chat list to reveal chat room
+    setIsChatListOpen(false);
+    // On desktop, if sidebar was expanded, minimize it to reveal the chat room
+    if (isSidebarOpen) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleToggleChatList = () => {
+    setIsChatListOpen((prev) => !prev);
+  };
+
+  const handleHideChatList = () => {
+    setIsChatListOpen(false);
   };
 
   const handleSendMessage = (content: string) => {
@@ -128,6 +148,8 @@ export function MessagesPage() {
     const existing = conversations.find((c) => c.id === contact.id);
     if (existing) {
       setSelectedId(existing.id);
+      setIsChatListOpen(false);
+      if (isSidebarOpen) setSidebarOpen(false);
       return;
     }
 
@@ -142,6 +164,8 @@ export function MessagesPage() {
       const createdId = res?.id || res?.conversationId;
       if (createdId) {
         setSelectedId(createdId);
+        setIsChatListOpen(false);
+        if (isSidebarOpen) setSidebarOpen(false);
       }
     } catch {
       // Fallback: create conversation with general params
@@ -156,6 +180,8 @@ export function MessagesPage() {
         const createdId = res?.id || res?.conversationId;
         if (createdId) {
           setSelectedId(createdId);
+          setIsChatListOpen(false);
+          if (isSidebarOpen) setSidebarOpen(false);
         }
       } catch (e) {
         console.error("Failed to start conversation:", e);
@@ -175,29 +201,60 @@ export function MessagesPage() {
         onOpenNewChat={() => setNewChatDialogOpen(true)}
       />
 
-      {/* 2. Main Split Layout (Chat List & Chat Room flush against each other with zero gap) */}
+      {/* 2. Main Responsive Split Layout */}
       <div className="flex h-full w-full min-h-0 min-w-0 flex-1 overflow-hidden">
         {/* Left Column: Chat List */}
-        <ConversationList
-          conversations={filteredConversations}
-          selectedId={selectedId}
-          onSelect={handleSelectConversation}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onMarkAllAsRead={handleMarkAllAsRead}
-          onStartNewChat={() => setNewChatDialogOpen(true)}
-        />
+        <div
+          className={cn(
+            "h-full overflow-hidden flex-col bg-background/60",
+            // Mobile visibility:
+            isChatListOpen ? "flex w-full" : "hidden",
+            // Desktop visibility:
+            // When sidebar is expanded: conversation list takes full width
+            isSidebarOpen
+              ? "md:flex md:w-full md:border-r-0"
+              : isChatListOpen
+                ? "md:flex md:w-80 md:shrink-0 lg:w-96 md:border-r md:border-border/40"
+                : "md:hidden",
+          )}
+        >
+          <ConversationList
+            conversations={filteredConversations}
+            selectedId={selectedId}
+            onSelect={handleSelectConversation}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onStartNewChat={() => setNewChatDialogOpen(true)}
+            onToggleCollapse={handleHideChatList}
+          />
+        </div>
 
         {/* Right Column: Chat Room or Empty State Card */}
-        <ChatRoom
-          conversation={activeConversation}
-          onSendMessage={handleSendMessage}
-          onReact={handleReact}
-          onCreateNewMessage={() => setNewChatDialogOpen(true)}
-          onBrowseContacts={() => setNewChatDialogOpen(true)}
-        />
+        <div
+          className={cn(
+            "h-full overflow-hidden flex-col flex-1 min-w-0 bg-background",
+            // Mobile visibility:
+            !isChatListOpen ? "flex w-full" : "hidden",
+            // Desktop visibility:
+            // When sidebar is expanded on desktop, chat room is hidden automatically
+            isSidebarOpen
+              ? "md:hidden"
+              : "md:flex",
+          )}
+        >
+          <ChatRoom
+            conversation={activeConversation}
+            onSendMessage={handleSendMessage}
+            onReact={handleReact}
+            onCreateNewMessage={() => setNewChatDialogOpen(true)}
+            onBrowseContacts={() => setNewChatDialogOpen(true)}
+            onToggleChatList={handleToggleChatList}
+            isChatListOpen={isChatListOpen}
+          />
+        </div>
       </div>
 
       {/* 3. New Chat Modal Dialog */}

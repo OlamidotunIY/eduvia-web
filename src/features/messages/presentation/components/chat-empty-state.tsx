@@ -1,28 +1,43 @@
-import { MessageSquare, Plus, UsersRound } from "lucide-react";
+import { ArrowLeft, MessageSquare, PanelLeft, Plus, UsersRound } from "lucide-react";
 import noConversationIllustration from "@/assets/eduvia_no_conversation_selected_transparent.png";
 import { Button } from "@/shared/ui/button";
 
 interface ChatEmptyStateProps {
   onCreateNewMessage: () => void;
   onBrowseContacts: () => void;
+  onToggleChatList?: () => void;
+  isChatListOpen?: boolean;
 }
 
 export function ChatEmptyState({
   onCreateNewMessage,
   onBrowseContacts,
+  onToggleChatList,
+  isChatListOpen,
 }: ChatEmptyStateProps) {
   return (
     <div className="flex h-full flex-1 min-w-0 flex-col bg-background overflow-hidden">
       {/* 1. Mini Top Breadcrumb/Header */}
-      <div className="flex h-14 items-center gap-2 border-b border-border/40 px-5 shrink-0 bg-background/50">
+      <div className="flex h-14 items-center gap-2 border-b border-border/40 px-3.5 md:px-5 shrink-0 bg-background/50">
+        {onToggleChatList && (
+          <button
+            type="button"
+            onClick={onToggleChatList}
+            title={isChatListOpen ? "Hide conversation list" : "Show conversation list"}
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer mr-1"
+          >
+            <PanelLeft className="size-4 hidden md:block" />
+            <ArrowLeft className="size-4 md:hidden" />
+          </button>
+        )}
         <div className="flex size-7 items-center justify-center rounded-lg border border-border/40 bg-muted/20 text-muted-foreground">
           <MessageSquare className="size-3.5" />
         </div>
         <span className="font-heading text-xs font-bold text-foreground">
           Messages
         </span>
-        <span className="text-xs text-muted-foreground/60">•</span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground/60 hidden sm:inline">•</span>
+        <span className="text-xs text-muted-foreground truncate hidden sm:inline">
           Select a conversation or start a new one
         </span>
       </div>

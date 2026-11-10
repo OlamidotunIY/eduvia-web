@@ -4,21 +4,11 @@ import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Separator } from "@/shared/ui/separator";
 import { Button } from "@/shared/ui/button";
 import { useMainHeaderSlot } from "./main-header-slot";
-import { useLayout } from "@/app/providers/layout-provider";
 
 export function MainHeader() {
   const { setElement } = useMainHeaderSlot();
-  const { isSidebarLocked } = useLayout();
   const { pathname } = useLocation();
   const isMembersPage = pathname.startsWith("/organization/members");
-
-  if (isSidebarLocked) {
-    return (
-      <header className="sticky top-0 z-50 flex h-14 w-full shrink-0 items-center border-b border-border/80 bg-background/95 backdrop-blur-xs px-4 md:px-5">
-        <div ref={setElement} className="flex h-full w-full min-w-0 items-center" />
-      </header>
-    );
-  }
 
   return (
     <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center border-b border-border/80 bg-background/95 backdrop-blur-xs pr-4 md:pr-6 pl-0">

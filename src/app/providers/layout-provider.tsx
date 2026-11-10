@@ -2,6 +2,7 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -10,15 +11,15 @@ import { useLocation } from "react-router-dom";
 const SIDEBAR_STORAGE_KEY = "eduvia-sidebar-state";
 
 interface LayoutContextValue {
-  /** The effective sidebar open state (always false on locked pages like /messages) */
+  /** The effective sidebar open state */
   isSidebarOpen: boolean;
-  /** The user's persisted preferred sidebar open state */
+  /** The user's persisted preferred sidebar open state on standard pages */
   persistedSidebarOpen: boolean;
   /** True when the current route forces the sidebar to be collapsed and locks it */
   isSidebarLocked: boolean;
-  /** Set sidebar open state. No-op if currently on a locked page */
+  /** Set sidebar open state */
   setSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
-  /** Toggle sidebar open state. No-op if currently on a locked page */
+  /** Toggle sidebar open state */
   toggleSidebar: () => void;
 }
 
@@ -27,11 +28,10 @@ const LayoutContext = createContext<LayoutContextValue | null>(null);
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
 
-  // Route condition: /messages is strictly locked to minimized/icon sidebar
+  // Route condition: /messages starts minimized to give space for chat layout
   const isMessagesPage = pathname.startsWith("/messages");
-  const isSidebarLocked = isMessagesPage;
 
-  // Read initial preference from localStorage
+  // Read initial preference from localStorage for standard pages
   const [persistedSidebarOpen, setPersistedSidebarOpen] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
@@ -44,39 +44,53 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     return true; // default expanded
   });
 
-  // When locked on messages, sidebar is always collapsed (icon mode)
-  const isSidebarOpen = isSidebarLocked ? false : persistedSidebarOpen;
+  // Sidebar state on messages page: starts minimized (false)
+  const [messagesSidebarOpen, setMessagesSidebarOpen] = useState<boolean>(false);
+
+  // When entering /messages, default to minimized
+  useEffect(() => {
+    if (isMessagesPage) {
+      setMessagesSidebarOpen(false);
+    }
+  }, [isMessagesPage]);
+
+  // When on messages, use messagesSidebarOpen; otherwise use persisted preference
+  const isSidebarOpen = isMessagesPage ? messagesSidebarOpen : persistedSidebarOpen;
 
   const setSidebarOpen = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
-      if (isSidebarLocked) return; // Prevent any expansion when locked
-      setPersistedSidebarOpen((prev) => {
-        const next = typeof value === "function" ? value(prev) : value;
-        try {
-          localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
-        } catch {
-          // ignore
-        }
-        return next;
-      });
+      if (isMessagesPage) {
+        setMessagesSidebarOpen((prev) =>
+          typeof value === "function" ? value(prev) : value,
+        );
+      } else {
+        setPersistedSidebarOpen((prev) => {
+          const next = typeof value === "function" ? value(prev) : value;
+          try {
+            localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+          } catch {
+            // ignore
+          }
+          return next;
+        });
+      }
     },
-    [isSidebarLocked],
+    [isMessagesPage],
   );
 
   const toggleSidebar = useCallback(() => {
-    if (isSidebarLocked) return;
     setSidebarOpen((prev) => !prev);
-  }, [isSidebarLocked, setSidebarOpen]);
+  }, [setSidebarOpen]);
 
   const value = useMemo(
     () => ({
       isSidebarOpen,
       persistedSidebarOpen,
-      isSidebarLocked,
+      isSidebarLocked: false,
       setSidebarOpen,
       toggleSidebar,
     }),
-    [isSidebarOpen, persistedSidebarOpen, isSidebarLocked, setSidebarOpen, toggleSidebar],
+    [isSidebarOpen, persistedSidebarOpen, setSidebarOpen, toggleSidebar],
   );
 
   return (

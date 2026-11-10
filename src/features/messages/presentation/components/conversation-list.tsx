@@ -1,4 +1,4 @@
-import { CheckCheck, MoreHorizontal, Search } from "lucide-react";
+import { CheckCheck, MoreHorizontal, PanelLeftClose, Search } from "lucide-react";
 import type { Conversation, ConversationFilter } from "@/shared/domain";
 import { ConversationItem } from "./conversation-item";
 import { ConversationListEmpty } from "./conversation-list-empty";
@@ -19,6 +19,7 @@ interface ConversationListProps {
   onSearchChange: (query: string) => void;
   onMarkAllAsRead: () => void;
   onStartNewChat: () => void;
+  onToggleCollapse?: () => void;
 }
 
 export function ConversationList({
@@ -31,6 +32,7 @@ export function ConversationList({
   onSearchChange,
   onMarkAllAsRead,
   onStartNewChat,
+  onToggleCollapse,
 }: ConversationListProps) {
   const filterTabs: { id: ConversationFilter; label: string }[] = [
     { id: "all", label: "All" },
@@ -40,31 +42,44 @@ export function ConversationList({
   ];
 
   return (
-    <div className="flex h-full w-80 md:w-88 lg:w-96 shrink-0 flex-col border-r border-border/40 bg-background/60 overflow-hidden">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       {/* 1. Header with Title and More Options */}
       <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
         <h2 className="font-heading text-lg font-bold tracking-tight text-foreground">
           Messages
         </h2>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="flex size-7 items-center justify-center rounded-md border border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
-              />
-            }
-          >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={onMarkAllAsRead} className="gap-2 text-xs">
-              <CheckCheck className="size-3.5" />
-              <span>Mark all as read</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-1.5">
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              title="Hide conversation list"
+              className="flex size-7 items-center justify-center rounded-md border border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
+            >
+              <PanelLeftClose className="size-4" />
+            </button>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  className="flex size-7 items-center justify-center rounded-md border border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground transition-colors cursor-pointer"
+                />
+              }
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={onMarkAllAsRead} className="gap-2 text-xs">
+                <CheckCheck className="size-3.5" />
+                <span>Mark all as read</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* 2. Filter Pills */}
