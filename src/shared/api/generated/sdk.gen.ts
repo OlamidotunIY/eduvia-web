@@ -319,6 +319,10 @@ import type {
   ProgressGetLessonReportResponses,
   ProgressGetOrgAnalyticsData,
   ProgressGetOrgAnalyticsResponses,
+  ProgressGetOrgStudentsProgressAliasData,
+  ProgressGetOrgStudentsProgressAliasResponses,
+  ProgressGetOrgStudentsProgressData,
+  ProgressGetOrgStudentsProgressResponses,
   ProgressGetStudentChurnRiskData,
   ProgressGetStudentChurnRiskResponses,
   ProgressGetStudentLessonHistoryData,
@@ -2567,6 +2571,44 @@ export const progressGetTeacherPerformance = <
   >({
     responseType: "json",
     url: "/orgs/{orgId}/analytics/teacher-performance",
+    ...options,
+  });
+
+export const progressGetOrgStudentsProgress = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<ProgressGetOrgStudentsProgressData, ThrowOnError>,
+): RequestResult<
+  ProgressGetOrgStudentsProgressResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ProgressGetOrgStudentsProgressResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/orgs/{orgId}/progress/students",
+    ...options,
+  });
+
+export const progressGetOrgStudentsProgressAlias = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<ProgressGetOrgStudentsProgressAliasData, ThrowOnError>,
+): RequestResult<
+  ProgressGetOrgStudentsProgressAliasResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ProgressGetOrgStudentsProgressAliasResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/orgs/{orgId}/students/progress",
     ...options,
   });
 

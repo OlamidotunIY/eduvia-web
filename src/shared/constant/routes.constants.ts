@@ -18,6 +18,7 @@ export const APP_ROUTES = {
   MEMBERS: "/organization/members",
   ROLES: "/organization/roles",
   ANALYTICS: "/organization/analytics",
+  STUDENT_PROGRESS: "/student-progress",
   ASSESSMENTS: "/assessments",
   QUESTIONS: "/questions",
   MESSAGES: "/messages",
@@ -34,6 +35,10 @@ export function curriculumDetailRoute(curriculumId: string): string {
 
 export function questionRoute(questionId: string): string {
   return `${APP_ROUTES.QUESTIONS}/${questionId}`;
+}
+
+export function studentProgressRoute(studentId: string): string {
+  return `${APP_ROUTES.STUDENT_PROGRESS}/${studentId}`;
 }
 
 export const ADMIN_ROUTES = {

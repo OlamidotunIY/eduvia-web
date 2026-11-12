@@ -20,6 +20,10 @@ import {
   RolesPermissionsPage,
   TeamMembersPage,
 } from "@/features/organization";
+import {
+  StudentProgressHubPage,
+  StudentProgressProfilePage,
+} from "@/features/student-progress";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 
 export const workspaceRoutes: RouteObject[] = [
@@ -48,7 +52,11 @@ export const workspaceRoutes: RouteObject[] = [
       { path: APP_ROUTES.MEMBERS, element: <TeamMembersPage /> },
       { path: APP_ROUTES.ROLES, element: <RolesPermissionsPage /> },
       { path: APP_ROUTES.ANALYTICS, element: <AnalyticsPage /> },
-      { path: "/student-progress", element: <AnalyticsPage /> },
+      { path: APP_ROUTES.STUDENT_PROGRESS, element: <StudentProgressHubPage /> },
+      {
+        path: `${APP_ROUTES.STUDENT_PROGRESS}/:studentId`,
+        element: <StudentProgressProfilePage />,
+      },
       { path: APP_ROUTES.ASSESSMENTS, element: <AssessmentsPage /> },
       { path: APP_ROUTES.QUESTIONS, element: <QuestionsPage /> },
       {

@@ -63,13 +63,23 @@ export function GlobalBreadcrumbs() {
         { label: "Roles & Permissions" },
       ];
     }
-    if (
-      pathname === APP_ROUTES.ANALYTICS ||
-      pathname === "/student-progress"
-    ) {
+    if (pathname === APP_ROUTES.ANALYTICS) {
       return [
         { label: "Organization", href: APP_ROUTES.MEMBERS },
         { label: "Analytics" },
+      ];
+    }
+    if (pathname === APP_ROUTES.STUDENT_PROGRESS) {
+      return [
+        { label: "Learners", href: APP_ROUTES.STUDENT_PROGRESS },
+        { label: "Student Progress" },
+      ];
+    }
+    if (pathname.startsWith(`${APP_ROUTES.STUDENT_PROGRESS}/`)) {
+      return [
+        { label: "Learners", href: APP_ROUTES.STUDENT_PROGRESS },
+        { label: "Student Progress", href: APP_ROUTES.STUDENT_PROGRESS },
+        { label: "Learner Profile" },
       ];
     }
     if (pathname === APP_ROUTES.SUBJECTS) {

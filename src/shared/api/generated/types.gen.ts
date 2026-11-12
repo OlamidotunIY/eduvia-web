@@ -784,6 +784,7 @@ export type ConversationSummaryDto = {
   participants: Array<string>;
   studentId: string | null;
   parentId: string | null;
+  classroomId: string | null;
   subject: string | null;
   status: string;
   lastMessageAt: string | null;
@@ -793,10 +794,11 @@ export type ConversationSummaryDto = {
 
 export type CreateConversationDto = {
   orgId: string;
-  type: "student_teacher" | "parent_admin";
+  type: "student_teacher" | "parent_admin" | "classroom_group";
   participants: Array<string>;
   studentId?: string | null;
   parentId?: string | null;
+  classroomId?: string | null;
   subject?: string | null;
 };
 
@@ -819,6 +821,7 @@ export type ConversationDetailDto = {
   participants: Array<string>;
   studentId: string | null;
   parentId: string | null;
+  classroomId: string | null;
   subject: string | null;
   status: string;
   lastMessageAt: string | null;
@@ -3371,6 +3374,52 @@ export type ProgressGetTeacherPerformanceResponses = {
 
 export type ProgressGetTeacherPerformanceResponse =
   ProgressGetTeacherPerformanceResponses[keyof ProgressGetTeacherPerformanceResponses];
+
+export type ProgressGetOrgStudentsProgressData = {
+  body?: never;
+  path: {
+    orgId: string;
+  };
+  query?: {
+    classroomId?: string;
+    subjectId?: string;
+    search?: string;
+    masteryTier?: string;
+  };
+  url: "/orgs/{orgId}/progress/students";
+};
+
+export type ProgressGetOrgStudentsProgressResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type ProgressGetOrgStudentsProgressResponse =
+  ProgressGetOrgStudentsProgressResponses[keyof ProgressGetOrgStudentsProgressResponses];
+
+export type ProgressGetOrgStudentsProgressAliasData = {
+  body?: never;
+  path: {
+    orgId: string;
+  };
+  query?: {
+    classroomId?: string;
+    subjectId?: string;
+    search?: string;
+    masteryTier?: string;
+  };
+  url: "/orgs/{orgId}/students/progress";
+};
+
+export type ProgressGetOrgStudentsProgressAliasResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type ProgressGetOrgStudentsProgressAliasResponse =
+  ProgressGetOrgStudentsProgressAliasResponses[keyof ProgressGetOrgStudentsProgressAliasResponses];
 
 export type NotificationsListNotificationsData = {
   body?: never;

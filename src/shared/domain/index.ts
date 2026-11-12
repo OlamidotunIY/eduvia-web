@@ -7,3 +7,4 @@ export * from "./curriculum";
 export * from "./messages";
 export * from "./question";
 export * from "./onboarding";
+export * from "./student-progress";
