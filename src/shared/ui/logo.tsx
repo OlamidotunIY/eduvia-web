@@ -1,4 +1,5 @@
 import {cn} from "cn";
+import eduviaLogo from "../../assets/eduvia-logo.png";
 
 const iconSizes = {
     sm: "size-4",
@@ -24,8 +25,8 @@ const Logo = ({size = "md", textColor, className, ...props}: LogoProps) => {
         <div className={cn("flex items-center font-medium", className)} {...props}>
             <div
                 className={cn("flex items-center justify-center rounded-sm overflow-hidden shrink-0", iconSizes[size])}>
-                <img src="https://res.cloudinary.com/koivlyas/image/upload/v1793572909/eduvia-logo.png"
-                     alt="Eduvia logo" className="w-full h-full object-cover"/>
+                <img src={eduviaLogo}
+                     alt="Eduvia logo" className="w-full h-full object-contain"/>
             </div>
             <p className={cn(textSizes[size], textColor, 'logo font-bold')}>duvia</p>
         </div>
