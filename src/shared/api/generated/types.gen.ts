@@ -638,6 +638,78 @@ export type CreateSubjectCurriculumMappingDto = {
   subjectNodeId: string;
 };
 
+export type OrgReportItemDto = {
+  id: string;
+  lessonId: string;
+  classroomId: string;
+  classroomName: string;
+  subjectId: string;
+  subjectName: string;
+  teacherId: string;
+  teacherName: string;
+  teacherAvatar?: string | null;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentAvatar?: string | null;
+  status: "draft" | "ai_draft" | "teacher_reviewing" | "submitted" | "archived";
+  attendanceStatus: "attended" | "absent" | "late" | "no_show";
+  overallRating?: number | null;
+  scorePercent?: number | null;
+  parentCanView: boolean;
+  hasAiSummary: boolean;
+  isAiApproved: boolean;
+  commentsCount: number;
+  lessonScheduledAt?: string | null;
+  submittedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OrgReportsFilterOptionDto = {
+  id: string;
+  name: string;
+};
+
+export type OrgReportsMetaDto = {
+  total: number;
+  totalDraft: number;
+  totalNeedsReview: number;
+  totalSubmitted: number;
+  totalMissingLessons: number;
+  averageRating?: number | null;
+  classrooms: Array<OrgReportsFilterOptionDto>;
+  subjects: Array<OrgReportsFilterOptionDto>;
+};
+
+export type OrgReportsResponseDto = {
+  reports: Array<OrgReportItemDto>;
+  meta: OrgReportsMetaDto;
+};
+
+export type MissingReportLessonStudentDto = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  image?: string | null;
+};
+
+export type MissingReportLessonItemDto = {
+  lessonId: string;
+  classroomId: string;
+  classroomName: string;
+  subjectId: string;
+  subjectName: string;
+  teacherId: string;
+  teacherName: string;
+  teacherAvatar?: string | null;
+  scheduledAt: string;
+  durationMins: number;
+  status: string;
+  students: Array<MissingReportLessonStudentDto>;
+};
+
 export type CreateLessonReportDto = {
   lessonId: string;
   classroomId: string;
@@ -658,6 +730,7 @@ export type UpdateLessonReportDto = {
   homeworkSet?: string | null;
   nextSteps?: string | null;
   overallRating?: number | null;
+  parentCanView?: boolean;
 };
 
 export type ApproveAiSummaryDto = {
@@ -3149,6 +3222,70 @@ export type ProgressGetLessonReportByLessonResponses = {
 export type ProgressGetLessonReportByLessonResponse =
   ProgressGetLessonReportByLessonResponses[keyof ProgressGetLessonReportByLessonResponses];
 
+export type ProgressGetOrgReportsData = {
+  body?: never;
+  path: {
+    orgId: string;
+  };
+  query?: {
+    status?: string;
+    classroomId?: string;
+    subjectId?: string;
+    teacherId?: string;
+    studentId?: string;
+    attendanceStatus?: string;
+    search?: string;
+    from?: string;
+    to?: string;
+  };
+  url: "/orgs/{orgId}/reports";
+};
+
+export type ProgressGetOrgReportsResponses = {
+  200: OrgReportsResponseDto;
+};
+
+export type ProgressGetOrgReportsResponse =
+  ProgressGetOrgReportsResponses[keyof ProgressGetOrgReportsResponses];
+
+export type ProgressCreateReportData = {
+  body: CreateLessonReportDto;
+  path: {
+    orgId: string;
+  };
+  query?: never;
+  url: "/orgs/{orgId}/reports";
+};
+
+export type ProgressCreateReportResponses = {
+  201: {
+    [key: string]: unknown;
+  };
+};
+
+export type ProgressCreateReportResponse =
+  ProgressCreateReportResponses[keyof ProgressCreateReportResponses];
+
+export type ProgressGetMissingReportLessonsData = {
+  body?: never;
+  path: {
+    orgId: string;
+  };
+  query?: {
+    classroomId?: string;
+    teacherId?: string;
+    search?: string;
+  };
+  url: "/orgs/{orgId}/reports/missing-lessons";
+};
+
+export type ProgressGetMissingReportLessonsResponses = {
+  200: Array<MissingReportLessonItemDto>;
+};
+
+export type ProgressGetMissingReportLessonsResponse =
+  ProgressGetMissingReportLessonsResponses[keyof ProgressGetMissingReportLessonsResponses];
+
 export type ProgressGetLessonReportData = {
   body?: never;
   path: {
@@ -3186,24 +3323,6 @@ export type ProgressUpdateReportResponses = {
 
 export type ProgressUpdateReportResponse =
   ProgressUpdateReportResponses[keyof ProgressUpdateReportResponses];
-
-export type ProgressCreateReportData = {
-  body: CreateLessonReportDto;
-  path: {
-    orgId: string;
-  };
-  query?: never;
-  url: "/orgs/{orgId}/reports";
-};
-
-export type ProgressCreateReportResponses = {
-  201: {
-    [key: string]: unknown;
-  };
-};
-
-export type ProgressCreateReportResponse =
-  ProgressCreateReportResponses[keyof ProgressCreateReportResponses];
 
 export type ProgressApproveAiSummaryData = {
   body: ApproveAiSummaryDto;

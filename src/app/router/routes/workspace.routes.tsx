@@ -24,6 +24,10 @@ import {
   StudentProgressHubPage,
   StudentProgressProfilePage,
 } from "@/features/student-progress";
+import {
+  LessonReportsHubPage,
+  LessonReportDetailPage,
+} from "@/features/lesson-reports";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 
 export const workspaceRoutes: RouteObject[] = [
@@ -56,6 +60,11 @@ export const workspaceRoutes: RouteObject[] = [
       {
         path: `${APP_ROUTES.STUDENT_PROGRESS}/:studentId`,
         element: <StudentProgressProfilePage />,
+      },
+      { path: APP_ROUTES.LESSON_REPORTS, element: <LessonReportsHubPage /> },
+      {
+        path: `${APP_ROUTES.LESSON_REPORTS}/:reportId`,
+        element: <LessonReportDetailPage />,
       },
       { path: APP_ROUTES.ASSESSMENTS, element: <AssessmentsPage /> },
       { path: APP_ROUTES.QUESTIONS, element: <QuestionsPage /> },

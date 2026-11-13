@@ -89,9 +89,22 @@ export function GlobalBreadcrumbs() {
       ];
     }
 
-    // 6. Assessments
+    // 6. Assessments & Lesson Reports
     if (pathname === APP_ROUTES.ASSESSMENTS) {
       return [{ label: "Assessments" }];
+    }
+    if (pathname === APP_ROUTES.LESSON_REPORTS) {
+      return [
+        { label: "Teaching" },
+        { label: "Lesson Reports" },
+      ];
+    }
+    if (pathname.startsWith(`${APP_ROUTES.LESSON_REPORTS}/`)) {
+      return [
+        { label: "Teaching" },
+        { label: "Lesson Reports", href: APP_ROUTES.LESSON_REPORTS },
+        { label: "Report Details" },
+      ];
     }
 
     // 7. Question Bank

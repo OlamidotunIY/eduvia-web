@@ -317,8 +317,12 @@ import type {
   ProgressGetLessonReportByLessonResponses,
   ProgressGetLessonReportData,
   ProgressGetLessonReportResponses,
+  ProgressGetMissingReportLessonsData,
+  ProgressGetMissingReportLessonsResponses,
   ProgressGetOrgAnalyticsData,
   ProgressGetOrgAnalyticsResponses,
+  ProgressGetOrgReportsData,
+  ProgressGetOrgReportsResponses,
   ProgressGetOrgStudentsProgressAliasData,
   ProgressGetOrgStudentsProgressAliasResponses,
   ProgressGetOrgStudentsProgressData,
@@ -2380,6 +2384,55 @@ export const progressGetLessonReportByLesson = <
     ...options,
   });
 
+export const progressGetOrgReports = <ThrowOnError extends boolean = false>(
+  options: Options<ProgressGetOrgReportsData, ThrowOnError>,
+): RequestResult<ProgressGetOrgReportsResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).get<
+    ProgressGetOrgReportsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/orgs/{orgId}/reports",
+    ...options,
+  });
+
+export const progressCreateReport = <ThrowOnError extends boolean = false>(
+  options: Options<ProgressCreateReportData, ThrowOnError>,
+): RequestResult<ProgressCreateReportResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<
+    ProgressCreateReportResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/orgs/{orgId}/reports",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const progressGetMissingReportLessons = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<ProgressGetMissingReportLessonsData, ThrowOnError>,
+): RequestResult<
+  ProgressGetMissingReportLessonsResponses,
+  unknown,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ProgressGetMissingReportLessonsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/orgs/{orgId}/reports/missing-lessons",
+    ...options,
+  });
+
 export const progressGetLessonReport = <ThrowOnError extends boolean = false>(
   options: Options<ProgressGetLessonReportData, ThrowOnError>,
 ): RequestResult<ProgressGetLessonReportResponses, unknown, ThrowOnError> =>
@@ -2403,23 +2456,6 @@ export const progressUpdateReport = <ThrowOnError extends boolean = false>(
   >({
     responseType: "json",
     url: "/orgs/{orgId}/reports/{reportId}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const progressCreateReport = <ThrowOnError extends boolean = false>(
-  options: Options<ProgressCreateReportData, ThrowOnError>,
-): RequestResult<ProgressCreateReportResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<
-    ProgressCreateReportResponses,
-    unknown,
-    ThrowOnError
-  >({
-    responseType: "json",
-    url: "/orgs/{orgId}/reports",
     ...options,
     headers: {
       "Content-Type": "application/json",
