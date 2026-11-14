@@ -49,6 +49,54 @@ export const classroomApi = {
       })
       .then((response) => response.data),
 
+  getLesson: (organizationId: string, lessonId: string) =>
+    apiClient
+      .get<unknown>(`/organizations/${organizationId}/lessons/${lessonId}`)
+      .then((response) => response.data),
+
+  startLesson: (organizationId: string, lessonId: string) =>
+    apiClient
+      .post(`/organizations/${organizationId}/lessons/${lessonId}/start`)
+      .then(() => undefined),
+
+  completeLesson: (organizationId: string, lessonId: string) =>
+    apiClient
+      .post(`/organizations/${organizationId}/lessons/${lessonId}/complete`)
+      .then(() => undefined),
+
+  cancelLesson: (organizationId: string, lessonId: string, reason: string) =>
+    apiClient
+      .post(`/organizations/${organizationId}/lessons/${lessonId}/cancel`, {
+        reason,
+      })
+      .then(() => undefined),
+
+  markStudentNoShow: (organizationId: string, lessonId: string) =>
+    apiClient
+      .post(
+        `/organizations/${organizationId}/lessons/${lessonId}/student-no-show`,
+      )
+      .then(() => undefined),
+
+  markTeacherNoShow: (organizationId: string, lessonId: string) =>
+    apiClient
+      .post(
+        `/organizations/${organizationId}/lessons/${lessonId}/teacher-no-show`,
+      )
+      .then(() => undefined),
+
+  assignCoverTeacher: (
+    organizationId: string,
+    lessonId: string,
+    coverTeacherId: string,
+  ) =>
+    apiClient
+      .post(
+        `/organizations/${organizationId}/lessons/${lessonId}/cover-teacher`,
+        { coverTeacherId },
+      )
+      .then(() => undefined),
+
   listSubjects: (organizationId: string) =>
     apiClient
       .get<unknown>(`/organizations/${organizationId}/subjects`, {

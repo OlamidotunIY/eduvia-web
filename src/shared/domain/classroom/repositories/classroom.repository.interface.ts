@@ -26,6 +26,21 @@ export interface IClassroomRepository {
     organizationId: string,
     range: { fromDate: string; toDate: string },
   ): Promise<ClassroomLesson[]>;
+  getLesson(organizationId: string, lessonId: string): Promise<ClassroomLesson>;
+  startLesson(organizationId: string, lessonId: string): Promise<void>;
+  completeLesson(organizationId: string, lessonId: string): Promise<void>;
+  cancelLesson(
+    organizationId: string,
+    lessonId: string,
+    reason: string,
+  ): Promise<void>;
+  markStudentNoShow(organizationId: string, lessonId: string): Promise<void>;
+  markTeacherNoShow(organizationId: string, lessonId: string): Promise<void>;
+  assignCoverTeacher(
+    organizationId: string,
+    lessonId: string,
+    coverTeacherId: string,
+  ): Promise<void>;
   listSubjects(organizationId: string): Promise<OrganizationSubject[]>;
   create(organizationId: string, input: CreateClassroomDto): Promise<void>;
   scheduleLesson(

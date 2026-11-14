@@ -71,6 +71,60 @@ export class ClassroomRepository implements IClassroomRepository {
     return value.map((item) => this.toClassroomLesson(item));
   }
 
+  async getLesson(
+    organizationId: string,
+    lessonId: string,
+  ): Promise<ClassroomLesson> {
+    return this.toClassroomLesson(
+      await classroomApi.getLesson(organizationId, lessonId),
+    );
+  }
+
+  async startLesson(organizationId: string, lessonId: string): Promise<void> {
+    await classroomApi.startLesson(organizationId, lessonId);
+  }
+
+  async completeLesson(
+    organizationId: string,
+    lessonId: string,
+  ): Promise<void> {
+    await classroomApi.completeLesson(organizationId, lessonId);
+  }
+
+  async cancelLesson(
+    organizationId: string,
+    lessonId: string,
+    reason: string,
+  ): Promise<void> {
+    await classroomApi.cancelLesson(organizationId, lessonId, reason);
+  }
+
+  async markStudentNoShow(
+    organizationId: string,
+    lessonId: string,
+  ): Promise<void> {
+    await classroomApi.markStudentNoShow(organizationId, lessonId);
+  }
+
+  async markTeacherNoShow(
+    organizationId: string,
+    lessonId: string,
+  ): Promise<void> {
+    await classroomApi.markTeacherNoShow(organizationId, lessonId);
+  }
+
+  async assignCoverTeacher(
+    organizationId: string,
+    lessonId: string,
+    coverTeacherId: string,
+  ): Promise<void> {
+    await classroomApi.assignCoverTeacher(
+      organizationId,
+      lessonId,
+      coverTeacherId,
+    );
+  }
+
   async listSubjects(organizationId: string): Promise<OrganizationSubject[]> {
     const value = await classroomApi.listSubjects(organizationId);
     if (!Array.isArray(value)) {
@@ -193,6 +247,7 @@ export class ClassroomRepository implements IClassroomRepository {
     const lesson = this.record(value, "classroom lesson");
     return new ClassroomLesson({
       id: this.requiredString(lesson, "id"),
+      orgId: this.optionalString(lesson, "orgId") ?? undefined,
       classroomId: this.requiredString(lesson, "classroomId"),
       teacherId: this.requiredString(lesson, "teacherId"),
       coverTeacherId: this.optionalString(lesson, "coverTeacherId"),
@@ -201,6 +256,14 @@ export class ClassroomRepository implements IClassroomRepository {
       status: this.requiredString(lesson, "status"),
       isRecurring: Boolean(lesson.isRecurring),
       origin: this.requiredString(lesson, "origin"),
+      meetLink: this.optionalString(lesson, "meetLink"),
+      videoProvider: this.optionalString(lesson, "videoProvider"),
+      cancelledReason: this.optionalString(lesson, "cancelledReason"),
+      startedAt: this.optionalString(lesson, "startedAt"),
+      completedAt: this.optionalString(lesson, "completedAt"),
+      reportedAt: this.optionalString(lesson, "reportedAt"),
+      noShowAt: this.optionalString(lesson, "noShowAt"),
+      noShowType: this.optionalString(lesson, "noShowType"),
     });
   }
 

@@ -144,6 +144,7 @@ export class ClassroomStudent {
 
 export interface ClassroomLessonProps {
   id: string;
+  orgId?: string;
   classroomId: string;
   teacherId: string;
   coverTeacherId: string | null;
@@ -152,10 +153,19 @@ export interface ClassroomLessonProps {
   status: string;
   isRecurring: boolean;
   origin: "RECURRING_GENERATION" | "ONE_OFF" | string;
+  meetLink?: string | null;
+  videoProvider?: string | null;
+  cancelledReason?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  reportedAt?: string | null;
+  noShowAt?: string | null;
+  noShowType?: string | null;
 }
 
 export class ClassroomLesson {
   readonly id: string;
+  readonly orgId?: string;
   readonly classroomId: string;
   readonly teacherId: string;
   readonly coverTeacherId: string | null;
@@ -164,9 +174,18 @@ export class ClassroomLesson {
   readonly status: string;
   readonly isRecurring: boolean;
   readonly origin: "RECURRING_GENERATION" | "ONE_OFF" | string;
+  readonly meetLink: string | null;
+  readonly videoProvider: string | null;
+  readonly cancelledReason: string | null;
+  readonly startedAt: string | null;
+  readonly completedAt: string | null;
+  readonly reportedAt: string | null;
+  readonly noShowAt: string | null;
+  readonly noShowType: string | null;
 
   constructor(props: ClassroomLessonProps) {
     this.id = props.id;
+    this.orgId = props.orgId;
     this.classroomId = props.classroomId;
     this.teacherId = props.teacherId;
     this.coverTeacherId = props.coverTeacherId;
@@ -175,6 +194,28 @@ export class ClassroomLesson {
     this.status = props.status;
     this.isRecurring = props.isRecurring;
     this.origin = props.origin;
+    this.meetLink = props.meetLink ?? null;
+    this.videoProvider = props.videoProvider ?? null;
+    this.cancelledReason = props.cancelledReason ?? null;
+    this.startedAt = props.startedAt ?? null;
+    this.completedAt = props.completedAt ?? null;
+    this.reportedAt = props.reportedAt ?? null;
+    this.noShowAt = props.noShowAt ?? null;
+    this.noShowType = props.noShowType ?? null;
+  }
+
+  isLive(): boolean {
+    return this.status.toUpperCase() === "LIVE";
+  }
+
+  isScheduled(): boolean {
+    return this.status.toUpperCase() === "SCHEDULED";
+  }
+
+  isEnded(): boolean {
+    return ["COMPLETED", "MARKING", "REPORTED", "ARCHIVED"].includes(
+      this.status.toUpperCase(),
+    );
   }
 
   isCancelled(): boolean {
