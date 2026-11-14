@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { APP_ROUTES } from "@/shared/constant/routes.constants";
+import { useLessonQuery } from "@/features/classroom";
+import { APP_ROUTES, lessonRoute } from "@/shared/constant/routes.constants";
+import { sessionStore } from "@/shared/store";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,8 +16,28 @@ export interface BreadcrumbSegment {
   href?: string;
 }
 
+function formatLessonBreadcrumbLabel(scheduledAt?: string): string {
+  if (!scheduledAt) return "Lesson Details";
+  const parsed = new Date(scheduledAt);
+  if (Number.isNaN(parsed.getTime())) return "Lesson Details";
+  return parsed.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function GlobalBreadcrumbs() {
   const { pathname } = useLocation();
+  const currentUser = sessionStore((state) => state.currentUser);
+  const organizationId = currentUser?.activeOrganization?.id;
+
+  const lessonRouteMatch = pathname.match(/^\/lessons\/([^/]+)(\/board)?$/);
+  const lessonId = lessonRouteMatch?.[1];
+  const isBoardRoute = Boolean(lessonRouteMatch?.[2]);
+  const lessonQuery = useLessonQuery(organizationId, lessonId);
+  const lessonScheduledAt = lessonQuery.data?.scheduledAt;
 
   const segments = useMemo<BreadcrumbSegment[]>(() => {
     // 1. Dashboard
@@ -61,6 +83,12 @@ export function GlobalBreadcrumbs() {
       return [
         { label: "Organization", href: APP_ROUTES.MEMBERS },
         { label: "Roles & Permissions" },
+      ];
+    }
+    if (pathname === APP_ROUTES.APPLICATIONS) {
+      return [
+        { label: "Organization", href: APP_ROUTES.MEMBERS },
+        { label: "Applications" },
       ];
     }
     if (pathname === APP_ROUTES.ANALYTICS) {
@@ -128,6 +156,22 @@ export function GlobalBreadcrumbs() {
       return [{ label: "Notifications" }];
     }
 
+    // 10. Lessons & Learning Board (never show raw lessonId)
+    if (lessonId) {
+      const lessonLabel = formatLessonBreadcrumbLabel(lessonScheduledAt);
+      if (isBoardRoute) {
+        return [
+          { label: "Calendar", href: APP_ROUTES.CALENDAR },
+          { label: lessonLabel, href: lessonRoute(lessonId) },
+          { label: "Learning Board" },
+        ];
+      }
+      return [
+        { label: "Calendar", href: APP_ROUTES.CALENDAR },
+        { label: lessonLabel },
+      ];
+    }
+
     // Fallback: capitalize route segments
     const cleanParts = pathname
       .split("/")
@@ -149,7 +193,7 @@ export function GlobalBreadcrumbs() {
         href: isLast ? undefined : `/${pathname.split("/").filter(Boolean).slice(0, idx + 1).join("/")}`,
       };
     });
-  }, [pathname]);
+  }, [isBoardRoute, lessonId, lessonScheduledAt, pathname]);
 
   return (
     <Breadcrumb className="select-none">

@@ -6,6 +6,8 @@ import {
   CalendarPage,
   ClassroomDetailPage,
   ClassroomsPage,
+  LessonBoardPage,
+  LessonDetailPage,
 } from "@/features/classroom";
 import {
   CurriculumDetailPage,
@@ -17,6 +19,7 @@ import { QuestionDetailPage, QuestionsPage } from "@/features/question";
 import { MessagesPage } from "@/features/messages";
 import {
   AnalyticsPage,
+  ApplicationsPage,
   RolesPermissionsPage,
   TeamMembersPage,
 } from "@/features/organization";
@@ -46,6 +49,14 @@ export const workspaceRoutes: RouteObject[] = [
         path: `${APP_ROUTES.CLASSROOMS}/:classroomId`,
         element: <ClassroomDetailPage />,
       },
+      {
+        path: `${APP_ROUTES.LESSONS}/:lessonId`,
+        element: <LessonDetailPage />,
+      },
+      {
+        path: `${APP_ROUTES.LESSONS}/:lessonId/board`,
+        element: <LessonBoardPage />,
+      },
       { path: APP_ROUTES.CALENDAR, element: <CalendarPage /> },
       { path: APP_ROUTES.CURRICULUM, element: <CurriculumPage /> },
       {
@@ -55,6 +66,7 @@ export const workspaceRoutes: RouteObject[] = [
       { path: APP_ROUTES.SUBJECTS, element: <SubjectsPage /> },
       { path: APP_ROUTES.MEMBERS, element: <TeamMembersPage /> },
       { path: APP_ROUTES.ROLES, element: <RolesPermissionsPage /> },
+      { path: APP_ROUTES.APPLICATIONS, element: <ApplicationsPage /> },
       { path: APP_ROUTES.ANALYTICS, element: <AnalyticsPage /> },
       { path: APP_ROUTES.STUDENT_PROGRESS, element: <StudentProgressHubPage /> },
       {

@@ -12,11 +12,13 @@ export const APP_ROUTES = {
 
   DASHBOARD: "/dashboard",
   CLASSROOMS: "/classrooms",
+  LESSONS: "/lessons",
   CALENDAR: "/calendar",
   CURRICULUM: "/curriculum",
   SUBJECTS: "/organization/subjects",
   MEMBERS: "/organization/members",
   ROLES: "/organization/roles",
+  APPLICATIONS: "/organization/applications",
   ANALYTICS: "/organization/analytics",
   STUDENT_PROGRESS: "/student-progress",
   LESSON_REPORTS: "/lesson-reports",
@@ -28,6 +30,14 @@ export const APP_ROUTES = {
 
 export function classroomRoute(classroomId: string): string {
   return `${APP_ROUTES.CLASSROOMS}/${classroomId}`;
+}
+
+export function lessonRoute(lessonId: string): string {
+  return `${APP_ROUTES.LESSONS}/${lessonId}`;
+}
+
+export function lessonBoardRoute(lessonId: string): string {
+  return `${APP_ROUTES.LESSONS}/${lessonId}/board`;
 }
 
 export function curriculumDetailRoute(curriculumId: string): string {
