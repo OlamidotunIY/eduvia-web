@@ -79,7 +79,11 @@ import {
 } from "@/shared/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
-import { APP_ROUTES } from "@/shared/constant/routes.constants";
+import {
+  APP_ROUTES,
+  lessonBoardRoute,
+  lessonRoute,
+} from "@/shared/constant/routes.constants";
 import { sessionStore } from "@/shared/store";
 import {
   useAddLearnerMutation,
@@ -562,7 +566,7 @@ export function ClassroomDetailPage() {
                             variant="outline"
                             size="sm"
                             className="h-8 gap-1.5 rounded-lg px-3 text-xs font-medium"
-                            onClick={() => setTab("lessons")}
+                            onClick={() => navigate(lessonRoute(lesson.id))}
                           >
                             View lesson
                             <ExternalLink className="size-3.5" />
@@ -718,7 +722,7 @@ export function ClassroomDetailPage() {
                             variant="outline"
                             size="sm"
                             className="h-8 gap-1.5 rounded-lg px-3 text-xs font-medium"
-                            onClick={() => setTab("lessons")}
+                            onClick={() => navigate(lessonRoute(lesson.id))}
                           >
                             View lesson
                             <ExternalLink className="size-3.5" />
@@ -930,7 +934,7 @@ export function ClassroomDetailPage() {
                                   className="size-7 text-muted-foreground hover:text-foreground"
                                   title="View lesson"
                                   aria-label="View lesson"
-                                  onClick={() => setTab("lessons")}
+                                  onClick={() => navigate(lessonRoute(lesson.id))}
                                 >
                                   <Eye className="size-4" />
                                 </Button>
@@ -1211,9 +1215,9 @@ export function ClassroomDetailPage() {
                               variant="ghost"
                               size="icon-xs"
                               className="size-7 text-muted-foreground hover:text-foreground"
-                              title="View lesson"
-                              aria-label="View lesson"
-                              onClick={() => setReschedulingLesson(lesson)}
+                              title="Open lesson details"
+                              aria-label="Open lesson details"
+                              onClick={() => navigate(lessonRoute(lesson.id))}
                             >
                               <Eye className="size-4" />
                             </Button>
@@ -1231,7 +1235,21 @@ export function ClassroomDetailPage() {
                               >
                                 <MoreHorizontal className="size-4" />
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    navigate(lessonRoute(lesson.id))
+                                  }
+                                >
+                                  <Eye /> Open lesson details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    navigate(lessonBoardRoute(lesson.id))
+                                  }
+                                >
+                                  <ExternalLink /> Open learning board
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={!canManageLessons}
                                   onClick={() => setReschedulingLesson(lesson)}

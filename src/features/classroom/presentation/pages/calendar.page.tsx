@@ -18,7 +18,6 @@ import {
   ChevronRight,
   Clock3,
   Funnel,
-  RotateCcw,
 } from "lucide-react";
 import { sessionStore } from "@/shared/store";
 import type { Classroom, ClassroomLesson } from "@/shared/domain";
@@ -47,13 +46,6 @@ import {
   PopoverTrigger,
 } from "@/shared/ui/popover";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
-import {
   useClassroomsQuery,
   useCreateClassroomMutation,
   useOrganizationCalendarLessonsQuery,
@@ -61,6 +53,7 @@ import {
   useRescheduleLessonMutation,
   useScheduleLessonMutation,
 } from "../../application";
+import { CalendarLessonSheet } from "../components/calendar-lesson-sheet";
 import { ScheduleLessonDialog } from "../components/classroom-action-dialogs";
 import { CreateClassroomDialog } from "../components/create-classroom-dialog";
 
@@ -574,63 +567,22 @@ export function CalendarPage() {
           }
         />
 
-        <Sheet
-          open={Boolean(selectedLesson)}
-          onOpenChange={(open) => !open && setSelectedLesson(null)}
-        >
-          <SheetContent>
-            {selectedLesson ? (
-              <>
-                <SheetHeader>
-                  <SheetTitle>
-                    {classroomNameById.get(selectedLesson.classroomId) ??
-                      "Classroom lesson"}
-                  </SheetTitle>
-                  <SheetDescription>
-                    {formatLessonDate(selectedLesson.scheduledAt)} ·{" "}
-                    {formatLessonTime(selectedLesson.scheduledAt)}
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="space-y-6 p-4">
-                  <div className="flex items-center justify-between border-y border-border py-4">
-                    <span className="text-sm text-muted-foreground">
-                      Status
-                    </span>
-                    <LessonStatus status={selectedLesson.status} />
-                  </div>
-                  <DetailRow
-                    label="Duration"
-                    value={`${selectedLesson.durationMins} minutes`}
-                  />
-                  <DetailRow
-                    label="Lesson type"
-                    value={
-                      selectedLesson.origin === "ONE_OFF"
-                        ? "Extra lesson"
-                        : "Recurring lesson"
-                    }
-                  />
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    disabled={!canManage}
-                    title={
-                      canManage
-                        ? "Reschedule lesson"
-                        : "You need lesson management permission to reschedule a lesson."
-                    }
-                    onClick={() => {
-                      setSelectedLesson(null);
-                      setReschedulingLesson(selectedLesson);
-                    }}
-                  >
-                    <RotateCcw /> Reschedule lesson
-                  </Button>
-                </div>
-              </>
-            ) : null}
-          </SheetContent>
-        </Sheet>
+        <CalendarLessonSheet
+          organizationId={organizationId}
+          lesson={selectedLesson}
+          classroomName={
+            selectedLesson
+              ? (classroomNameById.get(selectedLesson.classroomId) ??
+                "Classroom lesson")
+              : "Classroom lesson"
+          }
+          canManage={canManage}
+          onClose={() => setSelectedLesson(null)}
+          onReschedule={(lesson) => {
+            setSelectedLesson(null);
+            setReschedulingLesson(lesson);
+          }}
+        />
 
         <ScheduleLessonDialog
           open={Boolean(reschedulingLesson)}
@@ -1317,14 +1269,6 @@ function LessonStatus({ status }: { status: string }) {
     <Badge variant="outline" className="capitalize">
       {status}
     </Badge>
-  );
-}
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{value}</span>
-    </div>
   );
 }
 
