@@ -3,4 +3,5 @@ export * from './entities/organization-role.entity';
 export * from './entities/organization-permission.entity';
 export * from './entities/organization-member.entity';
 export * from './entities/org-analytics.entity';
+export * from './entities/teacher-application.entity';
 export * from './repositories/organization.repository.interface';

@@ -7,7 +7,16 @@ import type {
   ChangeMemberRoleDto,
   OrgAnalyticsResponseDto,
 } from '@/shared/api/generated';
-import type { OrganizationRoleRecord } from '@/shared/domain';
+import type {
+  OrganizationRoleRecord,
+  ApplyToOrganizationInput,
+  ApproveTeacherApplicationInput,
+  RejectTeacherApplicationInput,
+  TeacherApplicationRecord,
+  TeacherApplicationSettings,
+  TeacherApplicationStatus,
+  MarketplaceSubjectItem,
+} from '@/shared/domain';
 
 export const organizationApi = {
   create: (body: CreateOrganizationDto) =>
@@ -16,14 +25,60 @@ export const organizationApi = {
   listMarketplace: () =>
     apiClient.get<unknown>('/marketplace/organizations').then((response) => response.data),
 
-  apply: (organizationId: string) =>
+  listMarketplaceOrganizationSubjects: (organizationId: string) =>
+    apiClient
+      .get<MarketplaceSubjectItem[]>(`/marketplace/organizations/${organizationId}/subjects`)
+      .then((response) => response.data),
+
+  apply: (organizationId: string, input?: ApplyToOrganizationInput) =>
     apiClient
       .post(`/organizations/${organizationId}/applications`, {
-        orgId: organizationId,
-        applicantUserId: '',
-        appliedSubjects: [],
+        appliedSubjects: input?.appliedSubjects ?? [],
+        coverLetter: input?.coverLetter ?? null,
+        qualifications: input?.qualifications ?? null,
       })
       .then(() => undefined),
+
+  listApplications: (organizationId: string, status?: TeacherApplicationStatus) =>
+    apiClient
+      .get<TeacherApplicationRecord[]>(`/organizations/${organizationId}/applications`, {
+        params: status ? { status } : undefined,
+      })
+      .then((response) => response.data),
+
+  getApplicationSettings: (organizationId: string) =>
+    apiClient
+      .get<TeacherApplicationSettings>(`/organizations/${organizationId}/applications/settings`)
+      .then((response) => response.data),
+
+  updateApplicationSettings: (
+    organizationId: string,
+    body: { acceptingTeachers?: boolean; marketplaceListed?: boolean },
+  ) =>
+    apiClient
+      .patch<TeacherApplicationSettings>(
+        `/organizations/${organizationId}/applications/settings`,
+        body,
+      )
+      .then((response) => response.data),
+
+  approveApplication: (
+    organizationId: string,
+    applicationId: string,
+    body?: ApproveTeacherApplicationInput,
+  ) =>
+    apiClient
+      .post(`/organizations/${organizationId}/applications/${applicationId}/approve`, body ?? {})
+      .then((response) => response.data),
+
+  rejectApplication: (
+    organizationId: string,
+    applicationId: string,
+    body?: RejectTeacherApplicationInput,
+  ) =>
+    apiClient
+      .post(`/organizations/${organizationId}/applications/${applicationId}/reject`, body ?? {})
+      .then((response) => response.data),
 
   selectActive: (organizationId: string) =>
     apiClient.post(`/organizations/active/${organizationId}`).then(() => undefined),

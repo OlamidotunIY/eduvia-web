@@ -1,7 +1,18 @@
-import type { MarketplaceOrganization } from '../entities/marketplace-organization.entity';
+import type {
+  MarketplaceOrganization,
+  MarketplaceSubjectItem,
+} from '../entities/marketplace-organization.entity';
 import type { OrganizationRoleDefinition } from '../entities/organization-role.entity';
 import type { OrganizationPermissionDefinition } from '../entities/organization-permission.entity';
 import type { OrgAnalyticsEntity } from '../entities/org-analytics.entity';
+import type {
+  ApplyToOrganizationInput,
+  ApproveTeacherApplicationInput,
+  RejectTeacherApplicationInput,
+  TeacherApplicationRecord,
+  TeacherApplicationSettings,
+  TeacherApplicationStatus,
+} from '../entities/teacher-application.entity';
 import type {
   CreateOrganizationDto,
   CreateOrganizationRoleDto,
@@ -14,7 +25,27 @@ import type { OrganizationMemberRecord } from '../entities/organization-member.e
 export abstract class IOrganizationRepository {
   abstract create(input: CreateOrganizationDto): Promise<void>;
   abstract listMarketplace(): Promise<MarketplaceOrganization[]>;
-  abstract apply(organizationId: string): Promise<void>;
+  abstract listMarketplaceOrganizationSubjects(organizationId: string): Promise<MarketplaceSubjectItem[]>;
+  abstract apply(organizationId: string, input?: ApplyToOrganizationInput): Promise<void>;
+  abstract listApplications(
+    organizationId: string,
+    status?: TeacherApplicationStatus,
+  ): Promise<TeacherApplicationRecord[]>;
+  abstract getApplicationSettings(organizationId: string): Promise<TeacherApplicationSettings>;
+  abstract updateApplicationSettings(
+    organizationId: string,
+    input: { acceptingTeachers?: boolean; marketplaceListed?: boolean },
+  ): Promise<TeacherApplicationSettings>;
+  abstract approveApplication(
+    organizationId: string,
+    applicationId: string,
+    input?: ApproveTeacherApplicationInput,
+  ): Promise<unknown>;
+  abstract rejectApplication(
+    organizationId: string,
+    applicationId: string,
+    input?: RejectTeacherApplicationInput,
+  ): Promise<unknown>;
   abstract selectActive(organizationId: string): Promise<void>;
   abstract listRoles(organizationId: string): Promise<OrganizationRoleDefinition[]>;
   abstract listPermissions(organizationId: string): Promise<OrganizationPermissionDefinition[]>;

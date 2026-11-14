@@ -1,4 +1,7 @@
 export * from './use-apply-to-organization.mutation';
+export * from './use-approve-application.mutation';
+export * from './use-reject-application.mutation';
+export * from './use-update-application-settings.mutation';
 export * from './use-create-organization.mutation';
 export * from './use-switch-organization.mutation';
 export * from './use-invite-member.mutation';

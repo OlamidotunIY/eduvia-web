@@ -1,10 +1,17 @@
 import {
   MarketplaceOrganization,
+  type MarketplaceSubjectItem,
   OrganizationMemberRecord,
   OrganizationRoleDefinition,
   OrganizationPermissionDefinition,
   OrgAnalyticsEntity,
   IOrganizationRepository,
+  type ApplyToOrganizationInput,
+  type ApproveTeacherApplicationInput,
+  type RejectTeacherApplicationInput,
+  type TeacherApplicationRecord,
+  type TeacherApplicationSettings,
+  type TeacherApplicationStatus,
 } from '@/shared/domain';
 import type {
   CreateOrganizationDto,
@@ -26,8 +33,56 @@ export class OrganizationRepository implements IOrganizationRepository {
     return value.map((item) => this.toMarketplaceOrganization(item));
   }
 
-  async apply(organizationId: string): Promise<void> {
-    await organizationApi.apply(organizationId);
+  async listMarketplaceOrganizationSubjects(
+    organizationId: string,
+  ): Promise<MarketplaceSubjectItem[]> {
+    const raw = await organizationApi.listMarketplaceOrganizationSubjects(organizationId);
+    if (!Array.isArray(raw)) return [];
+    return raw.map((subject) => ({
+      id: String(subject.id ?? ''),
+      name: String(subject.name ?? ''),
+      description: typeof subject.description === 'string' ? subject.description : null,
+    }));
+  }
+
+  async apply(organizationId: string, input?: ApplyToOrganizationInput): Promise<void> {
+    await organizationApi.apply(organizationId, input);
+  }
+
+  async listApplications(
+    organizationId: string,
+    status?: TeacherApplicationStatus,
+  ): Promise<TeacherApplicationRecord[]> {
+    const raw = await organizationApi.listApplications(organizationId, status);
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item) => this.toTeacherApplication(item));
+  }
+
+  async getApplicationSettings(organizationId: string): Promise<TeacherApplicationSettings> {
+    return organizationApi.getApplicationSettings(organizationId);
+  }
+
+  async updateApplicationSettings(
+    organizationId: string,
+    input: { acceptingTeachers?: boolean; marketplaceListed?: boolean },
+  ): Promise<TeacherApplicationSettings> {
+    return organizationApi.updateApplicationSettings(organizationId, input);
+  }
+
+  async approveApplication(
+    organizationId: string,
+    applicationId: string,
+    input?: ApproveTeacherApplicationInput,
+  ): Promise<unknown> {
+    return organizationApi.approveApplication(organizationId, applicationId, input);
+  }
+
+  async rejectApplication(
+    organizationId: string,
+    applicationId: string,
+    input?: RejectTeacherApplicationInput,
+  ): Promise<unknown> {
+    return organizationApi.rejectApplication(organizationId, applicationId, input);
   }
 
   async selectActive(organizationId: string): Promise<void> {
@@ -100,7 +155,84 @@ export class OrganizationRepository implements IOrganizationRepository {
       country: this.readString(organization, 'country'),
       timezone: this.readString(organization, 'timezone'),
       acceptingTeachers: Boolean(organization.acceptingTeachers),
+      subjects: Array.isArray(organization.subjects)
+        ? organization.subjects.map((subject) => {
+            const item =
+              subject && typeof subject === 'object'
+                ? (subject as Record<string, unknown>)
+                : {};
+            return {
+              id: String(item.id ?? ''),
+              name: String(item.name ?? ''),
+              description: typeof item.description === 'string' ? item.description : null,
+            };
+          })
+        : [],
     });
+  }
+
+  private toTeacherApplication(rawValue: unknown): TeacherApplicationRecord {
+    const raw =
+      rawValue && typeof rawValue === 'object'
+        ? (rawValue as Record<string, unknown>)
+        : {};
+    const appliedSubjects: string[] = Array.isArray(raw.appliedSubjects)
+      ? raw.appliedSubjects.map((value: unknown) => String(value))
+      : [];
+    const appliedSubjectDetails = Array.isArray(raw.appliedSubjectDetails)
+      ? raw.appliedSubjectDetails.map((item) => {
+          const entry =
+            item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
+          return {
+            id: String(entry.id ?? ''),
+            name: String(entry.name ?? entry.id ?? ''),
+          };
+        })
+      : appliedSubjects.map((value) => ({ id: value, name: value }));
+    const approvedSubjects: string[] | null = Array.isArray(raw.approvedSubjects)
+      ? raw.approvedSubjects.map((value: unknown) => String(value))
+      : null;
+    const approvedSubjectDetails = Array.isArray(raw.approvedSubjectDetails)
+      ? raw.approvedSubjectDetails.map((item) => {
+          const entry =
+            item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
+          return {
+            id: String(entry.id ?? ''),
+            name: String(entry.name ?? entry.id ?? ''),
+          };
+        })
+      : approvedSubjects
+        ? approvedSubjects.map((value) => ({ id: value, name: value }))
+        : null;
+
+    return {
+      id: String(raw.id ?? ''),
+      orgId: String(raw.orgId ?? ''),
+      applicantUserId: String(raw.applicantUserId ?? ''),
+      applicant:
+        raw.applicant && typeof raw.applicant === 'object'
+          ? (raw.applicant as TeacherApplicationRecord['applicant'])
+          : null,
+      appliedSubjects,
+      appliedSubjectDetails,
+      status: (raw.status as TeacherApplicationStatus) ?? 'pending_review',
+      rejectionReason: typeof raw.rejectionReason === 'string' ? raw.rejectionReason : null,
+      reviewedBy: typeof raw.reviewedBy === 'string' ? raw.reviewedBy : null,
+      reviewer:
+        raw.reviewer && typeof raw.reviewer === 'object'
+          ? (raw.reviewer as TeacherApplicationRecord['reviewer'])
+          : null,
+      reviewedAt: raw.reviewedAt ? String(raw.reviewedAt) : null,
+      coverLetter: typeof raw.coverLetter === 'string' ? raw.coverLetter : null,
+      qualifications: typeof raw.qualifications === 'string' ? raw.qualifications : null,
+      assignedRole: typeof raw.assignedRole === 'string' ? raw.assignedRole : null,
+      assignedRoleId: typeof raw.assignedRoleId === 'string' ? raw.assignedRoleId : null,
+      assignedRoleName: typeof raw.assignedRoleName === 'string' ? raw.assignedRoleName : null,
+      approvedSubjects,
+      approvedSubjectDetails,
+      createdAt: String(raw.createdAt ?? new Date().toISOString()),
+      updatedAt: String(raw.updatedAt ?? raw.createdAt ?? new Date().toISOString()),
+    };
   }
 
   private toOrganizationRole(value: unknown): OrganizationRoleDefinition {

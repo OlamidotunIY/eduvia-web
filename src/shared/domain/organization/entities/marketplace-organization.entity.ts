@@ -1,3 +1,9 @@
+export interface MarketplaceSubjectItem {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 export interface MarketplaceOrganizationProps {
   id: string;
   name: string;
@@ -8,6 +14,7 @@ export interface MarketplaceOrganizationProps {
   country: string;
   timezone: string;
   acceptingTeachers: boolean;
+  subjects?: MarketplaceSubjectItem[];
 }
 
 export class MarketplaceOrganization {
@@ -20,6 +27,7 @@ export class MarketplaceOrganization {
   readonly country: string;
   readonly timezone: string;
   readonly acceptingTeachers: boolean;
+  readonly subjects: MarketplaceSubjectItem[];
 
   constructor(props: MarketplaceOrganizationProps) {
     this.id = props.id;
@@ -31,6 +39,7 @@ export class MarketplaceOrganization {
     this.country = props.country;
     this.timezone = props.timezone;
     this.acceptingTeachers = props.acceptingTeachers;
+    this.subjects = props.subjects ?? [];
   }
 
   isAvailable(): boolean {
