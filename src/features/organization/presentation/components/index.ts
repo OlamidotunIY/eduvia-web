@@ -6,3 +6,5 @@ export * from './roles-table';
 export * from './roles-metrics';
 export * from './role-drawer';
 export * from './analytics';
+export * from './applications';
+export * from './marketplace-apply-dialog';

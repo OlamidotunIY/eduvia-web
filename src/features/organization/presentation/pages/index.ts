@@ -3,4 +3,5 @@ export * from './marketplace.page';
 export * from './organization-choice.page';
 export * from './team-members.page';
 export * from './roles-permissions.page';
+export * from './applications.page';
 export * from './analytics.page';
