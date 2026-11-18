@@ -205,7 +205,7 @@ export function SettingsDialog() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeSettings()}>
       <DialogContent
         showCloseButton={false}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[88vw] max-w-5xl sm:max-w-5xl md:max-w-5xl lg:max-w-6xl h-[86vh] max-h-[820px] min-h-[500px] p-0 gap-0 overflow-hidden flex flex-col rounded-2xl border border-border/80 bg-background shadow-2xl"
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] sm:w-[88vw] max-w-5xl h-[88dvh] max-h-[88dvh] p-0 gap-0 overflow-hidden flex flex-col rounded-2xl border border-border/80 bg-background shadow-2xl"
       >
         {/* Accessible Dialog Title for Screen Readers */}
         <div className="sr-only">

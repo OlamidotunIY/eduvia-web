@@ -127,8 +127,8 @@ export function CreateClassroomDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[calc(100svh-2rem)] overflow-y-auto p-6 sm:p-8"
-        style={{ width: "min(92vw, 64rem)", maxWidth: "none" }}
+        className="max-h-[85dvh] overflow-y-auto p-5 sm:p-7"
+        style={{ width: "min(90vw, 56rem)", maxWidth: "none" }}
       >
         <DialogHeader className="max-w-2xl">
           <DialogTitle className="text-xl">Create classroom</DialogTitle>
