@@ -541,9 +541,9 @@ export function CommandCenterPage() {
         ? createPortal(
             <div className="flex h-full min-w-0 shrink-0 items-center justify-end gap-2 md:gap-3.5">
               {/* Global Search Input matching MessagesHeader */}
-              <div className="relative hidden md:flex items-center w-56 lg:w-80">
+              <div className="relative hidden md:flex items-center w-60 lg:w-80">
                 <Search
-                  className="pointer-events-none absolute left-3 size-3.5 text-muted-foreground/70"
+                  className="pointer-events-none absolute left-3 size-4 text-muted-foreground/70"
                   aria-hidden="true"
                 />
                 <input
@@ -551,9 +551,9 @@ export function CommandCenterPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search sessions, classrooms or tasks..."
-                  className="h-8.5 w-full rounded-lg border border-border/50 bg-muted/25 dark:bg-[#0d1612] pl-8.5 pr-11 text-xs text-foreground placeholder:text-muted-foreground/60 transition-colors focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                  className="h-9 w-full rounded-lg border border-border/50 bg-muted/25 dark:bg-[#0d1612] pl-9 pr-12 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 transition-colors focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
                 />
-                <div className="absolute right-2 flex items-center gap-0.5 rounded border border-border/40 bg-muted/30 px-1 py-0.5 text-[10px] font-medium text-muted-foreground/80">
+                <div className="absolute right-2.5 flex items-center gap-0.5 rounded border border-border/40 bg-muted/30 px-1.5 py-0.5 text-xs font-medium text-muted-foreground/80">
                   <span>⌘</span>
                   <span>K</span>
                 </div>
@@ -563,9 +563,9 @@ export function CommandCenterPage() {
               <button
                 type="button"
                 onClick={handleNewSession}
-                className="flex size-8 sm:size-auto sm:h-8.5 sm:px-3.5 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+                className="flex size-9 sm:size-auto sm:h-9 sm:px-3.5 shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs sm:text-sm font-semibold text-white shadow-xs transition-colors cursor-pointer"
               >
-                <Plus className="size-3.5 stroke-[2.5]" aria-hidden="true" />
+                <Plus className="size-4 stroke-[2.5]" aria-hidden="true" />
                 <span className="hidden sm:inline">New session</span>
               </button>
             </div>,
@@ -580,7 +580,7 @@ export function CommandCenterPage() {
           className={cn(
             "shrink-0 flex-col border-r border-border/40 bg-background transition-all duration-200",
             showMobileHistory ? "flex w-full" : "hidden",
-            showDesktopHistory ? "md:flex md:w-56 lg:w-60" : "md:hidden",
+            showDesktopHistory ? "md:flex md:w-64 lg:w-72" : "md:hidden",
           )}
         >
           <CommandCenterHistory
