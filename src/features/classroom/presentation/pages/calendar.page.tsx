@@ -20,7 +20,7 @@ import {
   Funnel,
 } from "lucide-react";
 import { sessionStore } from "@/shared/store";
-import type { Classroom, ClassroomLesson } from "@/shared/domain";
+import { type Classroom, ClassroomLesson } from "@/shared/domain";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -56,6 +56,7 @@ import {
 import { CalendarLessonSheet } from "../components/calendar-lesson-sheet";
 import { ScheduleLessonDialog } from "../components/classroom-action-dialogs";
 import { CreateClassroomDialog } from "../components/create-classroom-dialog";
+import { useParentChildrenQuery } from "@/features/parent-workspace";
 
 type CalendarView = "week" | "month" | "schedule";
 const HOURS = Array.from({ length: 24 }, (_, index) => index);
@@ -64,6 +65,7 @@ const WEEK_GRID_HEIGHT = HOURS.length * SLOT_HEIGHT;
 
 export function CalendarPage() {
   const currentUser = sessionStore((state) => state.currentUser);
+  const isParent = currentUser?.user.userType === "parent";
   const organizationId = currentUser?.activeOrganization?.id;
   const permissions = currentUser?.activeOrganization?.permissions ?? [];
   const [view, setView] = useState<CalendarView>("week");
@@ -72,6 +74,7 @@ export function CalendarPage() {
   const [classroomIds, setClassroomIds] = useState<string[]>([]);
   const [lessonStatuses, setLessonStatuses] = useState<string[]>([]);
   const [mineOnly, setMineOnly] = useState(false);
+  const [selectedChildId, setSelectedChildId] = useState<string>("all");
   const [isClassroomPickerOpen, setIsClassroomPickerOpen] = useState(false);
   const [selectedExtraClassroomId, setSelectedExtraClassroomId] = useState("");
   const [scheduleClassroom, setScheduleClassroom] = useState<Classroom | null>(
@@ -108,40 +111,102 @@ export function CalendarPage() {
     organizationId,
     "calendar",
   );
-  const canSchedule = permissions.includes("lessons:schedule");
-  const canCreateClassroom = permissions.includes("classrooms:create");
-  const canManage = permissions.includes("lessons:manage");
-  const activeFilterCount =
-    classroomIds.length + lessonStatuses.length + Number(mineOnly);
+
+  const parentChildrenQuery = useParentChildrenQuery();
+  const childrenList = isParent ? (parentChildrenQuery.data ?? []) : [];
+
+  const parentLessonList = useMemo(() => {
+    if (!isParent) return [];
+    const list: ClassroomLesson[] = [];
+
+    childrenList.forEach((child) => {
+      if (selectedChildId !== "all" && selectedChildId !== child.id) return;
+      if (child.nextLesson?.scheduledAt) {
+        const schedDate = new Date(child.nextLesson.scheduledAt);
+        list.push(
+          new ClassroomLesson({
+            id: child.nextLesson.id || `parent-lesson-${child.id}`,
+            orgId: "",
+            classroomId: `${child.id}-${child.nextLesson.subject}`,
+            teacherId: child.nextLesson.teacherName || "Teacher",
+            coverTeacherId: null,
+            scheduledAt: schedDate.toISOString(),
+            durationMins: child.nextLesson.durationMins || 60,
+            status: schedDate < new Date() ? "completed" : "scheduled",
+            isRecurring: false,
+            origin: "SCHEDULED_ONCE",
+          }),
+        );
+      }
+    });
+
+    return list;
+  }, [isParent, childrenList, selectedChildId]);
+
+  const canSchedule = !isParent && permissions.includes("lessons:schedule");
+  const canCreateClassroom = !isParent && permissions.includes("classrooms:create");
+  const canManage = !isParent && permissions.includes("lessons:manage");
+  const activeFilterCount = isParent
+    ? (selectedChildId !== "all" ? 1 : 0) + lessonStatuses.length
+    : classroomIds.length + lessonStatuses.length + Number(mineOnly);
 
   const classroomNameById = useMemo(
     () => new Map((classrooms.data ?? []).map((item) => [item.id, item.name])),
     [classrooms.data],
   );
-  const visibleLessons = useMemo(
-    () =>
-      (lessons.data ?? []).filter((lesson) => {
-        if (
-          classroomIds.length > 0 &&
-          !classroomIds.includes(lesson.classroomId)
-        )
-          return false;
+
+  const effectiveClassroomNameById = useMemo(() => {
+    if (isParent) {
+      const map = new Map<string, string>();
+      childrenList.forEach((child) => {
+        if (child.nextLesson) {
+          map.set(
+            `${child.id}-${child.nextLesson.subject}`,
+            `${child.firstName} · ${child.nextLesson.subject} - ${child.nextLesson.teacherName}`,
+          );
+        }
+      });
+      return map;
+    }
+    return classroomNameById;
+  }, [isParent, childrenList, classroomNameById]);
+
+  const visibleLessons = useMemo(() => {
+    if (isParent) {
+      return parentLessonList.filter((lesson) => {
         if (
           lessonStatuses.length > 0 &&
           !lessonStatuses.includes(lesson.status.toLowerCase())
-        )
+        ) {
           return false;
-        if (mineOnly && lesson.teacherId !== currentUser?.user.id) return false;
+        }
         return true;
-      }),
-    [
-      classroomIds,
-      currentUser?.user.id,
-      lessonStatuses,
-      lessons.data,
-      mineOnly,
-    ],
-  );
+      });
+    }
+
+    return (lessons.data ?? []).filter((lesson) => {
+      if (
+        classroomIds.length > 0 &&
+        !classroomIds.includes(lesson.classroomId)
+      )
+        return false;
+      if (
+        lessonStatuses.length > 0 &&
+        !lessonStatuses.includes(lesson.status.toLowerCase())
+      )
+        return false;
+      if (mineOnly && lesson.teacherId !== currentUser?.user.id) return false;
+      return true;
+    });
+  }, [
+    isParent,
+    parentLessonList,
+    classroomIds,
+    currentUser?.user.id,
+    lessonStatuses,
+    lessons.data,
+    mineOnly,
+  ]);
 
   const toggleClassroom = (id: string) => {
     setClassroomIds((current) => toggleFilterValue(current, id));
@@ -167,7 +232,10 @@ export function CalendarPage() {
   const openScheduleChoice = (draft: {
     scheduledAt: string;
     durationMins: number;
-  }) => setScheduleChoiceDraft(draft);
+  }) => {
+    if (!canSchedule && !canCreateClassroom) return;
+    setScheduleChoiceDraft(draft);
+  };
   const movePeriod = (direction: -1 | 1) => {
     const shift = (date: Date) =>
       view === "week" ? addWeeks(date, direction) : addMonths(date, direction);
@@ -180,7 +248,7 @@ export function CalendarPage() {
     setSelectedDay(today);
   };
 
-  if (!organizationId) {
+  if (!organizationId && !isParent) {
     return (
       <section className="mx-auto flex max-w-xl flex-1 flex-col items-start py-16">
         <p className="text-sm font-medium text-primary">Calendar</p>
@@ -198,7 +266,7 @@ export function CalendarPage() {
     <section className="-m-4 flex min-h-0 flex-1 flex-col overflow-hidden md:-m-6">
       {/* Calendar Dedicated Top Toolbar */}
       <div className="flex shrink-0 items-center justify-between border-b border-border/80 bg-background/95 px-4 py-2.5 backdrop-blur-xs gap-2 z-10">
-        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 flex-wrap">
           <Button
             variant="ghost"
             size="icon-xs"
@@ -261,24 +329,44 @@ export function CalendarPage() {
                 </p>
               </PopoverHeader>
               <div className="grid gap-5">
-                <FilterGroup title="Classrooms">
-                  {(classrooms.data ?? []).map((classroom) => (
+                {isParent ? (
+                  <FilterGroup title="Children">
                     <FilterOption
-                      key={classroom.id}
-                      checked={classroomIds.includes(classroom.id)}
-                      onCheckedChange={() =>
-                        toggleClassroom(classroom.id)
-                      }
+                      checked={selectedChildId === "all"}
+                      onCheckedChange={() => setSelectedChildId("all")}
                     >
-                      {classroom.name}
+                      All children
                     </FilterOption>
-                  ))}
-                  {!classrooms.data?.length ? (
-                    <p className="text-sm text-muted-foreground">
-                      No classrooms available.
-                    </p>
-                  ) : null}
-                </FilterGroup>
+                    {childrenList.map((child) => (
+                      <FilterOption
+                        key={child.id}
+                        checked={selectedChildId === child.id}
+                        onCheckedChange={() => setSelectedChildId(child.id)}
+                      >
+                        {child.firstName} {child.lastName} ({child.gradeLevel})
+                      </FilterOption>
+                    ))}
+                  </FilterGroup>
+                ) : (
+                  <FilterGroup title="Classrooms">
+                    {(classrooms.data ?? []).map((classroom) => (
+                      <FilterOption
+                        key={classroom.id}
+                        checked={classroomIds.includes(classroom.id)}
+                        onCheckedChange={() =>
+                          toggleClassroom(classroom.id)
+                        }
+                      >
+                        {classroom.name}
+                      </FilterOption>
+                    ))}
+                    {!classrooms.data?.length ? (
+                      <p className="text-sm text-muted-foreground">
+                        No classrooms available.
+                      </p>
+                    ) : null}
+                  </FilterGroup>
+                )}
                 <FilterGroup
                   title="Lesson status"
                   className="sm:grid-cols-3"
@@ -297,14 +385,16 @@ export function CalendarPage() {
                     </FilterOption>
                   ))}
                 </FilterGroup>
-                <FilterGroup title="Teaching scope">
-                  <FilterOption
-                    checked={mineOnly}
-                    onCheckedChange={setMineOnly}
-                  >
-                    My lessons only
-                  </FilterOption>
-                </FilterGroup>
+                {!isParent ? (
+                  <FilterGroup title="Teaching scope">
+                    <FilterOption
+                      checked={mineOnly}
+                      onCheckedChange={setMineOnly}
+                    >
+                      My lessons only
+                    </FilterOption>
+                  </FilterGroup>
+                ) : null}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -314,6 +404,7 @@ export function CalendarPage() {
                     setClassroomIds([]);
                     setLessonStatuses([]);
                     setMineOnly(false);
+                    if (isParent) setSelectedChildId("all");
                   }}
                 >
                   Clear all filters
@@ -374,9 +465,9 @@ export function CalendarPage() {
         </div>
       </div>
       <div className="min-h-0 flex-1">
-          {lessons.isPending ? (
+          {(lessons.isPending && !isParent) || (isParent && parentChildrenQuery.isPending) ? (
             <p className="py-20 text-center text-sm text-muted-foreground">
-              Loading lessons…
+              {isParent ? "Loading children schedule…" : "Loading lessons…"}
             </p>
           ) : view === "week" ? (
             <>
@@ -384,9 +475,10 @@ export function CalendarPage() {
                 <WeekGrid
                   days={range.days}
                   lessons={visibleLessons}
-                  classroomNameById={classroomNameById}
+                  classroomNameById={effectiveClassroomNameById}
                   onSelect={setSelectedLesson}
                   onSlotSelect={openScheduleChoice}
+                  canSchedule={canSchedule}
                 />
               </div>
               <div className="h-full min-h-0 overflow-hidden lg:hidden">
@@ -395,7 +487,7 @@ export function CalendarPage() {
                   selectedDay={selectedDay}
                   onSelectDay={setSelectedDay}
                   lessons={visibleLessons}
-                  classroomNameById={classroomNameById}
+                  classroomNameById={effectiveClassroomNameById}
                   onSelect={setSelectedLesson}
                   onSlotSelect={openScheduleChoice}
                   canSchedule={canSchedule}
@@ -409,7 +501,7 @@ export function CalendarPage() {
               selectedDay={selectedDay}
               onSelectDay={setSelectedDay}
               lessons={visibleLessons}
-              classroomNameById={classroomNameById}
+              classroomNameById={effectiveClassroomNameById}
               onSelect={setSelectedLesson}
               onSlotSelect={openScheduleChoice}
               canSchedule={canSchedule}
@@ -418,7 +510,7 @@ export function CalendarPage() {
             <div className="h-full overflow-y-auto">
               <ScheduleList
                 lessons={visibleLessons}
-                classroomNameById={classroomNameById}
+                classroomNameById={effectiveClassroomNameById}
                 onSelect={setSelectedLesson}
               />
             </div>
@@ -568,11 +660,11 @@ export function CalendarPage() {
         />
 
         <CalendarLessonSheet
-          organizationId={organizationId}
+          organizationId={selectedLesson?.orgId ?? organizationId ?? ""}
           lesson={selectedLesson}
           classroomName={
             selectedLesson
-              ? (classroomNameById.get(selectedLesson.classroomId) ??
+              ? (effectiveClassroomNameById.get(selectedLesson.classroomId) ??
                 "Classroom lesson")
               : "Classroom lesson"
           }
@@ -608,9 +700,11 @@ function WeekGrid({
   classroomNameById,
   onSelect,
   onSlotSelect,
+  canSchedule = true,
 }: CalendarGridProps & {
   days: Date[];
   onSlotSelect: (draft: { scheduledAt: string; durationMins: number }) => void;
+  canSchedule?: boolean;
 }) {
   return (
     <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden">
@@ -675,10 +769,11 @@ function WeekGrid({
                     <button
                       type="button"
                       key={hour}
-                      disabled={past}
+                      disabled={past || (!occupiedLesson && !canSchedule)}
                       data-past={past || undefined}
                       data-occupied={Boolean(occupiedLesson) || undefined}
-                      className="absolute inset-x-0 border-b border-transparent text-left outline-none hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring data-[past=true]:cursor-not-allowed data-[past=true]:bg-muted/15 data-[past=true]:hover:bg-muted/15 data-[occupied=true]:cursor-pointer data-[occupied=true]:bg-primary/[0.04] data-[occupied=true]:hover:bg-primary/[0.08]"
+                      data-disabled={(!occupiedLesson && !canSchedule) || undefined}
+                      className="absolute inset-x-0 border-b border-transparent text-left outline-none hover:bg-primary/5 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring data-[past=true]:cursor-not-allowed data-[past=true]:bg-muted/15 data-[past=true]:hover:bg-muted/15 data-[occupied=true]:cursor-pointer data-[occupied=true]:bg-primary/[0.04] data-[occupied=true]:hover:bg-primary/[0.08] data-[disabled=true]:cursor-default data-[disabled=true]:hover:bg-transparent"
                       style={{
                         top: `${hour * SLOT_HEIGHT}px`,
                         height: `${SLOT_HEIGHT}px`,
@@ -691,7 +786,7 @@ function WeekGrid({
                       onClick={() =>
                         occupiedLesson
                           ? onSelect(occupiedLesson)
-                          : onSlotSelect(createSlotDraft(day, hour))
+                          : canSchedule && onSlotSelect(createSlotDraft(day, hour))
                       }
                     />
                   );
