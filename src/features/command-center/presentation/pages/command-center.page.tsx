@@ -218,7 +218,6 @@ export function CommandCenterPage() {
       title: string,
       steps: OrchestrationStep[],
       startIndex: number,
-      voiceMuted = false,
     ) => {
       clearScheduledTimers();
 
