@@ -124,11 +124,11 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary">
-              <UserPlus className="size-5" />
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[85dvh] rounded-2xl">
+        <DialogHeader className="p-5 pb-3.5 border-b border-border/40 shrink-0">
+          <div className="flex items-center gap-3 pr-8">
+            <div className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <UserPlus className="size-4.5" />
             </div>
             <div>
               <DialogTitle className="text-base font-semibold">
@@ -141,16 +141,18 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
           </div>
         </DialogHeader>
 
-        {/* Informational Callout: Registration vs Enrollment */}
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs text-foreground/90 space-y-1">
-          <div className="flex items-center gap-1.5 font-semibold text-primary">
-            <ShieldCheck className="size-3.5" />
-            <span>Student Login Provision</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Registering creates your child's student identity. They will use the email and password below to log in to their Student Workspace. Classroom enrollment and tuition subscriptions are managed separately after registration.
-          </p>
-        </div>
+        <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-3.5 scrollbar-thin overscroll-contain">
+            {/* Informational Callout: Registration vs Enrollment */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs text-foreground/90 space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-primary">
+                <ShieldCheck className="size-3.5" />
+                <span>Student Login Provision</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Registering creates your child's student identity. They will use the email and password below to log in to their Student Workspace. Classroom enrollment and tuition subscriptions are managed separately after registration.
+              </p>
+            </div>
 
         {errorMessage && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
@@ -293,32 +295,33 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
               </Select>
             </div>
           </div>
+        </div>
 
-          <DialogFooter className="pt-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleClose(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={
-                registerMutation.isPending ||
-                !firstName.trim() ||
-                !lastName.trim() ||
-                !email.trim() ||
-                !password
-              }
-            >
-              {registerMutation.isPending ? "Registering Child..." : "Register Child Account"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+        <DialogFooter className="p-3.5 sm:px-5 bg-muted/20 border-t border-border/40 shrink-0 flex items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleClose(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={
+              registerMutation.isPending ||
+              !firstName.trim() ||
+              !lastName.trim() ||
+              !email.trim() ||
+              !password
+            }
+          >
+            {registerMutation.isPending ? "Registering Child..." : "Register Child Account"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
+);
 }
