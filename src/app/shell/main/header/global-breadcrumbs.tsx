@@ -40,9 +40,9 @@ export function GlobalBreadcrumbs() {
   const lessonScheduledAt = lessonQuery.data?.scheduledAt;
 
   const segments = useMemo<BreadcrumbSegment[]>(() => {
-    // 1. Dashboard
+    // 1. Command Center
     if (pathname === APP_ROUTES.DASHBOARD || pathname === "/") {
-      return [{ label: "Dashboard" }];
+      return [{ label: "Command Center" }];
     }
 
     // 2. Classrooms
@@ -154,6 +154,23 @@ export function GlobalBreadcrumbs() {
     // 9. Notifications
     if (pathname.startsWith(APP_ROUTES.NOTIFICATIONS)) {
       return [{ label: "Notifications" }];
+    }
+
+    // 10. Parent Routes
+    if (pathname === APP_ROUTES.CHILDREN) {
+      return [{ label: "My Children" }];
+    }
+    if (pathname === APP_ROUTES.CHILDREN_PROGRESS) {
+      return [
+        { label: "My Children", href: APP_ROUTES.CHILDREN },
+        { label: "Progress & Reports" },
+      ];
+    }
+    if (pathname === APP_ROUTES.MARKETPLACE) {
+      return [{ label: "Find Tuition" }];
+    }
+    if (pathname === APP_ROUTES.BILLING) {
+      return [{ label: "Subscriptions & Billing" }];
     }
 
     // 10. Lessons & Learning Board (never show raw lessonId)

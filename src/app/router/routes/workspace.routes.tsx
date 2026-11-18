@@ -1,7 +1,8 @@
 import type { RouteObject } from "react-router-dom";
 import { AuthGuard, RoleGuard } from "@/app/guard";
 import { RoleLayout } from "@/app/shell";
-import { DashboardPage, PlaceholderPage } from "@/features/dashboard";
+import { CommandCenterPage } from "@/features/command-center";
+import { PlaceholderPage } from "@/features/dashboard";
 import {
   CalendarPage,
   ClassroomDetailPage,
@@ -31,6 +32,13 @@ import {
   LessonReportsHubPage,
   LessonReportDetailPage,
 } from "@/features/lesson-reports";
+import {
+  ChildrenProgressPage,
+  FindTuitionPage,
+  MyChildrenPage,
+  ParentBillingPage,
+} from "@/features/parent-workspace";
+import { NotificationsPage } from "@/features/notifications";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 
 export const workspaceRoutes: RouteObject[] = [
@@ -43,7 +51,7 @@ export const workspaceRoutes: RouteObject[] = [
       </AuthGuard>
     ),
     children: [
-      { path: APP_ROUTES.DASHBOARD, element: <DashboardPage /> },
+      { path: APP_ROUTES.DASHBOARD, element: <CommandCenterPage /> },
       { path: APP_ROUTES.CLASSROOMS, element: <ClassroomsPage /> },
       {
         path: `${APP_ROUTES.CLASSROOMS}/:classroomId`,
@@ -85,6 +93,11 @@ export const workspaceRoutes: RouteObject[] = [
         element: <QuestionDetailPage />,
       },
       { path: APP_ROUTES.MESSAGES, element: <MessagesPage /> },
+      { path: APP_ROUTES.NOTIFICATIONS, element: <NotificationsPage /> },
+      { path: APP_ROUTES.CHILDREN, element: <MyChildrenPage /> },
+      { path: APP_ROUTES.CHILDREN_PROGRESS, element: <ChildrenProgressPage /> },
+      { path: APP_ROUTES.MARKETPLACE, element: <FindTuitionPage /> },
+      { path: APP_ROUTES.BILLING, element: <ParentBillingPage /> },
       { path: "*", element: <PlaceholderPage /> },
     ],
   },

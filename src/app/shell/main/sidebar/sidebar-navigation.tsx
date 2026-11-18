@@ -4,9 +4,11 @@ import {
   BookOpen,
   CalendarDays,
   ClipboardCheck,
+  Command,
+  Compass,
+  CreditCard,
   FileText,
   GraduationCap,
-  LayoutDashboard,
   LibraryBig,
   MessageSquare,
   ScrollText,
@@ -34,7 +36,7 @@ type NavigationItem = { label: string; to: string; icon: LucideIcon; requiredPer
 type NavigationGroup = { label?: string; items: NavigationItem[] }
 
 const teacherGroups: NavigationGroup[] = [
-  { items: [{ label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard }] },
+  { items: [{ label: 'Command Center', to: APP_ROUTES.DASHBOARD, icon: Command }] },
   {
     label: 'Teaching',
     items: [
@@ -47,7 +49,13 @@ const teacherGroups: NavigationGroup[] = [
     ],
   },
   { label: 'Learners', items: [{ label: 'Student Progress', to: '/student-progress', icon: BarChart3, requiredPermission: 'progress:read' }] },
-  { label: 'Communication', items: [{ label: 'Messages', to: '/messages', icon: MessageSquare, requiredPermission: 'conversations:read' }] },
+  {
+    label: 'Communication',
+    items: [
+      { label: 'Messages', to: '/messages', icon: MessageSquare, requiredPermission: 'conversations:read' },
+      { label: 'Notifications', to: '/notifications', icon: Bell },
+    ],
+  },
 ]
 
 const organizationManagementGroup: NavigationGroup = {
@@ -62,7 +70,7 @@ const organizationManagementGroup: NavigationGroup = {
 }
 
 const parentGroups: NavigationGroup[] = [
-  { items: [{ label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard }] },
+  { items: [{ label: 'Command Center', to: APP_ROUTES.DASHBOARD, icon: Command }] },
   {
     label: 'Children',
     items: [
@@ -70,12 +78,30 @@ const parentGroups: NavigationGroup[] = [
       { label: 'Progress & Reports', to: '/children/progress', icon: BarChart3 },
     ],
   },
-  { label: 'Learning', items: [{ label: 'Calendar', to: '/calendar', icon: CalendarDays }] },
-  { label: 'Communication', items: [{ label: 'Messages', to: '/messages', icon: MessageSquare }] },
+  {
+    label: 'Learning',
+    items: [
+      { label: 'Calendar', to: '/calendar', icon: CalendarDays },
+      { label: 'Find Tuition', to: '/marketplace', icon: Compass },
+    ],
+  },
+  {
+    label: 'Finance',
+    items: [
+      { label: 'Subscriptions & Billing', to: '/billing', icon: CreditCard },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { label: 'Messages', to: '/messages', icon: MessageSquare },
+      { label: 'Notifications', to: '/notifications', icon: Bell },
+    ],
+  },
 ]
 
 const studentGroups: NavigationGroup[] = [
-  { items: [{ label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard }] },
+  { items: [{ label: 'Command Center', to: APP_ROUTES.DASHBOARD, icon: Command }] },
   {
     label: 'Learning',
     items: [
@@ -84,11 +110,17 @@ const studentGroups: NavigationGroup[] = [
       { label: 'My Progress', to: '/progress', icon: BarChart3 },
     ],
   },
-  { label: 'Communication', items: [{ label: 'Messages', to: '/messages', icon: MessageSquare }] },
+  {
+    label: 'Communication',
+    items: [
+      { label: 'Messages', to: '/messages', icon: MessageSquare },
+      { label: 'Notifications', to: '/notifications', icon: Bell },
+    ],
+  },
 ]
 
 const adminGroups: NavigationGroup[] = [
-  { items: [{ label: 'Dashboard', to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard }] },
+  { items: [{ label: 'Command Center', to: APP_ROUTES.DASHBOARD, icon: Command }] },
   {
     label: 'Administration',
     items: [
@@ -118,7 +150,11 @@ function groupsForRole(role: WorkspaceRole, permissions: OrganizationPermission[
 
 function SidebarNavigationItem({ item }: { item: NavigationItem }) {
   const { pathname } = useLocation()
-  const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`)
+  const isActive =
+    pathname === item.to ||
+    (item.to !== '/children' &&
+      item.to !== APP_ROUTES.DASHBOARD &&
+      pathname.startsWith(`${item.to}/`))
   return (
     <SidebarMenuItem>
       <SidebarMenuButton render={<NavLink to={item.to} />} isActive={isActive} tooltip={item.label}>

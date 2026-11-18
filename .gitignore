@@ -23,3 +23,6 @@ certs/*.pem
 *.njsproj
 *.sln
 *.sw?
+__pycache__/
+*.pyc
+.agents/

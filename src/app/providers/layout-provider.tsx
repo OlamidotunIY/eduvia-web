@@ -2,7 +2,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -26,10 +25,15 @@ interface LayoutContextValue {
 const LayoutContext = createContext<LayoutContextValue | null>(null);
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
-  const { pathname } = useLocation();
+  const { pathname, key: locationKey } = useLocation();
 
-  // Route condition: /messages starts minimized to give space for chat layout
-  const isMessagesPage = pathname.startsWith("/messages");
+  // Route condition: split-pane workspaces (/messages and Command Center) start with main sidebar minimized
+  const splitRouteKey = pathname.startsWith("/messages")
+    ? `messages:${locationKey}`
+    : pathname === "/dashboard" || pathname === "/"
+      ? `command-center:${locationKey}`
+      : null;
+  const isSplitWorkspaceRoute = splitRouteKey !== null;
 
   // Read initial preference from localStorage for standard pages
   const [persistedSidebarOpen, setPersistedSidebarOpen] = useState<boolean>(() => {
@@ -44,25 +48,31 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     return true; // default expanded
   });
 
-  // Sidebar state on messages page: starts minimized (false)
-  const [messagesSidebarOpen, setMessagesSidebarOpen] = useState<boolean>(false);
+  // Per-visit sidebar override on split-pane workspaces; defaults to minimized (false)
+  const [splitSidebarOverride, setSplitSidebarOverride] = useState<{
+    routeKey: string;
+    open: boolean;
+  } | null>(null);
 
-  // When entering /messages, default to minimized
-  useEffect(() => {
-    if (isMessagesPage) {
-      setMessagesSidebarOpen(false);
-    }
-  }, [isMessagesPage]);
+  const splitSidebarOpen =
+    splitRouteKey && splitSidebarOverride?.routeKey === splitRouteKey
+      ? splitSidebarOverride.open
+      : false;
 
-  // When on messages, use messagesSidebarOpen; otherwise use persisted preference
-  const isSidebarOpen = isMessagesPage ? messagesSidebarOpen : persistedSidebarOpen;
+  // When on a split-pane route, use transient splitSidebarOpen; otherwise use persisted preference
+  const isSidebarOpen = isSplitWorkspaceRoute
+    ? splitSidebarOpen
+    : persistedSidebarOpen;
 
   const setSidebarOpen = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
-      if (isMessagesPage) {
-        setMessagesSidebarOpen((prev) =>
-          typeof value === "function" ? value(prev) : value,
-        );
+      if (splitRouteKey) {
+        setSplitSidebarOverride((prev) => {
+          const currentOpen =
+            prev?.routeKey === splitRouteKey ? prev.open : false;
+          const next = typeof value === "function" ? value(currentOpen) : value;
+          return { routeKey: splitRouteKey, open: next };
+        });
       } else {
         setPersistedSidebarOpen((prev) => {
           const next = typeof value === "function" ? value(prev) : value;
@@ -75,7 +85,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         });
       }
     },
-    [isMessagesPage],
+    [splitRouteKey],
   );
 
   const toggleSidebar = useCallback(() => {

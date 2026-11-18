@@ -6,6 +6,7 @@ import {
   SidebarHeader,
 } from "@/shared/ui/sidebar";
 import { OrganizationSwitcher } from "./organization-switcher";
+import { PlatformLogoHeader } from "./platform-logo-header";
 import {
   SidebarNavigation,
   SidebarProductNavigation,
@@ -17,6 +18,17 @@ export function MainSidebar() {
   const role = currentUser?.user.userType;
   if (!role || role === "pending") return null;
 
+  const showOrganizationSwitcher =
+    Boolean(currentUser.activeOrganization) &&
+    (role === "teacher" || role === "admin");
+
+  const portalSubtitle =
+    role === "parent"
+      ? "Parent Workspace"
+      : role === "student"
+        ? "Student Workspace"
+        : "Eduvia Platform";
+
   return (
     <Sidebar
       variant="inset"
@@ -24,7 +36,11 @@ export function MainSidebar() {
       className="overflow-hidden"
     >
       <SidebarHeader>
-        <OrganizationSwitcher />
+        {showOrganizationSwitcher ? (
+          <OrganizationSwitcher />
+        ) : (
+          <PlatformLogoHeader subtitle={portalSubtitle} />
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarNavigation

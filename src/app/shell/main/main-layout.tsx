@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { MainHeader, MainHeaderSlotProvider } from "./header";
 import { MainSidebar } from "./sidebar";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { LayoutProvider, useLayout } from "@/app/providers/layout-provider";
 import { boardUiStore } from "@/shared/store";
+import { SettingsDialog, useSettingsDialog } from "@/features/settings";
 
 function MainLayoutContent() {
   const { pathname } = useLocation();
@@ -12,7 +14,23 @@ function MainLayoutContent() {
   const isCalendarPage = pathname.endsWith("/calendar");
   const isMessagesPage = pathname.startsWith("/messages");
   const isBoardPage = /^\/lessons\/[^/]+\/board$/.test(pathname);
+  const isCommandCenterPage =
+    pathname === "/" ||
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard");
   const hideChrome = isBoardFullscreen && isBoardPage;
+
+  // Global hotkey: Cmd+, or Ctrl+, to toggle Settings dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
+        e.preventDefault();
+        useSettingsDialog.getState().openSettings();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <SidebarProvider
@@ -32,7 +50,7 @@ function MainLayoutContent() {
           {!hideChrome ? <MainHeader /> : null}
           <main
             className={`flex min-h-0 min-w-0 flex-1 flex-col ${
-              isMessagesPage || isBoardPage
+              isMessagesPage || isBoardPage || isCommandCenterPage
                 ? "overflow-hidden p-0 m-0"
                 : isCalendarPage
                   ? "overflow-hidden p-4 md:p-6"
@@ -42,6 +60,8 @@ function MainLayoutContent() {
             <Outlet />
           </main>
         </SidebarInset>
+        {/* Global Settings Dialog Modal */}
+        <SettingsDialog />
       </MainHeaderSlotProvider>
     </SidebarProvider>
   );

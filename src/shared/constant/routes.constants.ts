@@ -26,6 +26,10 @@ export const APP_ROUTES = {
   QUESTIONS: "/questions",
   MESSAGES: "/messages",
   NOTIFICATIONS: "/notifications",
+  CHILDREN: "/children",
+  CHILDREN_PROGRESS: "/children/progress",
+  MARKETPLACE: "/marketplace",
+  BILLING: "/billing",
 } as const;
 
 export function classroomRoute(classroomId: string): string {

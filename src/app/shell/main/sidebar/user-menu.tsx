@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { authRepository } from "@/features/authentication";
+import { useSettingsDialog } from "@/features/settings";
 import { APP_ROUTES } from "@/shared/constant/routes.constants";
 import { useTheme } from "@/app/providers/theme-provider";
 import { authStore, sessionStore } from "@/shared/store";
@@ -144,7 +145,7 @@ export function UserMenu() {
                 <Bell />
                 Notifications
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <DropdownMenuItem onClick={() => useSettingsDialog.getState().openSettings()}>
                 <Settings />
                 Settings
               </DropdownMenuItem>
