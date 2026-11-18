@@ -67,29 +67,29 @@ function CodeArtifactBlock({
   };
 
   return (
-    <div className="my-2 rounded-lg border border-zinc-800 bg-[#161618] dark:bg-[#121214] text-zinc-100 overflow-hidden shadow-2xs">
+    <div className="my-3 rounded-xl border border-zinc-800 bg-[#161618] dark:bg-[#121214] text-zinc-100 overflow-hidden shadow-2xs">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-800/80 bg-zinc-900/60 text-xs text-zinc-400">
-        <div className="flex items-center gap-1.5">
-          <Code className="size-3 text-zinc-400" />
-          <span className="font-mono text-[0.7rem]">{language}</span>
+      <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800/80 bg-zinc-900/70 text-xs text-zinc-400">
+        <div className="flex items-center gap-2">
+          <Code className="size-3.5 text-zinc-400" />
+          <span className="font-mono text-xs text-zinc-300">{language}</span>
         </div>
 
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-zinc-800 text-[0.7rem] text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
             title="Copy code"
           >
             {copied ? (
               <>
-                <Check className="size-2.5 text-emerald-400" />
-                <span className="text-emerald-400">Copied</span>
+                <Check className="size-3 text-emerald-400" />
+                <span className="text-emerald-400 font-medium">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="size-2.5" />
+                <Copy className="size-3" />
                 <span>Copy</span>
               </>
             )}
@@ -98,7 +98,7 @@ function CodeArtifactBlock({
       </div>
 
       {/* Code / Content Area */}
-      <pre className="p-3 font-mono text-xs leading-relaxed overflow-x-auto text-zinc-200 whitespace-pre scrollbar-thin">
+      <pre className="p-4 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto text-zinc-200 whitespace-pre scrollbar-thin">
         <code>{content}</code>
       </pre>
     </div>
@@ -248,7 +248,7 @@ function MessageTurn({
   if (isUser) {
     return (
       <div className="flex justify-end animate-in fade-in-50 duration-200">
-        <div className="rounded-xl bg-blue-600 dark:bg-blue-600 text-white px-3 py-1.5 text-xs shadow-2xs max-w-[75%] leading-relaxed font-normal">
+        <div className="rounded-2xl bg-blue-600 dark:bg-blue-600 text-white px-4 py-2.5 text-sm sm:text-[14.5px] shadow-sm max-w-[80%] leading-relaxed font-normal">
           {message.content}
         </div>
       </div>
@@ -276,7 +276,7 @@ function MessageTurn({
       return (
         <p
           key={index}
-          className="whitespace-pre-wrap text-xs text-foreground/90 leading-relaxed font-normal my-1.5"
+          className="whitespace-pre-wrap text-sm sm:text-[14.5px] text-foreground/90 leading-relaxed font-normal my-2"
         >
           {part}
         </p>
@@ -291,9 +291,9 @@ function MessageTurn({
   };
 
   return (
-    <div className="group flex items-start gap-2.5 animate-in fade-in-50 duration-200">
-      <div className="flex size-5.5 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mt-0.5">
-        <Sparkles className="size-3" />
+    <div className="group flex items-start gap-3 sm:gap-3.5 animate-in fade-in-50 duration-200">
+      <div className="flex size-7 sm:size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mt-0.5 shadow-2xs">
+        <Sparkles className="size-3.5 sm:size-4" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -311,20 +311,20 @@ function MessageTurn({
         )}
 
         {/* Hover Action Strip */}
-        <div className="flex items-center gap-1.5 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1 text-[0.7rem] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/40 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground py-1 px-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer"
           >
             {copied ? (
               <>
-                <Check className="size-2.5 text-emerald-500" />
+                <Check className="size-3 text-emerald-500" />
                 <span className="text-emerald-500">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="size-2.5" />
+                <Copy className="size-3" />
                 <span>Copy</span>
               </>
             )}
@@ -338,9 +338,9 @@ function MessageTurn({
                 message.spokenNote ?? message.content.slice(0, 150),
               )
             }
-            className="flex items-center gap-1 text-[0.7rem] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/40 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground py-1 px-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer"
           >
-            <Volume2 className="size-2.5" />
+            <Volume2 className="size-3" />
             <span>Read aloud</span>
           </button>
         </div>
@@ -385,50 +385,50 @@ export function CommandCenterThreadView({
   return (
     <div className="relative flex flex-1 min-h-0 flex-col overflow-hidden bg-background">
       {/* 1. Header Bar: Compact, clean, no folder icon */}
-      <div className="flex h-10 items-center justify-between px-3.5 border-b border-border/40 bg-background/80 backdrop-blur-xs shrink-0 select-none">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="flex h-11 sm:h-12 items-center justify-between px-4 sm:px-5 border-b border-border/40 bg-background/80 backdrop-blur-xs shrink-0 select-none">
+        <div className="flex items-center gap-2.5 min-w-0">
           {!isHistoryOpen && (
             <button
               type="button"
               onClick={onToggleHistory}
               aria-label="Open sidebar"
-              className="flex size-6.5 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+              className="flex size-7.5 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
             >
-              <PanelLeft className="size-3.5" />
+              <PanelLeft className="size-4" />
             </button>
           )}
 
           {thread ? (
-            <div className="flex items-center gap-1.5 min-w-0">
-              <MessageSquare className="size-3 text-muted-foreground/60 shrink-0" />
-              <span className="truncate text-xs font-semibold text-foreground">
+            <div className="flex items-center gap-2 min-w-0">
+              <MessageSquare className="size-3.5 text-muted-foreground/60 shrink-0" />
+              <span className="truncate text-xs sm:text-sm font-semibold text-foreground">
                 {thread.title}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="size-3 text-primary" />
-              <span className="text-xs font-semibold text-foreground">
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-3.5 text-primary" />
+              <span className="text-xs sm:text-sm font-semibold text-foreground">
                 New conversation
               </span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {thread?.kind === "orchestrate" && (
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-medium text-amber-500">
-              <Zap className="size-2 fill-amber-500/30" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-500">
+              <Zap className="size-2.5 fill-amber-500/30" />
               <span>Full access</span>
             </span>
           )}
 
           <button
             type="button"
-            className="flex size-6.5 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+            className="flex size-7.5 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
             title="Share session"
           >
-            <Share2 className="size-3" />
+            <Share2 className="size-3.5" />
           </button>
 
           <DropdownMenu>
@@ -436,15 +436,15 @@ export function CommandCenterThreadView({
               render={
                 <button
                   type="button"
-                  className="flex size-6.5 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+                  className="flex size-7.5 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
                 />
               }
             >
-              <MoreHorizontal className="size-3.5" />
+              <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36 text-xs">
-              <DropdownMenuItem onClick={onNewSession} className="gap-2 text-xs">
-                <Sparkles className="size-3" />
+            <DropdownMenuContent align="end" className="w-40 text-xs sm:text-sm">
+              <DropdownMenuItem onClick={onNewSession} className="gap-2 text-xs sm:text-sm">
+                <Sparkles className="size-3.5" />
                 <span>New Session</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -456,35 +456,35 @@ export function CommandCenterThreadView({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 scrollbar-thin"
+        className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-5 sm:py-6 scrollbar-thin"
       >
-        <div className="mx-auto max-w-2xl lg:max-w-3xl space-y-4">
+        <div className="mx-auto max-w-3xl lg:max-w-4xl xl:max-w-5xl space-y-6">
           {!thread || thread.messages.length === 0 ? (
             /* Empty State / Hero prompt launcher */
-            <div className="py-8 sm:py-14 flex flex-col items-center justify-center text-center animate-in fade-in-50 duration-200">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-2xs mb-3">
-                <Sparkles className="size-5" />
+            <div className="py-10 sm:py-16 flex flex-col items-center justify-center text-center animate-in fade-in-50 duration-200">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-2xs mb-4">
+                <Sparkles className="size-6" />
               </div>
-              <h2 className="font-heading text-lg sm:text-xl font-bold tracking-tight text-foreground">
+              <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 How can Eduvia assist your teaching today?
               </h2>
-              <p className="mt-1 text-xs text-muted-foreground max-w-md">
+              <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-lg">
                 Orchestrate lesson board decks, balance assessment questions, or draft comprehensive parent progress digests.
               </p>
 
               {/* Prompt Suggestions Grid */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left">
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
                 {quickPrompts.map((qp) => (
                   <button
                     key={qp.id}
                     type="button"
                     onClick={() => onSelectPrompt(qp, false)}
-                    className="flex flex-col items-start p-3 rounded-lg border border-border/60 hover:border-border hover:bg-muted/40 transition-colors group cursor-pointer"
+                    className="flex flex-col items-start p-3.5 sm:p-4 rounded-xl border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors group cursor-pointer shadow-2xs"
                   >
-                    <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                    <span className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                       {qp.title}
                     </span>
-                    <span className="text-[0.7rem] text-muted-foreground mt-0.5 line-clamp-2">
+                    <span className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                       {qp.description}
                     </span>
                   </button>

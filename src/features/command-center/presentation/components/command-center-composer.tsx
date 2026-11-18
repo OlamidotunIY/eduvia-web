@@ -80,18 +80,18 @@ export function CommandCenterComposer({
   const hasDraft = draft.trim().length > 0;
 
   return (
-    <div className="w-full shrink-0 px-3 pb-2 pt-0.5">
-      <div className="mx-auto max-w-2xl lg:max-w-3xl">
+    <div className="w-full shrink-0 px-4 sm:px-6 md:px-8 pb-3 pt-1">
+      <div className="mx-auto max-w-3xl lg:max-w-4xl xl:max-w-5xl">
         {/* Floating Composer Island (Codex / ChatGPT style) */}
-        <div className="relative rounded-xl border border-border/70 bg-card/70 dark:bg-[#18181b]/95 shadow-md backdrop-blur-md transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 overflow-hidden">
+        <div className="relative rounded-2xl border border-border/70 bg-card/75 dark:bg-[#18181b]/95 shadow-md backdrop-blur-md transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 overflow-hidden">
           {/* Optional Context Picker Popover Banner */}
           {showContextPicker && (
             <div
               role="region"
               aria-label="Scope AI to Eduvia context"
-              className="border-b border-border/40 bg-muted/30 p-2 flex flex-wrap items-center gap-1 animate-in fade-in-50 duration-150"
+              className="border-b border-border/40 bg-muted/30 p-2.5 flex flex-wrap items-center gap-1.5 animate-in fade-in-50 duration-150"
             >
-              <span className="mr-1 text-[10px] font-semibold text-muted-foreground">
+              <span className="mr-1 text-xs font-semibold text-muted-foreground">
                 Attach Context:
               </span>
               {AVAILABLE_CONTEXTS.map((ctx) => {
@@ -103,13 +103,13 @@ export function CommandCenterComposer({
                     aria-pressed={selected}
                     onClick={() => onToggleContext(ctx)}
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer",
+                      "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer",
                       selected
                         ? "border-primary/50 bg-primary/15 text-primary"
                         : "border-border/50 bg-background/60 text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    {selected && <Check className="size-2.5" />}
+                    {selected && <Check className="size-3" />}
                     <span>{ctx.label}</span>
                   </button>
                 );
@@ -118,29 +118,29 @@ export function CommandCenterComposer({
                 type="button"
                 onClick={() => setShowContextPicker(false)}
                 aria-label="Close context picker"
-                className="ml-auto flex size-4.5 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+                className="ml-auto flex size-6 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
               >
-                <X className="size-2.5" />
+                <X className="size-3.5" />
               </button>
             </div>
           )}
 
           {/* Selected Context Chips */}
           {selectedContexts.length > 0 && !showContextPicker && (
-            <div className="flex flex-wrap items-center gap-1 px-3 pt-2">
+            <div className="flex flex-wrap items-center gap-1.5 px-4 pt-3">
               {selectedContexts.map((ctx) => (
                 <span
                   key={ctx.id}
-                  className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+                  className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
                 >
-                  <AtSign className="size-2" />
+                  <AtSign className="size-2.5" />
                   <span>{ctx.label}</span>
                   <button
                     type="button"
                     onClick={() => onToggleContext(ctx)}
-                    className="hover:text-foreground ml-0.5"
+                    className="hover:text-foreground ml-0.5 cursor-pointer"
                   >
-                    <X className="size-2" />
+                    <X className="size-2.5" />
                   </button>
                 </span>
               ))}
@@ -148,7 +148,7 @@ export function CommandCenterComposer({
           )}
 
           {/* Textarea Input */}
-          <div className="px-3 pt-2 pb-0.5">
+          <div className="px-4 pt-3 pb-1">
             <textarea
               ref={textareaRef}
               rows={1}
@@ -161,26 +161,26 @@ export function CommandCenterComposer({
                   ? "Instruct Eduvia AI to orchestrate lesson pacing, board exercises, or reports..."
                   : "Work with Eduvia AI..."
               }
-              className="w-full resize-none bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none min-h-[28px] max-h-[140px] leading-relaxed scrollbar-none"
+              className="w-full resize-none bg-transparent text-sm sm:text-[14.5px] text-foreground placeholder:text-muted-foreground/60 placeholder:text-sm focus:outline-none min-h-[38px] max-h-[160px] leading-relaxed scrollbar-none"
             />
           </div>
 
           {/* Bottom Toolbar Row matching Codex UI in screenshot */}
-          <div className="flex items-center justify-between px-2.5 pb-2 pt-0.5">
+          <div className="flex items-center justify-between px-3.5 pb-2.5 pt-1">
             {/* Left Tools */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {/* Attach Context Button (+) */}
               <button
                 type="button"
                 onClick={() => setShowContextPicker((prev) => !prev)}
                 title="Attach classroom or curriculum scope"
                 className={cn(
-                  "flex size-6.5 items-center justify-center rounded-md border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer",
+                  "flex size-7.5 sm:size-8 items-center justify-center rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer",
                   (showContextPicker || selectedContexts.length > 0) &&
                     "border-primary/40 text-primary bg-primary/10",
                 )}
               >
-                <Plus className="size-3.5" />
+                <Plus className="size-4" />
               </button>
 
               {/* Mode / Access Badge Pill (e.g. "Full access" or "Discuss mode") */}
@@ -191,7 +191,7 @@ export function CommandCenterComposer({
                 }
                 title="Toggle AI capability mode"
                 className={cn(
-                  "inline-flex h-6.5 items-center gap-1 rounded-full border px-2 text-[0.7rem] font-medium transition-colors cursor-pointer",
+                  "inline-flex h-7.5 sm:h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors cursor-pointer",
                   mode === "orchestrate"
                     ? "border-amber-500/40 bg-amber-500/10 text-amber-500 dark:border-amber-500/30 dark:bg-amber-500/15"
                     : "border-border/50 bg-muted/30 text-muted-foreground hover:text-foreground",
@@ -199,12 +199,12 @@ export function CommandCenterComposer({
               >
                 {mode === "orchestrate" ? (
                   <>
-                    <Zap className="size-2.5 fill-amber-500/30" />
+                    <Zap className="size-3 fill-amber-500/30" />
                     <span>Full access</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="size-2.5" />
+                    <Sparkles className="size-3" />
                     <span>Discuss</span>
                   </>
                 )}
@@ -212,40 +212,40 @@ export function CommandCenterComposer({
             </div>
 
             {/* Right Tools: Model Selector + Mic + Submit Button */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {/* Model Dropdown Selector */}
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
                     <button
                       type="button"
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
                     />
                   }
                 >
-                  <span className="text-[0.7rem] font-medium">
+                  <span className="text-xs font-medium">
                     {selectedModel?.name ?? "5.6 Terra Medium"}
                   </span>
-                  <ChevronDown className="size-2.5" />
+                  <ChevronDown className="size-3" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 text-xs">
-                  <div className="px-2 py-1 text-[0.65rem] uppercase font-semibold text-muted-foreground">
+                <DropdownMenuContent align="end" className="w-52 text-xs sm:text-sm">
+                  <div className="px-2.5 py-1.5 text-xs uppercase font-semibold text-muted-foreground">
                     Model Selection
                   </div>
                   {AVAILABLE_MODELS.map((model) => (
                     <DropdownMenuItem
                       key={model.id}
                       onClick={() => onSelectModel?.(model)}
-                      className="flex items-center justify-between text-xs"
+                      className="flex items-center justify-between text-xs sm:text-sm py-2"
                     >
                       <div>
-                        <p className="font-medium">{model.name}</p>
-                        <p className="text-[0.65rem] text-muted-foreground">
+                        <p className="font-medium text-foreground">{model.name}</p>
+                        <p className="text-xs text-muted-foreground">
                           {model.tier}
                         </p>
                       </div>
                       {selectedModel?.id === model.id && (
-                        <Check className="size-3 text-primary shrink-0" />
+                        <Check className="size-3.5 text-primary shrink-0 ml-2" />
                       )}
                     </DropdownMenuItem>
                   ))}
@@ -259,11 +259,11 @@ export function CommandCenterComposer({
                 aria-pressed={isVoiceActive}
                 title="Voice conversation mode"
                 className={cn(
-                  "flex size-6.5 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer",
+                  "flex size-7.5 sm:size-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer",
                   isVoiceActive && "text-emerald-500 bg-emerald-500/10",
                 )}
               >
-                <Mic className="size-3.5" />
+                <Mic className="size-4" />
               </button>
 
               {/* Circular Submit Button with Arrow Up (↑) */}
@@ -273,20 +273,20 @@ export function CommandCenterComposer({
                 disabled={!hasDraft}
                 aria-label="Send message"
                 className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full transition-all shadow-2xs",
+                  "flex size-8 sm:size-8.5 shrink-0 items-center justify-center rounded-full transition-all shadow-2xs",
                   hasDraft
                     ? "bg-blue-600 hover:bg-blue-500 text-white cursor-pointer active:scale-95"
                     : "bg-muted text-muted-foreground/40 cursor-not-allowed opacity-60",
                 )}
               >
-                <ArrowUp className="size-3.5 stroke-[2.5]" />
+                <ArrowUp className="size-4 stroke-[2.5]" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Discreet Disclaimer below Composer */}
-        <p className="mt-1 text-center text-[0.65rem] text-muted-foreground/60">
+        <p className="mt-2 text-center text-xs text-muted-foreground/60">
           Eduvia AI can assist with curriculum planning, assessments, and reports. Verify important details.
         </p>
       </div>
