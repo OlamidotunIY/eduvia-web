@@ -191,7 +191,7 @@ export function CommandCenterComposer({
                 }
                 title="Toggle AI capability mode"
                 className={cn(
-                  "inline-flex h-6.5 items-center gap-1 rounded-full border px-2 text-[10px] font-medium transition-colors cursor-pointer",
+                  "inline-flex h-6.5 items-center gap-1 rounded-full border px-2 text-[0.7rem] font-medium transition-colors cursor-pointer",
                   mode === "orchestrate"
                     ? "border-amber-500/40 bg-amber-500/10 text-amber-500 dark:border-amber-500/30 dark:bg-amber-500/15"
                     : "border-border/50 bg-muted/30 text-muted-foreground hover:text-foreground",
@@ -219,28 +219,28 @@ export function CommandCenterComposer({
                   render={
                     <button
                       type="button"
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
                     />
                   }
                 >
-                  <span className="text-[10px] font-medium">
+                  <span className="text-[0.7rem] font-medium">
                     {selectedModel?.name ?? "5.6 Terra Medium"}
                   </span>
                   <ChevronDown className="size-2.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-xs">
-                  <div className="px-2 py-1 text-[9px] uppercase font-semibold text-muted-foreground">
+                  <div className="px-2 py-1 text-[0.65rem] uppercase font-semibold text-muted-foreground">
                     Model Selection
                   </div>
                   {AVAILABLE_MODELS.map((model) => (
                     <DropdownMenuItem
                       key={model.id}
                       onClick={() => onSelectModel?.(model)}
-                      className="flex items-center justify-between text-[11px]"
+                      className="flex items-center justify-between text-xs"
                     >
                       <div>
                         <p className="font-medium">{model.name}</p>
-                        <p className="text-[9px] text-muted-foreground">
+                        <p className="text-[0.65rem] text-muted-foreground">
                           {model.tier}
                         </p>
                       </div>
@@ -286,7 +286,7 @@ export function CommandCenterComposer({
         </div>
 
         {/* Discreet Disclaimer below Composer */}
-        <p className="mt-1 text-center text-[9px] text-muted-foreground/60">
+        <p className="mt-1 text-center text-[0.65rem] text-muted-foreground/60">
           Eduvia AI can assist with curriculum planning, assessments, and reports. Verify important details.
         </p>
       </div>

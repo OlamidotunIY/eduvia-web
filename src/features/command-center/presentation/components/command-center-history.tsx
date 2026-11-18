@@ -96,7 +96,7 @@ export function CommandCenterHistory({
           ) : (
             <MessageSquare className="size-3 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground" />
           )}
-          <span className="truncate text-[11px] leading-tight">{thread.title}</span>
+          <span className="truncate text-xs leading-tight">{thread.title}</span>
         </div>
 
         {/* 3-dots hover action */}
@@ -119,7 +119,7 @@ export function CommandCenterHistory({
                   e.stopPropagation();
                   onTogglePin(thread.id);
                 }}
-                className="gap-2 text-[11px]"
+                className="gap-2 text-xs"
               >
                 {thread.pinned ? (
                   <>
@@ -142,7 +142,7 @@ export function CommandCenterHistory({
                     e.stopPropagation();
                     onDeleteThread(thread.id);
                   }}
-                  className="gap-2 text-destructive text-[11px]"
+                  className="gap-2 text-destructive text-xs"
                 >
                   <Trash2 className="size-3" />
                   <span>Delete</span>
@@ -162,7 +162,7 @@ export function CommandCenterHistory({
     >
       {/* 1. Clean Top Header: No Codex Logo, Compact Action Icons */}
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5 shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-1">
+        <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground/70 px-1">
           Chats
         </span>
 
@@ -220,7 +220,7 @@ export function CommandCenterHistory({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search chats..."
-              className="w-full rounded-md border border-border/60 bg-muted/20 pl-6 pr-6 py-1 text-[11px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50"
+              className="w-full rounded-md border border-border/60 bg-muted/20 pl-6 pr-6 py-1 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50"
               autoFocus
             />
             {searchQuery && (
@@ -244,7 +244,7 @@ export function CommandCenterHistory({
             <button
               type="button"
               onClick={() => setIsPinnedExpanded((prev) => !prev)}
-              className="flex items-center gap-1.5 w-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 hover:text-foreground transition-colors group cursor-pointer"
+              className="flex items-center gap-1.5 w-full px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground/70 hover:text-foreground transition-colors group cursor-pointer"
             >
               {isPinnedExpanded ? (
                 <ChevronDown className="size-2.5 text-muted-foreground/60 group-hover:text-foreground" />
@@ -252,7 +252,7 @@ export function CommandCenterHistory({
                 <ChevronRight className="size-2.5 text-muted-foreground/60 group-hover:text-foreground" />
               )}
               <span>Pinned</span>
-              <span className="ml-auto text-[9px] text-muted-foreground/50">
+              <span className="ml-auto text-[0.65rem] text-muted-foreground/50">
                 {pinnedThreads.length}
               </span>
             </button>
@@ -268,7 +268,7 @@ export function CommandCenterHistory({
         {/* Flat List of Regular / Recent Chats */}
         <div className="space-y-0.5">
           {pinnedThreads.length > 0 && regularThreads.length > 0 && (
-            <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <div className="px-2 pt-1 pb-0.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Recent
             </div>
           )}
@@ -276,7 +276,7 @@ export function CommandCenterHistory({
           {regularThreads.length > 0 ? (
             regularThreads.map(renderThreadItem)
           ) : pinnedThreads.length === 0 ? (
-            <div className="px-3 py-6 text-center text-[11px] text-muted-foreground/60">
+            <div className="px-3 py-6 text-center text-xs text-muted-foreground/60">
               No conversations yet
             </div>
           ) : null}

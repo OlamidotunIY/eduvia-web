@@ -69,17 +69,17 @@ function CodeArtifactBlock({
   return (
     <div className="my-2 rounded-lg border border-zinc-800 bg-[#161618] dark:bg-[#121214] text-zinc-100 overflow-hidden shadow-2xs">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-800/80 bg-zinc-900/60 text-[11px] text-zinc-400">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-800/80 bg-zinc-900/60 text-xs text-zinc-400">
         <div className="flex items-center gap-1.5">
           <Code className="size-3 text-zinc-400" />
-          <span className="font-mono text-[10px]">{language}</span>
+          <span className="font-mono text-[0.7rem]">{language}</span>
         </div>
 
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-zinc-800 text-[10px] text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-zinc-800 text-[0.7rem] text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
             title="Copy code"
           >
             {copied ? (
@@ -98,7 +98,7 @@ function CodeArtifactBlock({
       </div>
 
       {/* Code / Content Area */}
-      <pre className="p-3 font-mono text-[11px] leading-relaxed overflow-x-auto text-zinc-200 whitespace-pre scrollbar-thin">
+      <pre className="p-3 font-mono text-xs leading-relaxed overflow-x-auto text-zinc-200 whitespace-pre scrollbar-thin">
         <code>{content}</code>
       </pre>
     </div>
@@ -124,13 +124,13 @@ function OrchestrationPipeline({
         <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-border/40">
           <div className="flex items-center gap-1.5 min-w-0">
             <Workflow className="size-3.5 shrink-0 text-emerald-500" aria-hidden="true" />
-            <span className="truncate text-[11px] font-semibold text-foreground">
+            <span className="truncate text-xs font-semibold text-foreground">
               {plan.goal}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
+            <span className="text-[0.7rem] font-medium tabular-nums text-muted-foreground">
               {completedCount}/{plan.steps.length} steps
             </span>
 
@@ -138,7 +138,7 @@ function OrchestrationPipeline({
               <button
                 type="button"
                 onClick={() => onResumeOrchestration(threadId)}
-                className="inline-flex h-5.5 items-center gap-1 rounded bg-emerald-600 hover:bg-emerald-500 px-2 text-[10px] font-semibold text-white transition-transform active:scale-[0.97] cursor-pointer"
+                className="inline-flex h-5.5 items-center gap-1 rounded bg-emerald-600 hover:bg-emerald-500 px-2 text-[0.7rem] font-semibold text-white transition-transform active:scale-[0.97] cursor-pointer"
               >
                 <Play className="size-2 fill-current" />
                 <span>Resume</span>
@@ -169,7 +169,7 @@ function OrchestrationPipeline({
               <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <span
                   className={cn(
-                    "text-[11px] font-semibold",
+                    "text-xs font-semibold",
                     step.status === "pending"
                       ? "text-muted-foreground"
                       : "text-foreground",
@@ -180,17 +180,17 @@ function OrchestrationPipeline({
 
                 <div className="flex items-center gap-1 shrink-0">
                   {step.durationLabel && (
-                    <span className="text-[9px] tabular-nums text-muted-foreground/70">
+                    <span className="text-[0.65rem] tabular-nums text-muted-foreground/70">
                       {step.durationLabel}
                     </span>
                   )}
-                  <span className="rounded border border-border/50 bg-background/60 px-1 py-0.2 text-[9px] font-medium text-muted-foreground">
+                  <span className="rounded border border-border/50 bg-background/60 px-1 py-0.2 text-[0.65rem] font-medium text-muted-foreground">
                     {step.module}
                   </span>
                 </div>
               </div>
 
-              <p className="mt-0.5 text-[11px] text-muted-foreground/85 leading-relaxed">
+              <p className="mt-0.5 text-xs text-muted-foreground/85 leading-relaxed">
                 {step.detail}
               </p>
             </li>
@@ -212,10 +212,10 @@ function OrchestrationPipeline({
                   <FileText className="size-3" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[11px] font-semibold text-foreground">
+                  <p className="truncate text-xs font-semibold text-foreground">
                     {artifact.label}
                   </p>
-                  <p className="truncate text-[9px] text-muted-foreground">
+                  <p className="truncate text-[0.65rem] text-muted-foreground">
                     {artifact.meta}
                   </p>
                 </div>
@@ -315,7 +315,7 @@ function MessageTurn({
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/40 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[0.7rem] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/40 transition-colors cursor-pointer"
           >
             {copied ? (
               <>
@@ -338,7 +338,7 @@ function MessageTurn({
                 message.spokenNote ?? message.content.slice(0, 150),
               )
             }
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/40 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[0.7rem] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/40 transition-colors cursor-pointer"
           >
             <Volume2 className="size-2.5" />
             <span>Read aloud</span>
@@ -417,7 +417,7 @@ export function CommandCenterThreadView({
 
         <div className="flex items-center gap-1">
           {thread?.kind === "orchestrate" && (
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-medium text-amber-500">
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-medium text-amber-500">
               <Zap className="size-2 fill-amber-500/30" />
               <span>Full access</span>
             </span>
@@ -443,7 +443,7 @@ export function CommandCenterThreadView({
               <MoreHorizontal className="size-3.5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36 text-xs">
-              <DropdownMenuItem onClick={onNewSession} className="gap-2 text-[11px]">
+              <DropdownMenuItem onClick={onNewSession} className="gap-2 text-xs">
                 <Sparkles className="size-3" />
                 <span>New Session</span>
               </DropdownMenuItem>
@@ -484,7 +484,7 @@ export function CommandCenterThreadView({
                     <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
                       {qp.title}
                     </span>
-                    <span className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+                    <span className="text-[0.7rem] text-muted-foreground mt-0.5 line-clamp-2">
                       {qp.description}
                     </span>
                   </button>
