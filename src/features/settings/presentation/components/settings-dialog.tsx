@@ -216,32 +216,32 @@ export function SettingsDialog() {
         </div>
 
         {/* Dialog Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/60 bg-muted/20 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <SettingsIcon className="size-4" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <SettingsIcon className="size-4.5" />
             </div>
             <div>
-              <h1 className="font-heading text-sm sm:text-base font-bold text-foreground leading-none">
+              <h1 className="font-heading text-base sm:text-lg font-bold text-foreground leading-tight">
                 Settings
               </h1>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                 Preferences and configuration
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2.5">
+            <kbd className="hidden sm:inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 font-mono text-xs text-muted-foreground">
               Esc to close
             </kbd>
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={closeSettings}
-              className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
+              className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              <X className="size-4" />
+              <X className="size-4.5" />
               <span className="sr-only">Close settings</span>
             </Button>
           </div>
@@ -252,23 +252,23 @@ export function SettingsDialog() {
           {/* Sidebar Navigation */}
           <aside className="w-56 sm:w-64 shrink-0 border-r border-border/60 bg-muted/10 flex flex-col h-full overflow-hidden">
             {/* Quick search input */}
-            <div className="p-3 border-b border-border/40 shrink-0">
+            <div className="p-3.5 border-b border-border/40 shrink-0">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                 <Input
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
                   placeholder="Filter settings..."
-                  className="h-7 pl-7 text-[11px] bg-background/80"
+                  className="h-8.5 pl-8 text-xs sm:text-sm bg-background/80"
                 />
               </div>
             </div>
 
             {/* Scrollable nav list (Enabled independent vertical scrolling as requested) */}
-            <div className="flex-1 overflow-y-auto p-2.5 space-y-4 scrollbar-thin">
+            <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin">
               {filteredGroups.map((group) => (
                 <div key={group.title} className="space-y-1">
-                  <p className="px-2 text-[10px] font-semibold tracking-wider text-muted-foreground/80 uppercase">
+                  <p className="px-2.5 text-xs font-semibold tracking-wider text-muted-foreground/80 uppercase">
                     {group.title}
                   </p>
                   <div className="space-y-0.5">
@@ -280,7 +280,7 @@ export function SettingsDialog() {
                           key={item.id}
                           type="button"
                           onClick={() => setActiveSection(item.id)}
-                          className={`flex items-center justify-between w-full px-2.5 py-2 rounded-lg text-left text-xs transition-colors group ${
+                          className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-left text-xs sm:text-sm transition-colors group cursor-pointer ${
                             isActive
                               ? "bg-primary/15 text-primary font-semibold shadow-2xs"
                               : "text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium"
@@ -288,7 +288,7 @@ export function SettingsDialog() {
                         >
                           <div className="flex items-center gap-2.5 truncate">
                             <Icon
-                              className={`size-3.5 shrink-0 transition-colors ${
+                              className={`size-4 shrink-0 transition-colors ${
                                 isActive
                                   ? "text-primary"
                                   : "text-muted-foreground group-hover:text-foreground"
@@ -297,7 +297,7 @@ export function SettingsDialog() {
                             <span className="truncate">{item.label}</span>
                           </div>
                           {item.badge && (
-                            <span className="text-[9px] px-1 py-0.2 rounded bg-primary/20 text-primary font-semibold">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/20 text-primary font-semibold">
                               {item.badge}
                             </span>
                           )}
