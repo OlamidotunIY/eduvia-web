@@ -24,18 +24,9 @@
   --heading: system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color: var(--text);
   background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 
   --background: oklch(1 0 0);
 
@@ -216,7 +207,16 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  /* Responsive Dynamic Base Typography & Fluid Content Scaling */
   html {
+    /* Default base for compact/laptop viewports (e.g. 13"-15" laptops, 1366x768 to 1536x864, or short screens) */
+    font-size: 13.5px;
+    line-height: 1.45;
+    letter-spacing: 0.18px;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     @apply bg-background font-sans;
     scrollbar-color: color-mix(
         in oklch,
@@ -224,6 +224,41 @@
         transparent
       )
       var(--background);
+  }
+
+  /* Extra-compact laptop viewports or short window viewports (e.g. height <= 720px) */
+  @media screen and (max-width: 1200px), screen and (max-height: 720px) {
+    html {
+      font-size: 13px;
+    }
+  }
+
+  /* Standard desktop displays (e.g. 1440px+ and height >= 820px) */
+  @media screen and (min-width: 1440px) and (min-height: 820px) {
+    html {
+      font-size: 14.75px;
+    }
+  }
+
+  /* Large desktop displays (e.g. 27-inch monitor / 1600px+ and height >= 880px) */
+  @media screen and (min-width: 1600px) and (min-height: 880px) {
+    html {
+      font-size: 15.5px;
+    }
+  }
+
+  /* Extra-large / 2K+ displays (e.g. 1920px+ and height >= 980px, 1440p displays) */
+  @media screen and (min-width: 1920px) and (min-height: 980px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+  /* 4K displays */
+  @media screen and (min-width: 2560px) and (min-height: 1200px) {
+    html {
+      font-size: 17px;
+    }
   }
   html::-webkit-scrollbar-track,
   body::-webkit-scrollbar-track {
