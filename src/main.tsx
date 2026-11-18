@@ -5,6 +5,7 @@ import "./index.css";
 import { ThemeProvider } from "@/app/providers/theme-provider";
 import { UserSocketProvider } from "@/app/providers/user-socket-provider";
 import { AuthSessionProvider } from "@/app/providers/auth-session-provider";
+import { BoardSettingsProvider } from "@/app/providers/board-settings-provider";
 import { router } from "@/app/router/route";
 import { queryClient } from "@/shared/api";
 
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider>
       <AuthSessionProvider>
         <UserSocketProvider>
-          <RouterProvider router={router} />
+          <BoardSettingsProvider>
+            <RouterProvider router={router} />
+          </BoardSettingsProvider>
         </UserSocketProvider>
       </AuthSessionProvider>
     </ThemeProvider>

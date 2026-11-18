@@ -11,18 +11,37 @@ export type BoardSurfaceStyle =
 
 export type NotebookWidthMode = "centered" | "full";
 
-export type BoardDrawingTool =
+export type BoardDockToolId =
   | "select"
   | "pan"
   | "pen"
+  | "pencil"
+  | "fountain"
   | "highlighter"
-  | "eraser"
   | "laser"
+  | "eraser"
   | "line"
   | "arrow"
   | "rect"
   | "ellipse"
   | "text";
+
+export type BoardStrokeToolKey =
+  | "pen"
+  | "pencil"
+  | "fountain"
+  | "highlighter"
+  | "shape";
+
+export interface BoardStrokeToolConfig {
+  colorIndex: number;
+  customColor: string | null;
+  width: number; // 1..10
+}
+
+export type BoardEraserMode = "partial" | "stroke";
+
+export type BoardDrawingTool = BoardDockToolId;
 
 export interface LessonPlan {
   learningObjectives: string[];
