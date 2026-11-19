@@ -1,8 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Bell,
   BookOpen,
   Camera,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
   Grid,
   KeyRound,
@@ -14,6 +16,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { cn } from "cn";
 import { sessionStore } from "@/shared/store";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
@@ -173,6 +176,29 @@ export function SettingsDialog() {
       .filter((group) => group.items.length > 0);
   }, [navigationGroups, searchFilter]);
 
+  const [mobileView, setMobileView] = useState<"nav" | "content">("nav");
+
+  useEffect(() => {
+    if (isOpen) {
+      setMobileView("nav");
+    }
+  }, [isOpen]);
+
+  const activeItem = useMemo(() => {
+    for (const group of navigationGroups) {
+      const found = group.items.find((i) => i.id === activeSection);
+      if (found) return found;
+    }
+    return null;
+  }, [navigationGroups, activeSection]);
+
+  const activeGroup = useMemo(() => {
+    for (const group of navigationGroups) {
+      if (group.items.some((i) => i.id === activeSection)) return group;
+    }
+    return null;
+  }, [navigationGroups, activeSection]);
+
   // Render the active panel
   const renderPanel = () => {
     switch (activeSection) {
@@ -205,7 +231,7 @@ export function SettingsDialog() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeSettings()}>
       <DialogContent
         showCloseButton={false}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] sm:w-[88vw] max-w-5xl h-[88dvh] max-h-[88dvh] p-0 gap-0 overflow-hidden flex flex-col rounded-2xl border border-border/80 bg-background shadow-2xl"
+        className="w-full max-w-full h-full max-h-full sm:w-[92vw] md:w-[90vw] lg:w-[88vw] sm:max-w-4xl md:max-w-5xl lg:max-w-6xl sm:h-[88dvh] sm:max-h-[88dvh] top-0 left-0 translate-x-0 translate-y-0 sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 p-0 gap-0 overflow-hidden flex flex-col rounded-none sm:rounded-2xl border-0 sm:border border-border/80 bg-background shadow-2xl"
       >
         {/* Accessible Dialog Title for Screen Readers */}
         <div className="sr-only">
@@ -216,22 +242,35 @@ export function SettingsDialog() {
         </div>
 
         {/* Dialog Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border/60 bg-muted/20 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Mobile Back Button: displayed on mobile when viewing content panel */}
+            {mobileView === "content" && (
+              <button
+                type="button"
+                onClick={() => setMobileView("nav")}
+                aria-label="Back to settings categories"
+                className="flex items-center gap-1 md:hidden -ml-1 mr-1 px-2 py-1 rounded-lg hover:bg-muted/60 text-primary font-medium text-xs sm:text-sm cursor-pointer transition-colors shrink-0"
+              >
+                <ChevronLeft className="size-4" />
+                <span>Sections</span>
+              </button>
+            )}
+
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <SettingsIcon className="size-4.5" />
             </div>
-            <div>
-              <h1 className="font-heading text-base sm:text-lg font-bold text-foreground leading-tight">
-                Settings
+            <div className="min-w-0">
+              <h1 className="font-heading text-base sm:text-lg font-bold text-foreground leading-tight truncate">
+                {mobileView === "content" && activeItem ? activeItem.label : "Settings"}
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                Preferences and configuration
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
+                {mobileView === "content" && activeGroup ? activeGroup.title : "Preferences and configuration"}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <kbd className="hidden sm:inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 font-mono text-xs text-muted-foreground">
               Esc to close
             </kbd>
@@ -247,10 +286,15 @@ export function SettingsDialog() {
           </div>
         </div>
 
-        {/* Dialog Body (Two-Column Sidebar Layout) */}
+        {/* Dialog Body (Two-Column Sidebar Layout on Desktop, Master-Detail on Mobile) */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Sidebar Navigation */}
-          <aside className="w-56 sm:w-64 shrink-0 border-r border-border/60 bg-muted/10 flex flex-col h-full overflow-hidden">
+          <aside
+            className={cn(
+              "w-full md:w-64 lg:w-72 shrink-0 border-r border-border/60 bg-muted/10 flex flex-col h-full overflow-hidden transition-all",
+              mobileView === "content" ? "hidden md:flex" : "flex",
+            )}
+          >
             {/* Quick search input */}
             <div className="p-3.5 border-b border-border/40 shrink-0">
               <div className="relative">
@@ -279,7 +323,10 @@ export function SettingsDialog() {
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => setActiveSection(item.id)}
+                          onClick={() => {
+                            setActiveSection(item.id);
+                            setMobileView("content");
+                          }}
                           className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-left text-xs sm:text-sm transition-colors group cursor-pointer ${
                             isActive
                               ? "bg-primary/15 text-primary font-semibold shadow-2xs"
@@ -296,11 +343,14 @@ export function SettingsDialog() {
                             />
                             <span className="truncate">{item.label}</span>
                           </div>
-                          {item.badge && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/20 text-primary font-semibold">
-                              {item.badge}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {item.badge && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/20 text-primary font-semibold">
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronRight className="size-4 text-muted-foreground/40 md:hidden" />
+                          </div>
                         </button>
                       );
                     })}
@@ -311,7 +361,12 @@ export function SettingsDialog() {
           </aside>
 
           {/* Main Content Area (Scrollable vertical container) */}
-          <main className="flex-1 min-w-0 h-full overflow-y-auto p-5 sm:p-7 md:p-8 scrollbar-thin bg-background">
+          <main
+            className={cn(
+              "flex-1 min-w-0 h-full overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-10 scrollbar-thin bg-background",
+              mobileView === "nav" ? "hidden md:block" : "block",
+            )}
+          >
             <div className="animate-in fade-in-50 duration-150">
               {renderPanel()}
             </div>
