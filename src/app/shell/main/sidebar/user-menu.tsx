@@ -87,7 +87,8 @@ export function UserMenu() {
           <DropdownMenuContent
             align="end"
             side={isMobile ? "bottom" : "right"}
-            sideOffset={4}
+            sideOffset={8}
+            className="w-64 min-w-64 shadow-xl border border-border/70"
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
