@@ -1,15 +1,64 @@
 import { useEffect, type ReactNode } from 'react'
+import { activeOrganizationChangedHandler } from '@/features/authentication'
 import {
-  activeOrganizationChangedHandler,
-} from '@/features/authentication'
-import { buildUserSocketAuth, userWsConnection } from '@/shared/api'
+  boardCanvasClearedHandler,
+  boardCanvasReplacedHandler,
+  boardLockChangedHandler,
+  boardModeChangedHandler,
+  boardSectionAddedHandler,
+  boardSectionRemovedHandler,
+  boardSectionUpdatedHandler,
+  boardStrokeDrawnHandler,
+  boardSurfaceChangedHandler,
+  lessonMeetLinkReadyHandler,
+  lessonStatusChangedHandler,
+} from '@/features/classroom'
+import {
+  chatDirectMessageHandler,
+  chatNewMessageHandler,
+  chatUserTypingHandler,
+} from '@/features/messages'
+import {
+  notificationCountHandler,
+  notificationMarkedReadHandler,
+  notificationNewHandler,
+} from '@/features/notifications'
+import {
+  boardWsConnection,
+  buildUserSocketAuth,
+  chatWsConnection,
+  lessonWsConnection,
+  notificationsWsConnection,
+  userWsConnection,
+} from '@/shared/api'
 import { authStore } from '@/shared/store'
 
 interface UserSocketProviderProps {
   children: ReactNode
 }
 
-/** Starts and stops the authenticated shared websocket transport with the session lifecycle. */
+const REGISTERED_HANDLERS = [
+  activeOrganizationChangedHandler,
+  notificationNewHandler,
+  notificationCountHandler,
+  notificationMarkedReadHandler,
+  chatNewMessageHandler,
+  chatDirectMessageHandler,
+  chatUserTypingHandler,
+  lessonStatusChangedHandler,
+  lessonMeetLinkReadyHandler,
+  boardModeChangedHandler,
+  boardLockChangedHandler,
+  boardSectionAddedHandler,
+  boardSectionUpdatedHandler,
+  boardSectionRemovedHandler,
+  boardStrokeDrawnHandler,
+  boardCanvasReplacedHandler,
+  boardCanvasClearedHandler,
+  boardSurfaceChangedHandler,
+] as const
+
+/** Starts and stops the authenticated shared websocket transport and registers all feature handlers. */
 export function UserSocketProvider({ children }: UserSocketProviderProps) {
   const accessToken = authStore((state) => state.accessToken)
   const isHydrated = authStore((state) => state.isHydrated)
@@ -17,12 +66,22 @@ export function UserSocketProvider({ children }: UserSocketProviderProps) {
   useEffect(() => {
     if (!isHydrated || !accessToken) return
 
-    const unregister = activeOrganizationChangedHandler.register()
-    userWsConnection.connect({ namespace: '/user', auth: buildUserSocketAuth(accessToken) })
+    const unregisters = REGISTERED_HANDLERS.map((handler) => handler.register())
+    const auth = buildUserSocketAuth(accessToken)
+
+    userWsConnection.connect({ namespace: '/user', auth })
+    notificationsWsConnection.connect({ namespace: '/notifications', auth })
+    chatWsConnection.connect({ namespace: '/chat', auth })
+    lessonWsConnection.connect({ namespace: '/lesson', auth })
+    boardWsConnection.connect({ namespace: '/board', auth })
 
     return () => {
-      unregister()
+      unregisters.forEach((unregister) => unregister())
       userWsConnection.disconnect()
+      notificationsWsConnection.disconnect()
+      chatWsConnection.disconnect()
+      lessonWsConnection.disconnect()
+      boardWsConnection.disconnect()
     }
   }, [accessToken, isHydrated])
 
