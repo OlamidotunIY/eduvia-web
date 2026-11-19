@@ -124,8 +124,8 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[85dvh] rounded-2xl">
-        <DialogHeader className="p-5 sm:p-6 pb-4 border-b border-border/40 shrink-0">
+      <DialogContent className="w-full max-w-full h-full max-h-full sm:w-[92vw] md:w-[90vw] lg:w-[86vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl sm:h-auto sm:max-h-[88dvh] top-0 left-0 translate-x-0 translate-y-0 sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 p-0 overflow-hidden flex flex-col rounded-none sm:rounded-2xl border-0 sm:border border-border/80 bg-background shadow-2xl">
+        <DialogHeader className="p-4 sm:p-6 pb-4 border-b border-border/40 shrink-0">
           <div className="flex items-center gap-3 pr-8">
             <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary shrink-0">
               <UserPlus className="size-5" />
@@ -142,18 +142,7 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-4 scrollbar-thin overscroll-contain">
-            {/* Informational Callout: Registration vs Enrollment */}
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 sm:p-4 text-xs sm:text-sm text-foreground/90 space-y-1.5">
-              <div className="flex items-center gap-2 font-semibold text-primary">
-                <ShieldCheck className="size-4" />
-                <span>Student Login Provision</span>
-              </div>
-              <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed">
-                Registering creates your child's student identity. They will use the email and password below to log in to their Student Workspace. Classroom enrollment and tuition subscriptions are managed separately after registration.
-              </p>
-            </div>
-
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5 scrollbar-thin overscroll-contain">
             {errorMessage && (
               <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs sm:text-sm text-destructive">
                 <AlertCircle className="size-4 shrink-0" />
@@ -161,137 +150,175 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
               </div>
             )}
 
-            {/* First & Last Name */}
-            <div className="grid grid-cols-2 gap-3.5">
-              <div className="space-y-1.5">
-                <Label htmlFor="child-first-name" className="text-xs sm:text-sm font-medium">
-                  First Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="child-first-name"
-                  placeholder="e.g. Timi"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  className="h-10 text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="child-last-name" className="text-xs sm:text-sm font-medium">
-                  Last Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="child-last-name"
-                  placeholder="e.g. Adebayo"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  className="h-10 text-sm"
-                />
-              </div>
-            </div>
+            {/* 2-Column Responsive Layout on Desktop (Times Two Width) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 items-start">
+              {/* Left Column: Student Identity & Academic Details */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-border/40 text-foreground font-semibold text-xs sm:text-sm">
+                  <GraduationCap className="size-4 text-primary" />
+                  <span>Student Profile & Grade</span>
+                </div>
 
-            {/* Student Login Email & Username */}
-            <div className="grid grid-cols-2 gap-3.5">
-              <div className="space-y-1.5">
-                <Label htmlFor="child-email" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
-                  <Mail className="size-3.5 text-muted-foreground" />
-                  <span>Student Login Email</span>
-                  <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="child-email"
-                  type="email"
-                  placeholder="e.g. timi@adebayo.family"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-10 text-sm"
-                />
-              </div>
+                {/* First & Last Name */}
+                <div className="grid grid-cols-2 gap-3.5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="child-first-name" className="text-xs sm:text-sm font-medium">
+                      First Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="child-first-name"
+                      placeholder="e.g. Timi"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="child-last-name" className="text-xs sm:text-sm font-medium">
+                      Last Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="child-last-name"
+                      placeholder="e.g. Adebayo"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="child-username" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
-                  <span>Username</span>
-                  <span className="text-xs text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="child-username"
-                  placeholder="e.g. timi.adebayo"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="h-10 text-sm"
-                />
-              </div>
-            </div>
+                {/* Date of Birth & Grade Level */}
+                <div className="grid grid-cols-2 gap-3.5 pt-0.5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="child-dob" className="text-xs sm:text-sm font-medium">
+                      Date of Birth <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="child-dob"
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      required
+                      className="h-10 text-sm"
+                    />
+                  </div>
 
-            {/* Student Login Password */}
-            <div className="space-y-1.5">
-              <Label htmlFor="child-password" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
-                <KeyRound className="size-3.5 text-muted-foreground" />
-                <span>Student Password</span>
-                <span className="text-destructive">*</span>
-                <span className="text-xs text-muted-foreground">(Min. 6 chars)</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="child-password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create password for child's login"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="h-10 pr-10 text-sm font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
-              </div>
-            </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="child-grade" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                      <GraduationCap className="size-3.5 text-muted-foreground" />
+                      <span>Grade Level</span>
+                    </Label>
+                    <Select value={gradeLevel} onValueChange={(val) => val && setGradeLevel(val)}>
+                      <SelectTrigger id="child-grade" className="h-10 text-sm">
+                        <SelectValue placeholder="Select Grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GRADE_LEVELS.map((g) => (
+                          <SelectItem key={g} value={g} className="text-sm">
+                            {g}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            {/* Date of Birth & Grade Level */}
-            <div className="grid grid-cols-2 gap-3.5 pt-0.5">
-              <div className="space-y-1.5">
-                <Label htmlFor="child-dob" className="text-xs sm:text-sm font-medium">
-                  Date of Birth <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="child-dob"
-                  type="date"
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                  required
-                  className="h-10 text-sm"
-                />
+                {/* Grade Placement Info */}
+                <div className="rounded-xl border border-border/50 bg-muted/20 p-3.5 space-y-1">
+                  <p className="text-xs font-semibold text-foreground">Grade Level Placement</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Grade selection automatically tailors lesson difficulty, curriculum topics, and interactive whiteboard exercises to your learner's level.
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="child-grade" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
-                  <GraduationCap className="size-3.5 text-muted-foreground" />
-                  <span>Grade Level</span>
-                </Label>
-                <Select value={gradeLevel} onValueChange={(val) => val && setGradeLevel(val)}>
-                  <SelectTrigger id="child-grade" className="h-10 text-sm">
-                    <SelectValue placeholder="Select Grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GRADE_LEVELS.map((g) => (
-                      <SelectItem key={g} value={g} className="text-sm">
-                        {g}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Right Column: Account Access & Credentials */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-border/40 text-foreground font-semibold text-xs sm:text-sm">
+                  <ShieldCheck className="size-4 text-primary" />
+                  <span>Student Workspace Login</span>
+                </div>
+
+                {/* Informational Callout: Registration vs Enrollment */}
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs sm:text-sm text-foreground/90 space-y-1.5">
+                  <div className="flex items-center gap-2 font-semibold text-primary">
+                    <ShieldCheck className="size-4" />
+                    <span>Student Login Identity</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Your child uses this email and password to log in to their Student Workspace. Classroom enrollment and tuition subscriptions remain managed under your parent account.
+                  </p>
+                </div>
+
+                {/* Student Login Email & Username */}
+                <div className="grid grid-cols-2 gap-3.5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="child-email" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                      <Mail className="size-3.5 text-muted-foreground" />
+                      <span>Student Email</span>
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="child-email"
+                      type="email"
+                      placeholder="e.g. timi@adebayo.family"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-10 text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="child-username" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                      <span>Username</span>
+                      <span className="text-xs text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <Input
+                      id="child-username"
+                      placeholder="e.g. timi.adebayo"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Student Login Password */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="child-password" className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                    <KeyRound className="size-3.5 text-muted-foreground" />
+                    <span>Student Password</span>
+                    <span className="text-destructive">*</span>
+                    <span className="text-xs text-muted-foreground">(Min. 6 chars)</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="child-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create password for child's login"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="h-10 pr-10 text-sm font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -301,7 +328,7 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
               type="button"
               variant="outline"
               onClick={() => handleClose(false)}
-              className="h-9.5 px-4 text-sm"
+              className="h-9.5 px-4 text-sm cursor-pointer"
             >
               Cancel
             </Button>
@@ -314,7 +341,7 @@ export function AddChildDialog({ open, onOpenChange }: AddChildDialogProps) {
                 !email.trim() ||
                 !password
               }
-              className="h-9.5 px-4 text-sm"
+              className="h-9.5 px-4 text-sm cursor-pointer"
             >
               {registerMutation.isPending ? "Registering Child..." : "Register Child Account"}
             </Button>
