@@ -5,4 +5,5 @@ export * from "./mutations/use-create-classroom.mutation";
 export * from "./mutations/use-classroom-actions.mutation";
 export * from "./mutations/use-lesson-actions.mutation";
 export * from "./mutations/use-board-actions.mutation";
-export * from "./hooks/use-board-socket";
+export * from "./handlers";
+export * from "./services/board-realtime.service";

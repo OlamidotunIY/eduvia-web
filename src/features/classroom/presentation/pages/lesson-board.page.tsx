@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -21,6 +21,7 @@ import {
   Video,
   X,
 } from "lucide-react";
+import { boardWsConnection } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/constant/api-constant";
 import { lessonRoute } from "@/shared/constant/routes.constants";
 import type {
@@ -71,10 +72,16 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { Textarea } from "@/shared/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import {
+  boardRealtimeService,
+  emitBoardCanvasReplace,
+  emitBoardClear,
+  emitBoardStroke,
+  emitBoardSurfaceStyle,
+  joinBoardRoom,
+  joinLessonRoom,
   useAddBoardSectionMutation,
   useAttachBoardQuestionMutation,
   useBoardByLessonQuery,
-  useBoardSocket,
   useClassroomDetailQuery,
   useClassroomLessonsQuery,
   useCompleteBoardPlanMutation,
@@ -476,69 +483,78 @@ function LessonBoardWorkspace({
     message: string;
   } | null>(null);
 
-  const {
-    isConnected,
-    emitStroke,
-    emitCanvasReplace,
-    emitClear,
-    emitSurfaceStyle,
-  } = useBoardSocket({
-    organizationId,
-    lessonId,
-    boardId: board.id,
-    onRemoteStroke: (remoteStroke) => {
-      setStrokes((prev) => {
-        const next = [...prev, remoteStroke];
+  useEffect(() => {
+    if (!lessonId) return;
+    return joinLessonRoom(lessonId);
+  }, [lessonId]);
+
+  useEffect(() => {
+    const leaveBoard = joinBoardRoom(board.id);
+    const unsubscribeCanvas = boardRealtimeService.subscribeCanvas(board.id, {
+      onRemoteStroke: (remoteStroke) => {
+        setStrokes((prev) => {
+          const next = [...prev, remoteStroke];
+          writeStoredBoardCanvas(board.id, {
+            ...latestCanvasRef.current,
+            strokes: next,
+          });
+          return next;
+        });
+      },
+      onRemoteCanvasReplace: (nextStrokes) => {
+        setStrokes(nextStrokes);
         writeStoredBoardCanvas(board.id, {
           ...latestCanvasRef.current,
-          strokes: next,
+          strokes: nextStrokes,
         });
-        return next;
-      });
-    },
-    onRemoteCanvasReplace: (nextStrokes) => {
-      setStrokes(nextStrokes);
-      writeStoredBoardCanvas(board.id, {
-        ...latestCanvasRef.current,
-        strokes: nextStrokes,
-      });
-    },
-    onRemoteClear: () => {
-      setUndoHistory((h) => [...h, strokes]);
-      setStrokes([]);
-      setRedoHistory([]);
-      writeStoredBoardCanvas(board.id, {
-        ...latestCanvasRef.current,
-        strokes: [],
-      });
-      setBoardNotice({ tone: "info", message: "Board canvas cleared." });
-    },
-    onRemoteSurfaceChange: (style) => {
-      if (style === "notebook") {
-        setSurfaceStyle("notebook");
+      },
+      onRemoteClear: () => {
+        setUndoHistory((h) => [...h, latestCanvasRef.current.strokes]);
+        setStrokes([]);
+        setRedoHistory([]);
         writeStoredBoardCanvas(board.id, {
           ...latestCanvasRef.current,
-          surfaceStyle: "notebook",
+          strokes: [],
         });
-      } else {
-        setSurfaceStyle("blank");
-        const nextBg =
-          style === "blackboard"
-            ? APP_DARK_BOARD_BG
-            : style === "whiteboard"
-              ? APP_LIGHT_BOARD_BG
-              : latestCanvasRef.current.boardBgColor;
-        if (nextBg) {
-          setBoardBgColor(nextBg);
+        setBoardNotice({ tone: "info", message: "Board canvas cleared." });
+      },
+      onRemoteSurfaceChange: (style) => {
+        if (style === "notebook") {
+          setSurfaceStyle("notebook");
+          writeStoredBoardCanvas(board.id, {
+            ...latestCanvasRef.current,
+            surfaceStyle: "notebook",
+          });
+        } else {
+          setSurfaceStyle("blank");
+          const nextBg =
+            style === "blackboard"
+              ? APP_DARK_BOARD_BG
+              : style === "whiteboard"
+                ? APP_LIGHT_BOARD_BG
+                : latestCanvasRef.current.boardBgColor;
+          if (nextBg) {
+            setBoardBgColor(nextBg);
+          }
+          writeStoredBoardCanvas(board.id, {
+            ...latestCanvasRef.current,
+            surfaceStyle: "blank",
+            boardBgColor: nextBg,
+          });
         }
-        writeStoredBoardCanvas(board.id, {
-          ...latestCanvasRef.current,
-          surfaceStyle: "blank",
-          boardBgColor: nextBg,
-        });
-      }
-    },
-  });
+      },
+    });
+
+    return () => {
+      unsubscribeCanvas();
+      leaveBoard();
+    };
+  }, [board.id]);
+
+  const isConnected = useSyncExternalStore(
+    boardWsConnection.subscribeStatus,
+    boardWsConnection.isConnected,
+  );
 
   const startLesson = useStartLessonMutation(
     organizationId,
@@ -850,7 +866,7 @@ function LessonBoardWorkspace({
           setUndoHistory((h) => [...h, strokes]);
           setStrokes((prev) => [...prev, stroke]);
           setRedoHistory([]);
-          emitStroke(stroke);
+          emitBoardStroke(board.id, stroke);
           bumpCanvasDirty();
         }}
         onMoveStroke={(strokeId, dxNorm, dyNorm) => {
@@ -871,7 +887,7 @@ function LessonBoardWorkspace({
             }
             moveSyncTimerRef.current = window.setTimeout(() => {
               moveSyncTimerRef.current = null;
-              emitCanvasReplace(next);
+              emitBoardCanvasReplace(board.id, next);
             }, 140);
             return next;
           });
@@ -882,7 +898,7 @@ function LessonBoardWorkspace({
           setUndoHistory((h) => [...h, strokes]);
           setRedoHistory([]);
           setStrokes(next);
-          emitCanvasReplace(next);
+          emitBoardCanvasReplace(board.id, next);
           bumpCanvasDirty();
         }}
         onReplaceStrokes={(nextStrokes, snapshotToPush) => {
@@ -891,7 +907,7 @@ function LessonBoardWorkspace({
             setRedoHistory([]);
           }
           setStrokes(nextStrokes);
-          emitCanvasReplace(nextStrokes);
+          emitBoardCanvasReplace(board.id, nextStrokes);
           bumpCanvasDirty();
         }}
         onUndoStroke={() => {
@@ -900,7 +916,7 @@ function LessonBoardWorkspace({
           setUndoHistory((h) => h.slice(0, -1));
           setRedoHistory((r) => [...r, strokes]);
           setStrokes(prevSnapshot);
-          emitCanvasReplace(prevSnapshot);
+          emitBoardCanvasReplace(board.id, prevSnapshot);
           bumpCanvasDirty();
         }}
         onRedoStroke={() => {
@@ -909,19 +925,19 @@ function LessonBoardWorkspace({
           setRedoHistory((r) => r.slice(0, -1));
           setUndoHistory((h) => [...h, strokes]);
           setStrokes(nextSnapshot);
-          emitCanvasReplace(nextSnapshot);
+          emitBoardCanvasReplace(board.id, nextSnapshot);
           bumpCanvasDirty();
         }}
         onClearCanvas={() => {
           setUndoHistory((h) => [...h, strokes]);
           setRedoHistory([]);
           setStrokes([]);
-          emitClear();
+          emitBoardClear(board.id);
           bumpCanvasDirty();
         }}
         onSurfaceStyleChange={(style) => {
           setSurfaceStyle(style);
-          emitSurfaceStyle(style);
+          emitBoardSurfaceStyle(board.id, style);
           bumpCanvasDirty();
         }}
         onBoardBgColorChange={(color) => {

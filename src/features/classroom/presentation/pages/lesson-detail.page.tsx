@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AlertTriangle,
@@ -27,6 +27,7 @@ import {
   classroomRoute,
   lessonBoardRoute,
 } from "@/shared/constant/routes.constants";
+import { lessonWsConnection } from "@/shared/api";
 import { sessionStore } from "@/shared/store";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
@@ -41,9 +42,9 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { Skeleton } from "@/shared/ui/skeleton";
 import {
+  joinLessonRoom,
   useAssignCoverTeacherMutation,
   useBoardByLessonQuery,
-  useBoardSocket,
   useCancelLessonMutation,
   useClassroomDetailQuery,
   useClassroomStudentsQuery,
@@ -156,10 +157,15 @@ export function LessonDetailPage() {
   );
   const membersQuery = useOrganizationMembersQuery(organizationId);
 
-  const { isConnected: isLessonSocketConnected } = useBoardSocket({
-    organizationId,
-    lessonId,
-  });
+  useEffect(() => {
+    if (!lessonId) return;
+    return joinLessonRoom(lessonId);
+  }, [lessonId]);
+
+  const isLessonSocketConnected = useSyncExternalStore(
+    lessonWsConnection.subscribeStatus,
+    lessonWsConnection.isConnected,
+  );
 
   const startLesson = useStartLessonMutation(
     organizationId,
