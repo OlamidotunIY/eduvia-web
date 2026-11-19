@@ -1,21 +1,68 @@
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Maximize2, Paperclip, Send, Smile } from "lucide-react";
 
 interface MessageInputProps {
   conversationName: string;
   onSendMessage: (content: string) => void;
+  onTypingChange?: (isTyping: boolean) => void;
 }
 
 export function MessageInput({
   conversationName,
   onSendMessage,
+  onTypingChange,
 }: MessageInputProps) {
   const [content, setContent] = useState("");
+  const typingTimerRef = useRef<number | null>(null);
+  const isTypingRef = useRef(false);
+
+  const notifyTyping = (nextTyping: boolean) => {
+    if (isTypingRef.current === nextTyping) return;
+    isTypingRef.current = nextTyping;
+    onTypingChange?.(nextTyping);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current !== null) {
+        window.clearTimeout(typingTimerRef.current);
+      }
+      if (isTypingRef.current) {
+        isTypingRef.current = false;
+        onTypingChange?.(false);
+      }
+    };
+  }, [onTypingChange]);
 
   const handleSend = () => {
     if (!content.trim()) return;
+    if (typingTimerRef.current !== null) {
+      window.clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    notifyTyping(false);
     onSendMessage(content.trim());
     setContent("");
+  };
+
+  const handleChange = (value: string) => {
+    setContent(value);
+    if (value.trim().length > 0) {
+      notifyTyping(true);
+      if (typingTimerRef.current !== null) {
+        window.clearTimeout(typingTimerRef.current);
+      }
+      typingTimerRef.current = window.setTimeout(() => {
+        typingTimerRef.current = null;
+        notifyTyping(false);
+      }, 2500);
+    } else {
+      if (typingTimerRef.current !== null) {
+        window.clearTimeout(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+      notifyTyping(false);
+    }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -49,7 +96,7 @@ export function MessageInput({
         <input
           type="text"
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={`Type a message to ${conversationName}...`}
           className="flex-1 bg-transparent py-1 text-xs md:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { cn } from "cn";
 import { Conversation, type ConversationFilter } from "@/shared/domain";
 import { ChatRoom } from "../components/chat-room";
@@ -9,6 +9,9 @@ import { useMainHeaderSlot } from "@/app/shell/main/header";
 import { useLayout } from "@/app/providers/layout-provider";
 import { sessionStore } from "@/shared/store";
 import {
+  emitConversationTyping,
+  joinConversationRoom,
+  messagesRealtimeService,
   useConversationsQuery,
   useConversationDetailQuery,
   useSendMessageMutation,
@@ -36,6 +39,36 @@ export function MessagesPage() {
 
   // Active selected conversation
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Join the active conversation Socket.IO room so chat:new_message and typing events flow to handlers
+  useEffect(() => {
+    if (!selectedId) return;
+    return joinConversationRoom(selectedId);
+  }, [selectedId]);
+
+  const rawTypingUserIds = useSyncExternalStore(
+    messagesRealtimeService.subscribe,
+    () => messagesRealtimeService.getTypingUserIds(selectedId),
+  );
+
+  const typingLabel = useMemo(() => {
+    const others = rawTypingUserIds.filter((id) => id !== currentUserId);
+    if (others.length === 0) return null;
+    if (others.length === 1) {
+      const member = members.find((m) => m.userId === others[0]);
+      const displayName = member?.getDisplayName();
+      return displayName ? `${displayName} is typing...` : "Typing...";
+    }
+    return `${others.length} people typing...`;
+  }, [rawTypingUserIds, currentUserId, members]);
+
+  const handleTypingChange = useCallback(
+    (isTyping: boolean) => {
+      if (!selectedId) return;
+      emitConversationTyping(selectedId, isTyping);
+    },
+    [selectedId],
+  );
 
   // Chat list visibility state (especially for mobile and collapsible view)
   const [isChatListOpen, setIsChatListOpen] = useState(true);
@@ -261,7 +294,9 @@ export function MessagesPage() {
         >
           <ChatRoom
             conversation={activeConversation}
+            typingLabel={typingLabel}
             onSendMessage={handleSendMessage}
+            onTypingChange={handleTypingChange}
             onReact={handleReact}
             onCreateNewMessage={() => setNewChatDialogOpen(true)}
             onBrowseContacts={() => setNewChatDialogOpen(true)}

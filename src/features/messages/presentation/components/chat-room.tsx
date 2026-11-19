@@ -19,7 +19,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 
 interface ChatRoomProps {
   conversation: Conversation | null;
+  typingLabel?: string | null;
   onSendMessage: (content: string) => void;
+  onTypingChange?: (isTyping: boolean) => void;
   onReact: (messageId: string, emoji: string) => void;
   onCreateNewMessage: () => void;
   onBrowseContacts: () => void;
@@ -29,7 +31,9 @@ interface ChatRoomProps {
 
 export function ChatRoom({
   conversation,
+  typingLabel,
   onSendMessage,
+  onTypingChange,
   onReact,
   onCreateNewMessage,
   onBrowseContacts,
@@ -116,11 +120,15 @@ export function ChatRoom({
             <h3 className="truncate font-heading text-sm font-bold text-foreground">
               {conversation.name}
             </h3>
-            {conversation.subtitle && (
+            {typingLabel ? (
+              <p className="truncate text-xs font-medium text-emerald-500 animate-pulse">
+                {typingLabel}
+              </p>
+            ) : conversation.subtitle ? (
               <p className="truncate text-xs text-muted-foreground">
                 {conversation.subtitle}
               </p>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -182,6 +190,7 @@ export function ChatRoom({
       <MessageInput
         conversationName={conversation.name}
         onSendMessage={onSendMessage}
+        onTypingChange={onTypingChange}
       />
     </div>
   );
