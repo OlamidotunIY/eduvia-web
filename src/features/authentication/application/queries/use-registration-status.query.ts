@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
-  eventBus,
   buildRegistrationSocketAuth,
-  WsConnection,
-  WsEventType,
-  type RegistrationReadyPayload,
+  registrationWsConnection,
 } from '@/shared/api'
+import { registrationReadyHandler } from '../handlers'
 import { authRepository } from '../../infrastructure'
 
 /**
@@ -17,36 +15,50 @@ export function useRegistrationStatusQuery(
   registrationRequestId: string | null,
   registrationContinuation: string | null,
 ) {
-  const [isReady, setIsReady] = useState(false)
+  const [readyRequestId, setReadyRequestId] = useState<string | null>(null)
+  const isReady = Boolean(
+    registrationRequestId && readyRequestId === registrationRequestId,
+  )
 
   useEffect(() => {
-    setIsReady(false)
     if (!registrationRequestId || !registrationContinuation) return
 
-    const connection = new WsConnection()
-    const unregister = eventBus.subscribe<RegistrationReadyPayload>(
-      WsEventType.REGISTRATION_READY,
-      (payload) => {
-        if (payload.registrationRequestId === registrationRequestId) setIsReady(true)
-      },
+    const unregisterHandler = registrationReadyHandler.register()
+    const unsubscribeReady = registrationReadyHandler.onReady(
+      registrationRequestId,
+      () => setReadyRequestId(registrationRequestId),
     )
-    connection.connect({
+
+    registrationWsConnection.connect({
       namespace: '/registration',
-      auth: buildRegistrationSocketAuth(registrationRequestId, registrationContinuation),
+      auth: buildRegistrationSocketAuth(
+        registrationRequestId,
+        registrationContinuation,
+      ),
     })
 
     return () => {
-      unregister()
-      connection.disconnect()
+      unsubscribeReady()
+      unregisterHandler()
+      registrationWsConnection.disconnect()
     }
   }, [registrationContinuation, registrationRequestId])
 
   const query = useQuery({
     queryKey: ['authentication', 'registration', registrationRequestId],
-    queryFn: () => authRepository.getRegistrationStatus(registrationRequestId!, registrationContinuation!),
+    queryFn: () =>
+      authRepository.getRegistrationStatus(
+        registrationRequestId!,
+        registrationContinuation!,
+      ),
     enabled: Boolean(registrationRequestId && registrationContinuation && isReady),
     staleTime: 0,
   })
 
-  return { ...query, isAwaitingCompletion: Boolean(registrationRequestId && registrationContinuation && !isReady) }
+  return {
+    ...query,
+    isAwaitingCompletion: Boolean(
+      registrationRequestId && registrationContinuation && !isReady,
+    ),
+  }
 }
